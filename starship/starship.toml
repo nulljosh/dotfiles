@@ -1,0 +1,57 @@
+# Catppuccin Mocha powerline prompt (Nerd Font glyphs)
+
+format = """
+[](fg:#89b4fa)\
+[$directory](bg:#89b4fa fg:#1e1e2e bold)\
+[](fg:#89b4fa bg:#cba6f7)\
+[$git_branch$git_status](bg:#cba6f7 fg:#1e1e2e)\
+[](fg:#cba6f7 bg:#a6e3a1)\
+[$nodejs$python$rust$ruby](bg:#a6e3a1 fg:#1e1e2e)\
+[](fg:#a6e3a1)\
+$cmd_duration\
+$line_break\
+$character"""
+
+[directory]
+format = "[ $path ]($style)"
+style = "bg:#89b4fa fg:#1e1e2e bold"
+truncation_length = 3
+truncate_to_repo = true
+
+[git_branch]
+symbol = " "
+format = "[ $symbol$branch ]($style)"
+style = "bg:#cba6f7 fg:#1e1e2e"
+
+[git_status]
+format = "[$all_status$ahead_behind]($style)"
+style = "bg:#cba6f7 fg:#1e1e2e"
+
+[nodejs]
+symbol = " "
+format = "[ $symbol$version ]($style)"
+style = "bg:#a6e3a1 fg:#1e1e2e"
+
+[python]
+symbol = " "
+format = "[ $symbol$version ]($style)"
+style = "bg:#a6e3a1 fg:#1e1e2e"
+
+[rust]
+symbol = " "
+format = "[ $symbol$version ]($style)"
+style = "bg:#a6e3a1 fg:#1e1e2e"
+
+[ruby]
+symbol = " "
+format = "[ $symbol$version ]($style)"
+style = "bg:#a6e3a1 fg:#1e1e2e"
+
+[cmd_duration]
+min_time = 2_000
+style = "bold #f9e2af"
+format = " [ $duration]($style)"
+
+[character]
+success_symbol = "[](bold #a6e3a1)"
+error_symbol = "[](bold #f38ba8)"

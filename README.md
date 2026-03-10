@@ -13,6 +13,10 @@ Shell and terminal config for macOS (Apple Silicon).
 - **ghostty** - Ghostty terminal (JetBrainsMono Nerd Font, fish shell)
 - **starship** - Starship prompt (Catppuccin Mocha, Powerline glyphs)
 
+## Architecture
+
+![architecture](architecture.svg)
+
 ## Prerequisites
 
 - [Homebrew](https://brew.sh)

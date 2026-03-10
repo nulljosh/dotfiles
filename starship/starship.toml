@@ -5,9 +5,7 @@ add_newline = false
 format = """
 [](fg:#89b4fa)\
 $username\
-[](fg:#89b4fa bg:#74c7ec)\
-$hostname\
-[](fg:#74c7ec bg:#fab387)\
+[](fg:#89b4fa bg:#fab387)\
 $time\
 [](fg:#fab387 bg:#89b4fa)\
 $directory\
@@ -25,12 +23,6 @@ format = "[ $user ]($style)"
 style_user = "bg:#89b4fa fg:#1e1e2e bold"
 style_root = "bg:#89b4fa fg:#1e1e2e bold"
 
-[hostname]
-ssh_only = false
-format = "[ 󰟀 $hostname ]($style)"
-style = "bg:#74c7ec fg:#1e1e2e bold"
-trim_at = ".local"
-
 [time]
 disabled = false
 time_format = "%H:%M"
@@ -38,7 +30,8 @@ format = "[  $time ]($style)"
 style = "bg:#fab387 fg:#1e1e2e bold"
 
 [directory]
-format = "[ $path ]($style)"
+home_symbol = "~"
+format = "[ 󰋜 $path ]($style)"
 style = "bg:#89b4fa fg:#1e1e2e bold"
 truncation_length = 3
 truncate_to_repo = true

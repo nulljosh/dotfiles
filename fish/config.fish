@@ -1,4 +1,6 @@
 # === PATH ===
+set -g fish_greeting
+
 fish_add_path /opt/homebrew/bin
 fish_add_path /opt/homebrew/opt/ruby/bin
 fish_add_path $HOME/.rbenv/shims

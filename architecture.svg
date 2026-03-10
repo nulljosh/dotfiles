@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" width="720" height="360">
+  <rect width="720" height="360" fill="#fff"/>
+
+  <!-- Title -->
+  <text x="360" y="30" text-anchor="middle" font-family="-apple-system, Helvetica" font-size="16" font-weight="600" fill="#1d1d1f">dotfiles architecture</text>
+
+  <!-- Repo (source) -->
+  <rect x="260" y="50" width="200" height="44" rx="10" fill="#f0fdf4" stroke="#34c759" stroke-width="1.5"/>
+  <text x="360" y="77" text-anchor="middle" font-family="-apple-system, Helvetica" font-size="13" font-weight="500" fill="#34c759">dotfiles repo</text>
+
+  <!-- Install script -->
+  <rect x="280" y="130" width="160" height="40" rx="10" fill="#e8f4fd" stroke="#007aff" stroke-width="1.5"/>
+  <text x="360" y="155" text-anchor="middle" font-family="-apple-system, Helvetica" font-size="12" font-weight="500" fill="#007aff">install.sh (symlinks)</text>
+
+  <!-- Arrow repo -> install -->
+  <line x1="360" y1="94" x2="360" y2="130" stroke="#86868b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Config files in repo -->
+  <rect x="40" y="56" width="140" height="32" rx="8" fill="#f5f5f7" stroke="#d2d2d7" stroke-width="1"/>
+  <text x="110" y="77" text-anchor="middle" font-family="-apple-system, Helvetica" font-size="10" fill="#1d1d1f">fish/config.fish</text>
+
+  <rect x="540" y="56" width="140" height="32" rx="8" fill="#f5f5f7" stroke="#d2d2d7" stroke-width="1"/>
+  <text x="610" y="77" text-anchor="middle" font-family="-apple-system, Helvetica" font-size="10" fill="#1d1d1f">starship.toml</text>
+
+  <!-- Arrows from repo to sub-files -->
+  <line x1="260" y1="72" x2="180" y2="72" stroke="#d2d2d7" stroke-width="1"/>
+  <line x1="460" y1="72" x2="540" y2="72" stroke="#d2d2d7" stroke-width="1"/>
+
+  <!-- Target locations -->
+  <rect x="40" y="220" width="150" height="36" rx="8" fill="#fff3e0" stroke="#ff9500" stroke-width="1.5"/>
+  <text x="115" y="243" text-anchor="middle" font-family="-apple-system, Helvetica" font-size="10" font-weight="500" fill="#ff9500">~/.config/fish/</text>
+
+  <rect x="220" y="220" width="120" height="36" rx="8" fill="#fff3e0" stroke="#ff9500" stroke-width="1.5"/>
+  <text x="280" y="243" text-anchor="middle" font-family="-apple-system, Helvetica" font-size="10" font-weight="500" fill="#ff9500">~/.zshrc</text>
+
+  <rect x="370" y="220" width="150" height="36" rx="8" fill="#fff3e0" stroke="#ff9500" stroke-width="1.5"/>
+  <text x="445" y="243" text-anchor="middle" font-family="-apple-system, Helvetica" font-size="10" font-weight="500" fill="#ff9500">~/.config/ghostty/</text>
+
+  <rect x="550" y="220" width="140" height="36" rx="8" fill="#fff3e0" stroke="#ff9500" stroke-width="1.5"/>
+  <text x="620" y="243" text-anchor="middle" font-family="-apple-system, Helvetica" font-size="10" font-weight="500" fill="#ff9500">~/.config/starship.toml</text>
+
+  <!-- Arrows from install to targets -->
+  <line x1="310" y1="170" x2="115" y2="220" stroke="#86868b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="340" y1="170" x2="280" y2="220" stroke="#86868b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="380" y1="170" x2="445" y2="220" stroke="#86868b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="410" y1="170" x2="620" y2="220" stroke="#86868b" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <!-- Secrets (not tracked) -->
+  <rect x="40" y="290" width="150" height="36" rx="8" fill="#fef2f2" stroke="#ff3b30" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="115" y="313" text-anchor="middle" font-family="-apple-system, Helvetica" font-size="10" fill="#ff3b30">secrets.fish</text>
+
+  <rect x="220" y="290" width="150" height="36" rx="8" fill="#fef2f2" stroke="#ff3b30" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="295" y="313" text-anchor="middle" font-family="-apple-system, Helvetica" font-size="10" fill="#ff3b30">secrets.zsh</text>
+
+  <!-- source arrows -->
+  <line x1="115" y1="256" x2="115" y2="290" stroke="#ff3b30" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrowRed)"/>
+  <line x1="280" y1="256" x2="295" y2="290" stroke="#ff3b30" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrowRed)"/>
+
+  <text x="440" y="313" font-family="-apple-system, Helvetica" font-size="10" fill="#86868b">dashed = not tracked in git</text>
+
+  <!-- Arrow markers -->
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#86868b"/>
+    </marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ff3b30"/>
+    </marker>
+  </defs>
+</svg>

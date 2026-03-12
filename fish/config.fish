@@ -18,6 +18,11 @@ end
 fnm env --shell fish | source
 
 # === Starship prompt ===
+if test "$TERM_PROGRAM" = "Apple_Terminal"
+    set -gx STARSHIP_CONFIG $HOME/.config/starship-terminal.toml
+else
+    set -gx STARSHIP_CONFIG $HOME/.config/starship.toml
+end
 starship init fish | source
 
 # === Zoxide ===

@@ -55,4 +55,9 @@ source <(fzf --zsh)
 eval "$(zoxide init zsh)"
 
 # === Starship prompt ===
+if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]; then
+  export STARSHIP_CONFIG="$HOME/.config/starship-terminal.toml"
+else
+  export STARSHIP_CONFIG="$HOME/.config/starship.toml"
+fi
 eval "$(starship init zsh)"

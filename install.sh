@@ -20,5 +20,6 @@ link "$DOTFILES/fish/config.fish"      "$HOME/.config/fish/config.fish"
 link "$DOTFILES/zsh/.zshrc"            "$HOME/.zshrc"
 link "$DOTFILES/ghostty/config"        "$HOME/.config/ghostty/config"
 link "$DOTFILES/starship/starship.toml" "$HOME/.config/starship.toml"
+link "$DOTFILES/starship/starship-terminal.toml" "$HOME/.config/starship-terminal.toml"
 
 echo "done. secrets files are NOT managed by this repo."

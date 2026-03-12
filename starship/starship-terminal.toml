@@ -1,0 +1,66 @@
+# ASCII-safe Starship prompt for Apple Terminal.
+
+add_newline = false
+
+format = """
+[ $username ](bold black on blue)\
+[|](bold yellow)\
+[ $time ](bold black on yellow)\
+[|](bold blue)\
+[ $directory ](bold black on blue)\
+$git_branch$git_status\
+$nodejs$python$rust$ruby\
+$cmd_duration\
+$character"""
+
+[username]
+show_always = true
+format = "$user"
+style_user = "bold black on blue"
+style_root = "bold black on blue"
+
+[time]
+disabled = false
+time_format = "%H:%M"
+format = "$time"
+style = "bold black on yellow"
+
+[directory]
+home_symbol = "~"
+format = "$path"
+style = "bold black on blue"
+truncation_length = 3
+truncate_to_repo = true
+
+[git_branch]
+symbol = " git:"
+format = "[ $symbol$branch ](bold black on magenta)"
+
+[git_status]
+format = "[$all_status$ahead_behind](bold black on magenta)"
+
+[nodejs]
+symbol = " node:"
+format = "[ $symbol$version ](bold black on green)"
+
+[python]
+symbol = " py:"
+format = "[ $symbol$version ](bold black on green)"
+
+[rust]
+symbol = " rs:"
+format = "[ $symbol$version ](bold black on green)"
+
+[ruby]
+symbol = " rb:"
+format = "[ $symbol$version ](bold black on green)"
+
+[cmd_duration]
+min_time = 2_000
+style = "bold yellow"
+format = "[ $duration ]($style)"
+
+[character]
+success_symbol = "[>](bold green)"
+error_symbol = "[>](bold red)"
+vimcmd_symbol = "[<](bold blue)"

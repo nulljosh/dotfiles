@@ -1,0 +1,191 @@
+#!/bin/bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")")" && pwd)"
+MAC_BIN="$SCRIPT_DIR/mac"
+BUILTIN_WORKFLOW_DIR="$SCRIPT_DIR/../workflows"
+USER_WORKFLOW_DIR="${HOME}/.local/share/macflow/workflows"
+
+usage() {
+    cat >&2 <<EOF
+macflow -- Mac workflow engine
+
+Usage:
+  macflow run <name>       Execute a workflow
+  macflow list             List available workflows
+  macflow show <name>      Print workflow file contents
+  macflow dry <name>       Dry run -- print commands without executing
+  macflow new <name>       Create new workflow in user dir, open in \$EDITOR
+
+Workflow format:
+  # comment lines are ignored
+  wait <seconds>           Sleep for N seconds
+  if-running <app>         Next line runs only if app is running
+  if-not-running <app>     Next line runs only if app is not running
+  <mac command>            Any other line is passed to the mac binary
+EOF
+    exit "${1:-2}"
+}
+
+find_workflow() {
+    local name="$1"
+    local user_path="$USER_WORKFLOW_DIR/$name"
+    local builtin_path="$BUILTIN_WORKFLOW_DIR/$name"
+
+    if [[ -f "$user_path" ]]; then
+        echo "$user_path"
+    elif [[ -f "$builtin_path" ]]; then
+        echo "$builtin_path"
+    else
+        echo "macflow: workflow not found: $name" >&2
+        exit 1
+    fi
+}
+
+list_workflows() {
+    local shown=()
+    echo "Available workflows:"
+
+    if [[ -d "$BUILTIN_WORKFLOW_DIR" ]]; then
+        while IFS= read -r -d '' f; do
+            local name
+            name="$(basename "$f")"
+            echo "  $name  (built-in)"
+            shown+=("$name")
+        done < <(find "$BUILTIN_WORKFLOW_DIR" -maxdepth 1 -type f -not -name '.*' -print0 | sort -z)
+    fi
+
+    if [[ -d "$USER_WORKFLOW_DIR" ]]; then
+        while IFS= read -r -d '' f; do
+            local name
+            name="$(basename "$f")"
+            local is_dup=0
+            for s in "${shown[@]+"${shown[@]}"}"; do
+                [[ "$s" == "$name" ]] && is_dup=1 && break
+            done
+            if [[ $is_dup -eq 0 ]]; then
+                echo "  $name  (user)"
+            else
+                echo "  $name  (user, overrides built-in)"
+            fi
+        done < <(find "$USER_WORKFLOW_DIR" -maxdepth 1 -type f -not -name '.*' -print0 | sort -z)
+    fi
+}
+
+app_is_running() {
+    local app="$1"
+    osascript -e "application \"$app\" is running" 2>/dev/null | grep -q "true"
+}
+
+run_workflow() {
+    local workflow_file="$1"
+    local dry="${2:-false}"
+    local condition=""
+
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        # Strip leading/trailing whitespace
+        line="${line#"${line%%[![:space:]]*}"}"
+        line="${line%"${line##*[![:space:]]}"}"
+
+        # Skip blank lines and comments
+        [[ -z "$line" ]] && continue
+        [[ "$line" == \#* ]] && continue
+
+        # Handle wait
+        if [[ "$line" == wait\ * ]]; then
+            local secs="${line#wait }"
+            if [[ "$dry" == true ]]; then
+                echo "  [wait] sleep $secs"
+            else
+                sleep "$secs"
+            fi
+            condition=""
+            continue
+        fi
+
+        # Handle conditionals -- sets condition for next real line
+        if [[ "$line" == if-running\ * ]]; then
+            condition="running:${line#if-running }"
+            continue
+        fi
+
+        if [[ "$line" == if-not-running\ * ]]; then
+            condition="not-running:${line#if-not-running }"
+            continue
+        fi
+
+        # Check pending condition
+        if [[ -n "$condition" ]]; then
+            local cond_type="${condition%%:*}"
+            local cond_app="${condition#*:}"
+            condition=""
+
+            local running=false
+            app_is_running "$cond_app" && running=true
+
+            if [[ "$cond_type" == "running" && "$running" == false ]]; then
+                [[ "$dry" == true ]] && echo "  [skip] $line  (if-running $cond_app: not running)"
+                continue
+            fi
+            if [[ "$cond_type" == "not-running" && "$running" == true ]]; then
+                [[ "$dry" == true ]] && echo "  [skip] $line  (if-not-running $cond_app: is running)"
+                continue
+            fi
+        fi
+
+        # Execute or print the mac command
+        if [[ "$dry" == true ]]; then
+            echo "  mac $line"
+        else
+            "$MAC_BIN" $line
+        fi
+
+    done < "$workflow_file"
+}
+
+[[ $# -eq 0 ]] && usage 2
+
+CMD="$1"
+shift
+
+case "$CMD" in
+    run)
+        [[ $# -eq 0 ]] && { echo "macflow: run requires a workflow name" >&2; usage 1; }
+        wf="$(find_workflow "$1")"
+        echo "Running workflow: $1"
+        run_workflow "$wf" false
+        ;;
+    list)
+        list_workflows
+        ;;
+    show)
+        [[ $# -eq 0 ]] && { echo "macflow: show requires a workflow name" >&2; usage 1; }
+        wf="$(find_workflow "$1")"
+        cat "$wf"
+        ;;
+    dry)
+        [[ $# -eq 0 ]] && { echo "macflow: dry requires a workflow name" >&2; usage 1; }
+        wf="$(find_workflow "$1")"
+        echo "Dry run: $1"
+        run_workflow "$wf" true
+        ;;
+    new)
+        [[ $# -eq 0 ]] && { echo "macflow: new requires a workflow name" >&2; usage 1; }
+        mkdir -p "$USER_WORKFLOW_DIR"
+        new_wf="$USER_WORKFLOW_DIR/$1"
+        if [[ -f "$new_wf" ]]; then
+            echo "macflow: workflow already exists: $new_wf" >&2
+            exit 1
+        fi
+        printf '# %s workflow\n' "$1" > "$new_wf"
+        echo "Created: $new_wf"
+        "${EDITOR:-nano}" "$new_wf"
+        ;;
+    help|--help|-h)
+        usage 0
+        ;;
+    *)
+        echo "macflow: unknown command: $CMD" >&2
+        usage 1
+        ;;
+esac

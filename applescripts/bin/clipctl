@@ -1,0 +1,140 @@
+#!/bin/bash
+# clipctl -- Clipboard manager
+# Usage: clipctl <command> [args]
+
+set -euo pipefail
+
+HISTORY_FILE="${HOME}/.local/share/clipctl/history"
+HISTORY_MAX=50
+
+usage() {
+  cat <<'EOF'
+Usage: clipctl <command> [args]
+
+Commands:
+  get               Print clipboard contents
+  set <text>        Set clipboard to text (also accepts stdin)
+  copy <file>       Copy file contents to clipboard
+  history           Show clipboard history
+  history clear     Clear clipboard history
+  history <n>       Recall nth history entry to clipboard
+  clear             Clear the clipboard
+  count             Character/word/line count of clipboard
+EOF
+  exit 2
+}
+
+ensure_history_dir() {
+  mkdir -p "$(dirname "$HISTORY_FILE")"
+  touch "$HISTORY_FILE"
+}
+
+save_to_history() {
+  ensure_history_dir
+  local content
+  content=$(pbpaste 2>/dev/null || true)
+  [[ -z "$content" ]] && return
+
+  # Prepend with timestamp separator
+  local entry
+  entry="--- $(date '+%Y-%m-%d %H:%M:%S') ---"
+  {
+    echo "$entry"
+    echo "$content"
+  } >> "$HISTORY_FILE"
+
+  # Trim to last N entries
+  local total
+  total=$(grep -c "^--- " "$HISTORY_FILE" 2>/dev/null || echo "0")
+  if [[ "$total" -gt "$HISTORY_MAX" ]]; then
+    # Keep only the last HISTORY_MAX entries
+    local skip=$((total - HISTORY_MAX))
+    local line_num
+    line_num=$(grep -n "^--- " "$HISTORY_FILE" | sed -n "$((skip + 1))p" | cut -d: -f1)
+    if [[ -n "$line_num" ]]; then
+      tail -n +"$line_num" "$HISTORY_FILE" > "$HISTORY_FILE.tmp"
+      mv "$HISTORY_FILE.tmp" "$HISTORY_FILE"
+    fi
+  fi
+}
+
+[[ $# -lt 1 ]] && usage
+
+cmd="$1"
+shift
+
+case "$cmd" in
+  get)
+    pbpaste
+    ;;
+
+  set)
+    if [[ $# -gt 0 ]]; then
+      echo -n "$*" | pbcopy
+    else
+      # Read from stdin
+      pbcopy
+    fi
+    save_to_history
+    echo "Clipboard set."
+    ;;
+
+  copy)
+    [[ $# -lt 1 ]] && { echo "Usage: clipctl copy <file>"; exit 1; }
+    [[ ! -f "$1" ]] && { echo "File not found: $1"; exit 1; }
+    pbcopy < "$1"
+    save_to_history
+    echo "Copied contents of $1 to clipboard."
+    ;;
+
+  history)
+    ensure_history_dir
+    if [[ $# -eq 0 ]]; then
+      if [[ ! -s "$HISTORY_FILE" ]]; then
+        echo "No clipboard history."
+      else
+        # Show entries with index numbers
+        awk '/^--- /{n++; print n": "$0; next} {print "   "$0}' "$HISTORY_FILE" | tail -100
+      fi
+    elif [[ "$1" == "clear" ]]; then
+      > "$HISTORY_FILE"
+      echo "Clipboard history cleared."
+    elif [[ "$1" =~ ^[0-9]+$ ]]; then
+      # Recall entry N
+      entry_num="$1"
+      content=$(awk -v n="$entry_num" '
+        /^--- /{count++; if(count==n){capture=1; next} else if(capture){exit}}
+        capture{print}
+      ' "$HISTORY_FILE")
+      if [[ -n "$content" ]]; then
+        echo -n "$content" | pbcopy
+        echo "Recalled entry $entry_num to clipboard."
+      else
+        echo "Entry $entry_num not found."
+        exit 1
+      fi
+    else
+      echo "Usage: clipctl history [clear|<n>]"; exit 1
+    fi
+    ;;
+
+  clear)
+    echo -n "" | pbcopy
+    echo "Clipboard cleared."
+    ;;
+
+  count)
+    content=$(pbpaste)
+    chars=$(echo -n "$content" | wc -c | tr -d ' ')
+    words=$(echo -n "$content" | wc -w | tr -d ' ')
+    lines=$(echo -n "$content" | wc -l | tr -d ' ')
+    echo "Characters: $chars"
+    echo "Words: $words"
+    echo "Lines: $lines"
+    ;;
+
+  *)
+    echo "Unknown command: $cmd"
+    usage
+    ;;
+esac

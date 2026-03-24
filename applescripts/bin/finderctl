@@ -1,0 +1,147 @@
+#!/bin/bash
+# finderctl -- Finder and file management via AppleScript
+# Usage: finderctl <command> [args]
+
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: finderctl <command> [args]
+
+Commands:
+  open <path>       Open folder in Finder
+  reveal <path>     Reveal file in Finder
+  trash             Empty the Trash
+  selected          Get paths of selected Finder items
+  hidden            Toggle hidden files visibility
+  hidden on|off     Show/hide hidden files explicitly
+  cleanup [path]    Sort files in directory by type (default: ~/Desktop)
+  eject [name]      Eject a volume (or list mounted volumes)
+  info <path>       Get file/folder info
+EOF
+  exit 2
+}
+
+[[ $# -lt 1 ]] && usage
+
+cmd="$1"
+shift
+
+case "$cmd" in
+  open)
+    [[ $# -lt 1 ]] && { echo "Usage: finderctl open <path>"; exit 1; }
+    path=$(cd "$1" 2>/dev/null && pwd || echo "$1")
+    open "$path"
+    echo "Opened: $path"
+    ;;
+
+  reveal)
+    [[ $# -lt 1 ]] && { echo "Usage: finderctl reveal <path>"; exit 1; }
+    path=$(realpath "$1" 2>/dev/null || echo "$1")
+    open -R "$path"
+    echo "Revealed: $path"
+    ;;
+
+  trash)
+    osascript -e 'tell application "Finder" to empty the trash'
+    echo "Trash emptied."
+    ;;
+
+  selected)
+    osascript <<'APPLESCRIPT'
+tell application "Finder"
+  set theSelection to selection
+  if (count of theSelection) is 0 then
+    return "No items selected."
+  end if
+  set output to ""
+  repeat with theItem in theSelection
+    set output to output & (POSIX path of (theItem as alias)) & linefeed
+  end repeat
+  return output
+end tell
+APPLESCRIPT
+    ;;
+
+  hidden)
+    if [[ $# -eq 0 ]]; then
+      current=$(defaults read com.apple.finder AppleShowAllFiles 2>/dev/null || echo "false")
+      if [[ "$current" == "true" ]] || [[ "$current" == "YES" ]]; then
+        defaults write com.apple.finder AppleShowAllFiles -bool false
+        echo "Hidden files: off"
+      else
+        defaults write com.apple.finder AppleShowAllFiles -bool true
+        echo "Hidden files: on"
+      fi
+      killall Finder
+    else
+      case "$1" in
+        on)  defaults write com.apple.finder AppleShowAllFiles -bool true; killall Finder; echo "Hidden files: visible" ;;
+        off) defaults write com.apple.finder AppleShowAllFiles -bool false; killall Finder; echo "Hidden files: hidden" ;;
+        *)   echo "Usage: finderctl hidden [on|off]"; exit 1 ;;
+      esac
+    fi
+    ;;
+
+  cleanup)
+    target="${1:-$HOME/Desktop}"
+    target=$(realpath "$target" 2>/dev/null || echo "$target")
+
+    if [[ ! -d "$target" ]]; then
+      echo "Not a directory: $target"; exit 1
+    fi
+
+    moved=0
+    move_exts() {
+      local category="$1"; shift
+      for ext in "$@"; do
+        for file in "$target"/*."$ext" "$target"/*."$(echo "$ext" | tr '[:lower:]' '[:upper:]')" 2>/dev/null; do
+          [[ -f "$file" ]] || continue
+          mkdir -p "$target/$category"
+          mv "$file" "$target/$category/"
+          moved=$((moved + 1))
+        done
+      done
+    }
+
+    move_exts Images jpg jpeg png gif bmp svg webp heic tiff ico
+    move_exts Documents pdf doc docx xls xlsx ppt pptx txt rtf odt csv
+    move_exts Videos mp4 mov avi mkv wmv flv webm m4v
+    move_exts Audio mp3 wav aac flac ogg m4a wma aiff
+    move_exts Archives zip tar gz bz2 7z rar xz dmg iso pkg
+    move_exts Code py js ts jsx tsx html css json xml yaml yml sh bash rb go rs java c cpp h hpp
+    move_exts Data db sqlite sql jsonl parquet arrow
+
+    echo "Cleanup complete. Moved $moved files in $target."
+    ;;
+
+  eject)
+    if [[ $# -eq 0 ]]; then
+      echo "Mounted volumes:"
+      ls /Volumes/
+    else
+      diskutil eject "/Volumes/$1" 2>/dev/null && echo "Ejected: $1" || {
+        osascript -e "tell application \"Finder\" to eject disk \"$1\""
+        echo "Ejected: $1"
+      }
+    fi
+    ;;
+
+  info)
+    [[ $# -lt 1 ]] && { echo "Usage: finderctl info <path>"; exit 1; }
+    if [[ -e "$1" ]]; then
+      stat -f "Name: %N%nSize: %z bytes%nType: %HT%nModified: %Sm%nCreated: %SB" "$1"
+      if [[ -d "$1" ]]; then
+        count=$(find "$1" -maxdepth 1 | wc -l | tr -d ' ')
+        echo "Items: $((count - 1))"
+      fi
+    else
+      echo "Not found: $1"; exit 1
+    fi
+    ;;
+
+  *)
+    echo "Unknown command: $cmd"
+    usage
+    ;;
+esac

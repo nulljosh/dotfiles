@@ -1,0 +1,92 @@
+#!/bin/bash
+# procctl -- Process management utilities
+# Usage: procctl <command> [args]
+
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: procctl <command> [args]
+
+Commands:
+  top              Top 10 processes by CPU
+  top-mem          Top 10 processes by RAM
+  find <name>      Find processes matching name
+  kill <name|pid>  Kill by PID (numeric) or name pattern
+  watch <name>     Monitor process CPU/RAM every 5s (Ctrl-C to stop)
+  zombie           List zombie processes
+EOF
+  exit 2
+}
+
+[[ $# -lt 1 ]] && usage
+
+cmd="$1"
+shift
+
+case "$cmd" in
+  top)
+    ps -eo pid,pcpu,pmem,comm -r | head -11
+    ;;
+
+  top-mem)
+    ps -eo pid,pcpu,pmem,comm -m | head -11
+    ;;
+
+  find)
+    [[ $# -lt 1 ]] && { echo "Usage: procctl find <name>"; exit 1; }
+    pgrep -lf "$1" || echo "No processes found matching: $1"
+    ;;
+
+  kill)
+    [[ $# -lt 1 ]] && { echo "Usage: procctl kill <name|pid>"; exit 1; }
+    target="$1"
+    if [[ "$target" =~ ^[0-9]+$ ]]; then
+      if kill "$target" 2>/dev/null; then
+        echo "Killed PID $target"
+      else
+        echo "Failed to kill PID $target (not found or permission denied)"
+        exit 1
+      fi
+    else
+      count=$(pgrep -f "$target" 2>/dev/null | wc -l | tr -d ' ')
+      if [[ "$count" -eq 0 ]]; then
+        echo "No processes found matching: $target"
+        exit 1
+      fi
+      pkill -f "$target" 2>/dev/null && echo "Killed $count process(es) matching: $target" || {
+        echo "Failed to kill processes matching: $target"
+        exit 1
+      }
+    fi
+    ;;
+
+  watch)
+    [[ $# -lt 1 ]] && { echo "Usage: procctl watch <name>"; exit 1; }
+    name="$1"
+    echo "Watching processes matching '$name' (Ctrl-C to stop)..."
+    while true; do
+      echo ""
+      echo "--- $(date '+%H:%M:%S') ---"
+      ps aux | grep -v grep | grep "$name" | awk '{printf "PID: %-8s CPU: %-6s MEM: %-6s CMD: %s\n", $2, $3"%", $4"%", $11}' || echo "(no matches)"
+      sleep 5
+    done
+    ;;
+
+  zombie)
+    result=$(ps aux | awk '$8=="Z" {print}')
+    if [[ -z "$result" ]]; then
+      echo "No zombie processes."
+    else
+      echo "USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND"
+      echo "$result"
+    fi
+    ;;
+
+  *)
+    echo "Unknown command: $cmd"
+    usage
+    ;;
+esac
+
+exit 0

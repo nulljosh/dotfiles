@@ -1,0 +1,134 @@
+#!/bin/bash
+set -euo pipefail
+
+CTX_DIR="$HOME/.local/share/mac/contexts"
+mkdir -p "$CTX_DIR"
+
+usage() {
+  cat <<'EOF'
+Usage: mac-context <command> [args]
+
+Commands:
+  save <name>     Save current desktop state
+  restore <name>  Restore saved state
+  list            List saved contexts
+  delete <name>   Delete a saved context
+EOF
+  exit 2
+}
+
+[[ $# -lt 1 ]] && usage
+cmd="$1"; shift
+
+case "$cmd" in
+  save)
+    [[ $# -lt 1 ]] && { echo "Usage: mac-context save <name>"; exit 1; }
+    name="$1"
+    [[ "$name" == */* || "$name" == ..* ]] && { echo "Invalid context name: $name"; exit 1; }
+    file="$CTX_DIR/$name"
+    {
+      echo "# Context: $name"
+      echo "# Saved: $(date)"
+      echo ""
+      echo "[apps]"
+      osascript -e 'tell application "System Events" to get name of every application process whose background only is false' | tr ',' '\n' | sed 's/^ //'
+      echo ""
+      echo "[windows]"
+      osascript <<'APPLESCRIPT'
+tell application "System Events"
+  set output to ""
+  repeat with proc in (every application process whose background only is false)
+    try
+      repeat with w in (every window of proc)
+        set {x, y} to position of w
+        set {w2, h} to size of w
+        set output to output & name of proc & "|" & x & "|" & y & "|" & w2 & "|" & h & linefeed
+      end repeat
+    end try
+  end repeat
+  return output
+end tell
+APPLESCRIPT
+      echo ""
+      echo "[music]"
+      osascript -e '
+tell application "Music"
+  if not running then return "stopped"
+  try
+    set t to current track
+    return (player state as text) & "|" & name of t & "|" & artist of t & "|" & sound volume & "|" & shuffle enabled
+  on error
+    return "idle"
+  end try
+end tell' 2>/dev/null || echo "stopped"
+      echo ""
+      echo "[system]"
+      echo "dark|$(osascript -e 'tell application "System Events" to tell appearance preferences to return dark mode' 2>/dev/null)"
+      echo "volume|$(osascript -e 'output volume of (get volume settings)' 2>/dev/null)"
+    } > "$file"
+    echo "Context saved: $name"
+    ;;
+
+  restore)
+    [[ $# -lt 1 ]] && { echo "Usage: mac-context restore <name>"; exit 1; }
+    name="$1"
+    [[ "$name" == */* || "$name" == ..* ]] && { echo "Invalid context name: $name"; exit 1; }
+    file="$CTX_DIR/$name"
+    [[ ! -f "$file" ]] && { echo "Context not found: $name"; exit 1; }
+
+    section=""
+    while IFS= read -r line; do
+      [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
+      if [[ "$line" =~ ^\[(.+)\]$ ]]; then
+        section="${BASH_REMATCH[1]}"; continue
+      fi
+      case "$section" in
+        apps)
+          app=$(echo "$line" | xargs)
+          open -a "$app" 2>/dev/null &
+          ;;
+        windows)
+          IFS='|' read -r app x y w h <<< "$line"
+          [[ -z "$app" ]] && continue
+          osascript -e "tell application \"System Events\" to tell process \"$app\"
+            try
+              set position of window 1 to {$x, $y}
+              set size of window 1 to {$w, $h}
+            end try
+          end tell" 2>/dev/null
+          ;;
+        music)
+          if [[ "$line" != "stopped" && "$line" != "idle" ]]; then
+            IFS='|' read -r state track artist vol shuf <<< "$line"
+            osascript -e "tell application \"Music\" to set sound volume to $vol" 2>/dev/null
+            if [[ "$state" == "playing" ]]; then
+              osascript -e 'tell application "Music" to play' 2>/dev/null
+            fi
+          fi
+          ;;
+        system)
+          IFS='|' read -r key val <<< "$line"
+          case "$key" in
+            dark) osascript -e "tell application \"System Events\" to tell appearance preferences to set dark mode to $val" 2>/dev/null ;;
+            volume) osascript -e "set volume output volume $val" 2>/dev/null ;;
+          esac
+          ;;
+      esac
+    done < "$file"
+    wait
+    echo "Context restored: $name"
+    ;;
+
+  list)
+    ls "$CTX_DIR" 2>/dev/null || echo "No saved contexts."
+    ;;
+
+  delete)
+    [[ $# -lt 1 ]] && { echo "Usage: mac-context delete <name>"; exit 1; }
+    rm -f "$CTX_DIR/$1" && echo "Deleted: $1"
+    ;;
+
+  *)
+    usage
+    ;;
+esac

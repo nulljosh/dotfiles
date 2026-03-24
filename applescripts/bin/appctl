@@ -1,0 +1,145 @@
+#!/bin/bash
+# appctl -- Application launcher and manager
+# Usage: appctl <command> [args]
+
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: appctl <command> [args]
+
+Commands:
+  open <app>        Launch an application
+  quit <app>        Quit an application gracefully
+  kill <app>        Force quit an application
+  restart <app>     Quit and relaunch an application
+  running           List all running applications
+  check <app>       Check if an application is running
+  front             Get frontmost application name
+  hide <app>        Hide an application
+  show <app>        Unhide/activate an application
+  pid <app>         Get PID of running application
+  windows [app]     List windows (all or for specific app)
+EOF
+  exit 2
+}
+
+[[ $# -lt 1 ]] && usage
+
+cmd="$1"
+shift
+
+case "$cmd" in
+  open)
+    [[ $# -lt 1 ]] && { echo "Usage: appctl open <app>"; exit 1; }
+    open -a "$1" 2>/dev/null && echo "Opened: $1" || {
+      echo "App not found: $1"; exit 1
+    }
+    ;;
+
+  quit)
+    [[ $# -lt 1 ]] && { echo "Usage: appctl quit <app>"; exit 1; }
+    osascript -e "tell application \"$1\" to quit" 2>/dev/null && echo "Quit: $1" || {
+      echo "Could not quit: $1"; exit 1
+    }
+    ;;
+
+  kill)
+    [[ $# -lt 1 ]] && { echo "Usage: appctl kill <app>"; exit 1; }
+    pkill -f "$1" 2>/dev/null && echo "Force quit: $1" || {
+      killall "$1" 2>/dev/null && echo "Force quit: $1" || {
+        echo "Could not kill: $1"; exit 1
+      }
+    }
+    ;;
+
+  restart)
+    [[ $# -lt 1 ]] && { echo "Usage: appctl restart <app>"; exit 1; }
+    osascript -e "tell application \"$1\" to quit" 2>/dev/null
+    sleep 1
+    open -a "$1" 2>/dev/null && echo "Restarted: $1" || {
+      echo "Could not restart: $1"; exit 1
+    }
+    ;;
+
+  running)
+    osascript <<'APPLESCRIPT'
+tell application "System Events"
+  set appList to name of every application process whose background only is false
+  set output to ""
+  repeat with appName in appList
+    set output to output & appName & linefeed
+  end repeat
+  return output
+end tell
+APPLESCRIPT
+    ;;
+
+  check)
+    [[ $# -lt 1 ]] && { echo "Usage: appctl check <app>"; exit 1; }
+    if osascript -e "tell application \"System Events\" to (name of processes) contains \"$1\"" 2>/dev/null | grep -q "true"; then
+      echo "$1: running"
+    else
+      echo "$1: not running"
+      exit 1
+    fi
+    ;;
+
+  front)
+    osascript -e 'tell application "System Events" to name of first application process whose frontmost is true'
+    ;;
+
+  hide)
+    [[ $# -lt 1 ]] && { echo "Usage: appctl hide <app>"; exit 1; }
+    osascript -e "tell application \"System Events\" to set visible of process \"$1\" to false" 2>/dev/null
+    echo "Hidden: $1"
+    ;;
+
+  show)
+    [[ $# -lt 1 ]] && { echo "Usage: appctl show <app>"; exit 1; }
+    osascript -e "tell application \"$1\" to activate" 2>/dev/null
+    echo "Activated: $1"
+    ;;
+
+  pid)
+    [[ $# -lt 1 ]] && { echo "Usage: appctl pid <app>"; exit 1; }
+    pgrep -f "$1" 2>/dev/null || { echo "Not running: $1"; exit 1; }
+    ;;
+
+  windows)
+    if [[ $# -eq 0 ]]; then
+      osascript <<'APPLESCRIPT'
+tell application "System Events"
+  set output to ""
+  repeat with proc in (every application process whose background only is false)
+    set appName to name of proc
+    try
+      set winNames to name of every window of proc
+      repeat with w in winNames
+        set output to output & appName & ": " & w & linefeed
+      end repeat
+    end try
+  end repeat
+  return output
+end tell
+APPLESCRIPT
+    else
+      osascript -e "
+tell application \"System Events\"
+  tell process \"$1\"
+    set output to \"\"
+    repeat with w in (every window)
+      set output to output & name of w & linefeed
+    end repeat
+    return output
+  end tell
+end tell
+" 2>/dev/null || echo "No windows found for: $1"
+    fi
+    ;;
+
+  *)
+    echo "Unknown command: $cmd"
+    usage
+    ;;
+esac

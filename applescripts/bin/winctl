@@ -1,0 +1,337 @@
+#!/bin/bash
+# winctl -- Window management via AppleScript
+# Usage: winctl <command> [args]
+
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: winctl <command> [args]
+
+Commands:
+  list              List all windows with positions and sizes
+  focus <app>       Bring app window to front
+  move <app> <x> <y>           Move window to position
+  resize <app> <w> <h>         Resize window
+  bounds <app> <x> <y> <w> <h> Set position and size
+  left [app]        Snap window to left half (frontmost if no app)
+  right [app]       Snap window to right half
+  max [app]         Maximize window
+  center [app]      Center window on screen
+  corners           Arrange windows in quadrants
+  stack             Stack all windows centered
+  minimize [app]    Minimize window
+  fullscreen [app]  Toggle fullscreen
+  layout save|list|apply <name>  Save/list/apply named window layouts
+  thirds {left|center|right} [app]  Snap to horizontal third
+  swap              Swap positions of two frontmost windows
+  restore           Restore windows from last saved state
+EOF
+  exit 2
+}
+
+[[ $# -lt 1 ]] && usage
+
+# Get screen dimensions
+get_screen_size() {
+  osascript -e 'tell application "Finder" to get bounds of window of desktop' 2>/dev/null | tr ',' ' ' || echo "0 0 1440 900"
+}
+
+get_frontmost() {
+  osascript -e 'tell application "System Events" to name of first application process whose frontmost is true'
+}
+
+cmd="$1"
+shift
+
+case "$cmd" in
+  list)
+    osascript <<'APPLESCRIPT'
+tell application "System Events"
+  set output to ""
+  repeat with proc in (every application process whose background only is false)
+    set appName to name of proc
+    try
+      repeat with w in (every window of proc)
+        set {x, y} to position of w
+        set {w2, h} to size of w
+        set wName to name of w
+        set output to output & appName & " | " & wName & " | pos:" & x & "," & y & " size:" & w2 & "x" & h & linefeed
+      end repeat
+    end try
+  end repeat
+  return output
+end tell
+APPLESCRIPT
+    ;;
+
+  focus)
+    [[ $# -lt 1 ]] && { echo "Usage: winctl focus <app>"; exit 1; }
+    osascript -e "tell application \"$1\" to activate"
+    echo "Focused: $1"
+    ;;
+
+  move)
+    [[ $# -lt 3 ]] && { echo "Usage: winctl move <app> <x> <y>"; exit 1; }
+    osascript -e "
+tell application \"System Events\" to tell process \"$1\"
+  set position of window 1 to {$2, $3}
+end tell"
+    echo "Moved $1 to $2, $3"
+    ;;
+
+  resize)
+    [[ $# -lt 3 ]] && { echo "Usage: winctl resize <app> <w> <h>"; exit 1; }
+    osascript -e "
+tell application \"System Events\" to tell process \"$1\"
+  set size of window 1 to {$2, $3}
+end tell"
+    echo "Resized $1 to $2 x $3"
+    ;;
+
+  bounds)
+    [[ $# -lt 5 ]] && { echo "Usage: winctl bounds <app> <x> <y> <w> <h>"; exit 1; }
+    osascript -e "
+tell application \"System Events\" to tell process \"$1\"
+  set position of window 1 to {$2, $3}
+  set size of window 1 to {$4, $5}
+end tell"
+    echo "Set $1 bounds: pos=$2,$3 size=$4x$5"
+    ;;
+
+  left)
+    app="${1:-$(get_frontmost)}"
+    read -r _ _ sw sh <<< "$(get_screen_size)"
+    half_w=$((sw / 2))
+    osascript -e "
+tell application \"System Events\" to tell process \"$app\"
+  set position of window 1 to {0, 25}
+  set size of window 1 to {$half_w, $((sh - 25))}
+end tell"
+    echo "Snapped $app to left half"
+    ;;
+
+  right)
+    app="${1:-$(get_frontmost)}"
+    read -r _ _ sw sh <<< "$(get_screen_size)"
+    half_w=$((sw / 2))
+    osascript -e "
+tell application \"System Events\" to tell process \"$app\"
+  set position of window 1 to {$half_w, 25}
+  set size of window 1 to {$half_w, $((sh - 25))}
+end tell"
+    echo "Snapped $app to right half"
+    ;;
+
+  max)
+    app="${1:-$(get_frontmost)}"
+    read -r _ _ sw sh <<< "$(get_screen_size)"
+    osascript -e "
+tell application \"System Events\" to tell process \"$app\"
+  set position of window 1 to {0, 25}
+  set size of window 1 to {$sw, $((sh - 25))}
+end tell"
+    echo "Maximized: $app"
+    ;;
+
+  center)
+    app="${1:-$(get_frontmost)}"
+    read -r _ _ sw sh <<< "$(get_screen_size)"
+    osascript -e "
+tell application \"System Events\" to tell process \"$app\"
+  set {w, h} to size of window 1
+  set x to ($sw - w) / 2
+  set y to ($sh - h) / 2
+  set position of window 1 to {x, y}
+end tell"
+    echo "Centered: $app"
+    ;;
+
+  corners)
+    read -r _ _ sw sh <<< "$(get_screen_size)"
+    half_w=$((sw / 2))
+    half_h=$(( (sh - 25) / 2 ))
+    apps=$(osascript -e '
+tell application "System Events"
+  set appList to name of every application process whose background only is false and (count of windows) > 0
+  set output to ""
+  repeat with a in appList
+    set output to output & a & linefeed
+  end repeat
+  return output
+end tell' | head -4)
+
+    positions=("0 25" "$half_w 25" "0 $((25 + half_h))" "$half_w $((25 + half_h))")
+    i=0
+    while IFS= read -r app; do
+      [[ -z "$app" ]] && continue
+      [[ $i -ge 4 ]] && break
+      read -r px py <<< "${positions[$i]}"
+      osascript -e "
+tell application \"System Events\" to tell process \"$app\"
+  set position of window 1 to {$px, $py}
+  set size of window 1 to {$half_w, $half_h}
+end tell" 2>/dev/null
+      echo "Corner $((i+1)): $app"
+      i=$((i + 1))
+    done <<< "$apps"
+    ;;
+
+  stack)
+    read -r _ _ sw sh <<< "$(get_screen_size)"
+    w=$((sw * 3 / 4))
+    h=$((sh * 3 / 4))
+    x=$(( (sw - w) / 2 ))
+    y=$(( (sh - h) / 2 ))
+    osascript -e "
+tell application \"System Events\"
+  repeat with proc in (every application process whose background only is false)
+    try
+      repeat with win in (every window of proc)
+        set position of win to {$x, $y}
+        set size of win to {$w, $h}
+      end repeat
+    end try
+  end repeat
+end tell"
+    echo "All windows stacked and centered."
+    ;;
+
+  minimize)
+    app="${1:-$(get_frontmost)}"
+    osascript -e "tell application \"$app\" to set miniaturized of window 1 to true" 2>/dev/null || \
+    osascript -e "tell application \"System Events\" to tell process \"$app\" to set value of attribute \"AXMinimized\" of window 1 to true"
+    echo "Minimized: $app"
+    ;;
+
+  fullscreen)
+    app="${1:-$(get_frontmost)}"
+    osascript -e "
+tell application \"System Events\" to tell process \"$app\"
+  set val to value of attribute \"AXFullScreen\" of window 1
+  set value of attribute \"AXFullScreen\" of window 1 to not val
+end tell"
+    echo "Toggled fullscreen: $app"
+    ;;
+
+  layout)
+    LAYOUT_DIR="$HOME/.local/share/winctl/layouts"
+    mkdir -p "$LAYOUT_DIR"
+    sub="${1:-}"
+    shift || true
+    case "$sub" in
+      save)
+        [[ $# -lt 1 ]] && { echo "Usage: winctl layout save <name>"; exit 1; }
+        name="$1"
+        osascript <<'APPLESCRIPT' > "$LAYOUT_DIR/$name"
+tell application "System Events"
+  set output to ""
+  repeat with proc in (every application process whose background only is false)
+    set appName to name of proc
+    try
+      repeat with w in (every window of proc)
+        set {x, y} to position of w
+        set {w2, h} to size of w
+        set output to output & appName & "|" & x & "|" & y & "|" & w2 & "|" & h & linefeed
+      end repeat
+    end try
+  end repeat
+  return output
+end tell
+APPLESCRIPT
+        echo "Layout saved: $name"
+        ;;
+      list)
+        ls "$LAYOUT_DIR" 2>/dev/null || echo "No saved layouts."
+        ;;
+      apply)
+        [[ $# -lt 1 ]] && { echo "Usage: winctl layout apply <name>"; exit 1; }
+        name="$1"
+        file="$LAYOUT_DIR/$name"
+        [[ ! -f "$file" ]] && { echo "Layout not found: $name"; exit 1; }
+        while IFS='|' read -r app x y w h; do
+          [[ -z "$app" ]] && continue
+          osascript -e "
+tell application \"System Events\" to tell process \"$app\"
+  try
+    set position of window 1 to {$x, $y}
+    set size of window 1 to {$w, $h}
+  end try
+end tell" 2>/dev/null
+        done < "$file"
+        echo "Layout applied: $name"
+        ;;
+      *)
+        echo "Usage: winctl layout {save|list|apply} [name]"
+        exit 2
+        ;;
+    esac
+    ;;
+
+  thirds)
+    pos="${1:-left}"
+    app="${2:-$(get_frontmost)}"
+    read -r _ _ sw sh <<< "$(get_screen_size)"
+    third_w=$((sw / 3))
+    h=$((sh - 25))
+    case "$pos" in
+      left)   x=0 ;;
+      center) x=$third_w ;;
+      right)  x=$((third_w * 2)) ;;
+      *)      echo "Usage: winctl thirds {left|center|right} [app]"; exit 1 ;;
+    esac
+    osascript -e "
+tell application \"System Events\" to tell process \"$app\"
+  set position of window 1 to {$x, 25}
+  set size of window 1 to {$third_w, $h}
+end tell"
+    echo "Snapped $app to $pos third"
+    ;;
+
+  swap)
+    read -r app1 app2 < <(osascript -e '
+tell application "System Events"
+  set procs to every application process whose background only is false and (count of windows) > 0
+  if (count of procs) < 2 then return ""
+  set a to name of item 1 of procs
+  set b to name of item 2 of procs
+  return a & " " & b
+end tell')
+    [[ -z "$app1" ]] && { echo "Need at least 2 windowed apps."; exit 1; }
+    pos1=$(osascript -e "tell application \"System Events\" to tell process \"$app1\" to get {position, size} of window 1")
+    pos2=$(osascript -e "tell application \"System Events\" to tell process \"$app2\" to get {position, size} of window 1")
+    IFS=', ' read -r x1 y1 w1 h1 <<< "$pos1"
+    IFS=', ' read -r x2 y2 w2 h2 <<< "$pos2"
+    osascript -e "tell application \"System Events\" to tell process \"$app1\"
+      set position of window 1 to {$x2, $y2}
+      set size of window 1 to {$w2, $h2}
+    end tell"
+    osascript -e "tell application \"System Events\" to tell process \"$app2\"
+      set position of window 1 to {$x1, $y1}
+      set size of window 1 to {$w1, $h1}
+    end tell"
+    echo "Swapped: $app1 <-> $app2"
+    ;;
+
+  restore)
+    LAYOUT_DIR="$HOME/.local/share/winctl/layouts"
+    file="$LAYOUT_DIR/.last"
+    [[ ! -f "$file" ]] && { echo "No saved state to restore."; exit 1; }
+    while IFS='|' read -r app x y w h; do
+      [[ -z "$app" ]] && continue
+      osascript -e "
+tell application \"System Events\" to tell process \"$app\"
+  try
+    set position of window 1 to {$x, $y}
+    set size of window 1 to {$w, $h}
+  end try
+end tell" 2>/dev/null
+    done < "$file"
+    echo "Windows restored."
+    ;;
+
+  *)
+    echo "Unknown command: $cmd"
+    usage
+    ;;
+esac

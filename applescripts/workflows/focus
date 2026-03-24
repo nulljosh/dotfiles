@@ -1,0 +1,5 @@
+# Focus mode -- minimize distractions
+app quit Mail
+app quit Messages
+focus on
+win max

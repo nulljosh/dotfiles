@@ -24,10 +24,23 @@ chmod +x install.sh
 
 ## Key Files
 
+### Shell & Terminal
 - `fish/` - Fish shell config (aliases, abbreviations, tool init).
 - `zsh/` - Zsh config (PATH, aliases, completions, tool init).
 - `ghostty/` - Ghostty terminal config (font, shell, theme).
 - `starship/` - Starship prompt config (Catppuccin Mocha).
+- `applescripts/` - macOS automation scripts.
 - `install.sh` - Symlink installer that backs up existing files.
-- `icon.svg` - Repo icon.
-- `architecture.svg` - Architecture diagram.
+
+### Infrastructure (infra/)
+- `infra/api-gateway/` - API gateway (Go)
+- `infra/key-value-store/` - KV store (Rust)
+- `infra/search-engine/` - Search engine (Python)
+- `infra/graphics-renderer/` - Graphics renderer (Rust)
+
+### Notes (notes/)
+- Personal reference site. Health, school, timeline, master notes.
+- Has its own GitHub Pages deploy.
+
+### Vibe (vibe/)
+- Portfolio design reference. Dark editorial aesthetic template.

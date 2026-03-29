@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <rect width="400" height="300" fill="white"/>
+
+  <!-- Center node -->
+  <rect x="130" y="120" width="140" height="44" rx="10" fill="#0071e3"/>
+  <text x="200" y="147" text-anchor="middle" fill="white" font-size="13" font-weight="600">Key-Value Store</text>
+
+  <!-- TCP Server -->
+  <rect x="150" y="20" width="100" height="36" rx="8" fill="#f5f5f7" stroke="#d2d2d7" stroke-width="1"/>
+  <text x="200" y="43" text-anchor="middle" fill="#1d1d1f" font-size="11" font-weight="500">TCP Server</text>
+  <line x1="200" y1="56" x2="200" y2="120" stroke="#d2d2d7" stroke-width="1.5"/>
+
+  <!-- Hash Index -->
+  <rect x="10" y="100" width="100" height="36" rx="8" fill="#f5f5f7" stroke="#d2d2d7" stroke-width="1"/>
+  <text x="60" y="123" text-anchor="middle" fill="#1d1d1f" font-size="11" font-weight="500">Hash Index</text>
+  <line x1="110" y1="118" x2="130" y2="135" stroke="#d2d2d7" stroke-width="1.5"/>
+
+  <!-- Write-Ahead Log -->
+  <rect x="290" y="100" width="100" height="36" rx="8" fill="#f5f5f7" stroke="#d2d2d7" stroke-width="1"/>
+  <text x="340" y="123" text-anchor="middle" fill="#1d1d1f" font-size="11" font-weight="500">Write-Ahead Log</text>
+  <line x1="290" y1="118" x2="270" y2="135" stroke="#d2d2d7" stroke-width="1.5"/>
+
+  <!-- Log Storage -->
+  <rect x="20" y="210" width="100" height="36" rx="8" fill="#f5f5f7" stroke="#d2d2d7" stroke-width="1"/>
+  <text x="70" y="233" text-anchor="middle" fill="#1d1d1f" font-size="11" font-weight="500">Log Storage</text>
+  <line x1="110" y1="225" x2="150" y2="165" stroke="#d2d2d7" stroke-width="1.5"/>
+
+  <!-- Compaction -->
+  <rect x="155" y="210" width="100" height="36" rx="8" fill="#f5f5f7" stroke="#d2d2d7" stroke-width="1"/>
+  <text x="205" y="233" text-anchor="middle" fill="#1d1d1f" font-size="11" font-weight="500">Compaction</text>
+  <line x1="205" y1="210" x2="200" y2="164" stroke="#d2d2d7" stroke-width="1.5"/>
+
+  <!-- Crash Recovery -->
+  <rect x="280" y="210" width="110" height="36" rx="8" fill="#f5f5f7" stroke="#d2d2d7" stroke-width="1"/>
+  <text x="335" y="233" text-anchor="middle" fill="#1d1d1f" font-size="11" font-weight="500">Crash Recovery</text>
+  <line x1="290" y1="225" x2="255" y2="165" stroke="#d2d2d7" stroke-width="1.5"/>
+
+  <!-- Language label -->
+  <text x="200" y="290" text-anchor="middle" fill="#86868b" font-size="10">Rust</text>
+</svg>

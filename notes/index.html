@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>notes</title>
+<link rel="icon" href="assets/img/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg-primary: #09090b;
+    --bg-secondary: #18181b;
+    --bg-tertiary: #1c1c1f;
+    --text-primary: #f4f4f5;
+    --text-secondary: #a1a1aa;
+    --text-tertiary: #71717a;
+    --blue: #3b82f6;
+    --blue-light: #60a5fa;
+    --green: #10b981;
+    --border: rgba(255, 255, 255, 0.06);
+    --border-hover: rgba(255, 255, 255, 0.1);
+    --radius: 16px;
+    --radius-pill: 28px;
+    --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+  :root[data-theme="light"] {
+    --bg-primary: #f6f7fb;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f8fafc;
+    --text-primary: #111827;
+    --text-secondary: #374151;
+    --text-tertiary: #6b7280;
+    --blue: #2563eb;
+    --blue-light: #1d4ed8;
+    --green: #059669;
+    --border: rgba(15, 23, 42, 0.12);
+    --border-hover: rgba(15, 23, 42, 0.2);
+    --shadow-hover: 0 8px 24px rgba(15, 23, 42, 0.12);
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .theme-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 20;
+    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border-radius: 999px;
+    padding: 0.42rem 0.8rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .theme-toggle:hover {
+    color: var(--blue-light);
+    border-color: rgba(59, 130, 246, 0.35);
+    background: var(--bg-tertiary);
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: clamp(1.25rem, 4vw, 3rem);
+    padding-top: clamp(3rem, 8vw, 6rem);
+    padding-bottom: 4rem;
+  }
+
+  /* Header */
+  header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  header h1 {
+    font-size: clamp(1.5rem, 3vw, 1.75rem);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    color: var(--text-primary);
+    margin-bottom: 0.375rem;
+  }
+
+  header p {
+    font-size: 0.9375rem;
+    font-weight: 400;
+    color: var(--text-tertiary);
+    letter-spacing: 0.01em;
+  }
+
+  /* Section label */
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-tertiary);
+    margin-bottom: 1rem;
+  }
+
+  /* File list */
+  .file-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .file-list li {
+    list-style: none;
+  }
+
+  .file-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    text-decoration: none;
+    color: inherit;
+    border-top: 2px solid transparent;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.2s ease,
+                border-color 0.2s ease,
+                background 0.2s ease;
+  }
+
+  .file-row:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    background: var(--bg-tertiary);
+    border-color: var(--border-hover);
+  }
+
+  .file-row:active {
+    transform: translateY(0);
+  }
+
+  /* Category accent colors on hover */
+  .file-row[data-cat="config"]:hover { border-top-color: var(--text-tertiary); }
+  .file-row[data-cat="health"]:hover { border-top-color: var(--green); }
+  .file-row[data-cat="automation"]:hover { border-top-color: #f59e0b; }
+  .file-row[data-cat="education"]:hover { border-top-color: #6366f1; }
+  .file-row[data-cat="benefits"]:hover { border-top-color: var(--blue); }
+  .file-row[data-cat="planning"]:hover { border-top-color: #ec4899; }
+  .file-row[data-cat="ui"]:hover { border-top-color: #8b5cf6; }
+
+  /* File icon */
+  .file-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .file-icon.md { background: rgba(59, 130, 246, 0.15); color: var(--blue-light); }
+  .file-icon.html { background: rgba(249, 115, 22, 0.15); color: #fb923c; }
+  .file-icon.claude { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+
+  .file-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .file-name {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+  }
+
+  .file-desc {
+    font-size: 0.8125rem;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .file-meta {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Links row */
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .links a {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 0.375rem 0.875rem;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    border: 1px solid var(--border);
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+                transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .links a:hover {
+    background: rgba(59, 130, 246, 0.08);
+    color: var(--blue-light);
+    border-color: rgba(59, 130, 246, 0.2);
+    transform: translateY(-1px);
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+  }
+
+  footer .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    display: inline-block;
+    margin-right: 6px;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Staggered entrance */
+  .file-list li:nth-child(1) .file-row { animation-delay: 0s; }
+  .file-list li:nth-child(2) .file-row { animation-delay: 0.04s; }
+  .file-list li:nth-child(3) .file-row { animation-delay: 0.08s; }
+  .file-list li:nth-child(4) .file-row { animation-delay: 0.12s; }
+  .file-list li:nth-child(5) .file-row { animation-delay: 0.16s; }
+  .file-list li:nth-child(6) .file-row { animation-delay: 0.2s; }
+  .file-list li:nth-child(7) .file-row { animation-delay: 0.24s; }
+
+  @media (max-width: 480px) {
+    .file-meta { display: none; }
+    .file-desc { white-space: normal; }
+  }
+</style>
+</head>
+<body>
+<button class="theme-toggle" type="button">Light</button>
+
+<div class="container">
+  <header class="animate__animated animate__fadeIn">
+    <h1>notes</h1>
+    <p>Personal notes and reference.</p>
+  </header>
+
+  <div class="section-label">Files</div>
+
+  <ul class="file-list">
+    <li><a href="pages/health.html" class="file-row animate__animated animate__fadeInUp" data-cat="health">
+      <div class="file-icon md">MD</div>
+      <div class="file-info">
+        <div class="file-name">health</div>
+        <div class="file-desc">GlyNAC supplement stack, dosage, blood work, sinus care</div>
+      </div>
+      <div class="file-meta">2.9 KB</div>
+    </a></li>
+
+    <li><a href="pages/pixelmator.html" class="file-row animate__animated animate__fadeInUp" data-cat="automation">
+      <div class="file-icon md">MD</div>
+      <div class="file-info">
+        <div class="file-name">pixelmator</div>
+        <div class="file-desc">Pixelmator + Claude AppleScript automation workflow</div>
+      </div>
+      <div class="file-meta">762 B</div>
+    </a></li>
+
+    <li><a href="pages/tally.html" class="file-row animate__animated animate__fadeInUp" data-cat="benefits">
+      <div class="file-icon md">MD</div>
+      <div class="file-info">
+        <div class="file-name">tally</div>
+        <div class="file-desc">PWD/DTC disability benefits, ombudsperson contacts, tax credit</div>
+      </div>
+      <div class="file-meta">776 B</div>
+    </a></li>
+
+    <li><a href="pages/school.html" class="file-row animate__animated animate__fadeInUp" data-cat="education">
+      <div class="file-icon md">MD</div>
+      <div class="file-info">
+        <div class="file-name">school</div>
+        <div class="file-desc">UVIC CS transfer requirements, deadlines, prerequisites</div>
+      </div>
+      <div class="file-meta">866 B</div>
+    </a></li>
+
+    <li><a href="pages/CLAUDE.html" class="file-row animate__animated animate__fadeInUp" data-cat="config">
+      <div class="file-icon claude">MD</div>
+      <div class="file-info">
+        <div class="file-name">CLAUDE</div>
+        <div class="file-desc">Project instructions and brain dump checklist</div>
+      </div>
+      <div class="file-meta">3.2 KB</div>
+    </a></li>
+
+    <li><a href="pages/master.html" class="file-row animate__animated animate__fadeInUp" data-cat="planning">
+      <div class="file-icon md">MD</div>
+      <div class="file-info">
+        <div class="file-name">master</div>
+        <div class="file-desc">All notes combined -- tasks, health, timeline, school, benefits, pixelmator</div>
+      </div>
+      <div class="file-meta">4.2 KB</div>
+    </a></li>
+
+    <li><a href="pages/timeline.html" class="file-row animate__animated animate__fadeInUp" data-cat="planning">
+      <div class="file-icon md">MD</div>
+      <div class="file-info">
+        <div class="file-name">timeline</div>
+        <div class="file-desc">5-year roadmap: college, career, projects</div>
+      </div>
+      <div class="file-meta">1.5 KB</div>
+    </a></li>
+  </ul>
+
+  <div class="links">
+    <a href="https://github.com/nulljosh/notes">GitHub</a>
+    <a href="https://heyitsmejosh.com">Portfolio</a>
+  </div>
+
+  <footer>
+    <span><span class="dot"></span>nulljosh/notes</span>
+    <span>7 items</span>
+  </footer>
+</div>
+<script src="assets/js/theme-toggle.js"></script>
+</body>
+</html>

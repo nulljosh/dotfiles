@@ -1,0 +1,33 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Env
+.env
+.env.*
+
+# Node / JS
+node_modules/
+dist/
+build/
+.cache/
+.parcel-cache/
+.vite/
+coverage/
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Deployment / tooling
+.vercel/
+.netlify/

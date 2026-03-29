@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 - notes</title>
+<link rel="icon" href="assets/img/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg-primary: #09090b;
+    --text-primary: #f4f4f5;
+    --text-secondary: #a1a1aa;
+    --text-tertiary: #71717a;
+    --blue-light: #60a5fa;
+    --border: rgba(255, 255, 255, 0.06);
+  }
+  :root[data-theme="light"] {
+    --bg-primary: #f6f7fb;
+    --text-primary: #111827;
+    --text-secondary: #374151;
+    --text-tertiary: #6b7280;
+    --blue-light: #1d4ed8;
+    --border: rgba(15, 23, 42, 0.12);
+  }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container {
+    text-align: center;
+    padding: 2rem;
+  }
+  h1 {
+    font-size: 3rem;
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    color: var(--text-tertiary);
+    margin-bottom: 0.5rem;
+  }
+  p {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+  }
+  a {
+    display: inline-block;
+    text-decoration: none;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.45rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  a:hover {
+    color: var(--blue-light);
+    border-color: rgba(59, 130, 246, 0.35);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>404</h1>
+  <p>Page not found.</p>
+  <a href="/">Back to notes</a>
+</div>
+<script src="assets/js/theme-toggle.js"></script>
+</body>
+</html>

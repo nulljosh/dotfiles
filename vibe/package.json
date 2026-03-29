@@ -1,0 +1,14 @@
+{
+  "name": "vibe",
+  "version": "2.0.0",
+  "description": "Extract design tokens from any URL",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "puppeteer": "^24.0.0"
+  },
+  "license": "MIT"
+}

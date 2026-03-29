@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <rect width="400" height="300" fill="white"/>
+
+  <!-- Center node -->
+  <rect x="120" y="120" width="160" height="44" rx="10" fill="#0071e3"/>
+  <text x="200" y="147" text-anchor="middle" fill="white" font-size="13" font-weight="600">Graphics Renderer</text>
+
+  <!-- Scene Parser -->
+  <rect x="30" y="20" width="100" height="36" rx="8" fill="#f5f5f7" stroke="#d2d2d7" stroke-width="1"/>
+  <text x="80" y="43" text-anchor="middle" fill="#1d1d1f" font-size="11" font-weight="500">Scene Parser</text>
+  <line x1="105" y1="56" x2="160" y2="120" stroke="#d2d2d7" stroke-width="1.5"/>
+
+  <!-- Ray Tracer -->
+  <rect x="270" y="20" width="100" height="36" rx="8" fill="#f5f5f7" stroke="#d2d2d7" stroke-width="1"/>
+  <text x="320" y="43" text-anchor="middle" fill="#1d1d1f" font-size="11" font-weight="500">Ray Tracer</text>
+  <line x1="295" y1="56" x2="240" y2="120" stroke="#d2d2d7" stroke-width="1.5"/>
+
+  <!-- Geometry -->
+  <rect x="10" y="130" width="90" height="36" rx="8" fill="#f5f5f7" stroke="#d2d2d7" stroke-width="1"/>
+  <text x="55" y="153" text-anchor="middle" fill="#1d1d1f" font-size="11" font-weight="500">Geometry</text>
+  <line x1="100" y1="148" x2="120" y2="142" stroke="#d2d2d7" stroke-width="1.5"/>
+
+  <!-- Phong Lighting -->
+  <rect x="295" y="130" width="100" height="36" rx="8" fill="#f5f5f7" stroke="#d2d2d7" stroke-width="1"/>
+  <text x="345" y="153" text-anchor="middle" fill="#1d1d1f" font-size="11" font-weight="500">Phong Lighting</text>
+  <line x1="295" y1="148" x2="280" y2="145" stroke="#d2d2d7" stroke-width="1.5"/>
+
+  <!-- Linear Algebra -->
+  <rect x="30" y="240" width="100" height="36" rx="8" fill="#f5f5f7" stroke="#d2d2d7" stroke-width="1"/>
+  <text x="80" y="263" text-anchor="middle" fill="#1d1d1f" font-size="11" font-weight="500">Linear Algebra</text>
+  <line x1="105" y1="240" x2="160" y2="170" stroke="#d2d2d7" stroke-width="1.5"/>
+
+  <!-- Image Output -->
+  <rect x="270" y="240" width="100" height="36" rx="8" fill="#f5f5f7" stroke="#d2d2d7" stroke-width="1"/>
+  <text x="320" y="263" text-anchor="middle" fill="#1d1d1f" font-size="11" font-weight="500">Image Output</text>
+  <line x1="295" y1="240" x2="240" y2="170" stroke="#d2d2d7" stroke-width="1.5"/>
+
+  <!-- Language label -->
+  <text x="200" y="290" text-anchor="middle" fill="#86868b" font-size="10">Rust / SDL2</text>
+</svg>

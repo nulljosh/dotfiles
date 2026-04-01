@@ -21,9 +21,9 @@ go build -o api-gateway .
 
 ```bash
 ./api-gateway -mode gateway -port 8080 \
-  -backends http://localhost:8081,http://localhost:8082 \
-  -rate-limit 100 \
-  -key-rate-limit 1000
+ -backends http://localhost:8081,http://localhost:8082 \
+ -rate-limit 100 \
+ -key-rate-limit 1000
 ```
 
 Expected output:
@@ -80,7 +80,7 @@ Status: 200
 Response: {"healthy_backends":2,"status":"ok","timestamp":"2026-02-10T12:23:50Z","total_backends":2}
 ```
 
-✅ **Test**: Gateway reports both backends as healthy
+[x] **Test**: Gateway reports both backends as healthy
 
 ### 2. Request Routing
 
@@ -91,16 +91,16 @@ go run . -mode client -cmd user -endpoint http://localhost:8080 -count 4
 Expected output shows alternating backends:
 ```
 [1] Status: 200
-    User ID: 1, Backend: http://localhost:8081
+ User ID: 1, Backend: http://localhost:8081
 [2] Status: 200
-    User ID: 2, Backend: http://localhost:8082
+ User ID: 2, Backend: http://localhost:8082
 [3] Status: 200
-    User ID: 3, Backend: http://localhost:8081
+ User ID: 3, Backend: http://localhost:8081
 [4] Status: 200
-    User ID: 4, Backend: http://localhost:8082
+ User ID: 4, Backend: http://localhost:8082
 ```
 
-✅ **Test**: Load balancing works correctly (round-robin)
+[x] **Test**: Load balancing works correctly (round-robin)
 
 ### 3. Echo Endpoint
 
@@ -111,12 +111,12 @@ go run . -mode client -cmd echo -endpoint http://localhost:8080 -count 2
 Expected response includes request body echoed back:
 ```
 [1] Status: 200
-    Backend: http://localhost:8081
+ Backend: http://localhost:8081
 [2] Status: 200
-    Backend: http://localhost:8082
+ Backend: http://localhost:8082
 ```
 
-✅ **Test**: Requests are proxied correctly
+[x] **Test**: Requests are proxied correctly
 
 ### 4. Authentication
 
@@ -128,15 +128,15 @@ Expected output:
 ```
 Testing authentication...
 1. Request without key (should succeed):
-   Status: 200
+ Status: 200
 2. Request with invalid key (should fail):
-   Status: 401
+ Status: 401
 3. Request with valid key (should succeed):
-   Status: 200
-   Backend: http://localhost:8081
+ Status: 200
+ Backend: http://localhost:8081
 ```
 
-✅ **Test**: Invalid keys are rejected (401), valid keys are accepted (200)
+[x] **Test**: Invalid keys are rejected (401), valid keys are accepted (200)
 
 ### 5. Rate Limiting (Per IP)
 
@@ -153,7 +153,7 @@ Testing rate limiting (150 requests)...
 Successful: 100/150, Limited: 50/150
 ```
 
-✅ **Test**: Requests are limited to ~100/minute per IP
+[x] **Test**: Requests are limited to ~100/minute per IP
 
 ### 6. Slow Endpoint
 
@@ -166,10 +166,10 @@ Expected: Each request takes ~500ms
 ```
 Testing /api/slow endpoint (1 requests)...
 [1] Status: 200
-    Backend: http://localhost:8081
+ Backend: http://localhost:8081
 ```
 
-✅ **Test**: Slow backends are handled correctly
+[x] **Test**: Slow backends are handled correctly
 
 ### 7. Request Logging
 
@@ -181,17 +181,17 @@ tail -f gateway.log | jq .
 Expected log entries:
 ```json
 {
-  "client_ip": "127.0.0.1",
-  "method": "GET",
-  "path": "/api/user",
-  "status_code": 200,
-  "response_time_ms": "5.23",
-  "backend": "http://localhost:8081",
-  "timestamp": "2026-02-10T12:23:50.123Z"
+ "client_ip": "127.0.0.1",
+ "method": "GET",
+ "path": "/api/user",
+ "status_code": 200,
+ "response_time_ms": "5.23",
+ "backend": "http://localhost:8081",
+ "timestamp": "2026-02-10T12:23:50.123Z"
 }
 ```
 
-✅ **Test**: All requests are logged with status, backend, and response time
+[x] **Test**: All requests are logged with status, backend, and response time
 
 ## Integration Tests
 
@@ -216,9 +216,9 @@ pkill -f "port 8081"
 ```
 
 3. Observe:
-   - First few requests may fail or timeout
-   - Gateway detects unhealthy backend
-   - Requests route only to Backend-2
+ - First few requests may fail or timeout
+ - Gateway detects unhealthy backend
+ - Requests route only to Backend-2
 
 4. Restart Backend-1:
 ```bash
@@ -226,24 +226,24 @@ pkill -f "port 8081"
 ```
 
 5. Observe:
-   - Gateway detects Backend-1 is healthy again
-   - Requests start routing to both backends
+ - Gateway detects Backend-1 is healthy again
+ - Requests start routing to both backends
 
-✅ **Test**: Failover and recovery work correctly
+[x] **Test**: Failover and recovery work correctly
 
 ### Test 3: API Key Rate Limiting
 
 ```bash
 # Create a script to test per-key limits
 for i in {1..1500}; do
-  curl -H "X-API-Key: key-test-1" http://localhost:8080/api/user >/dev/null 2>&1
-  [ $((i % 500)) -eq 0 ] && echo "Request $i"
+ curl -H "X-API-Key: key-test-1" http://localhost:8080/api/user >/dev/null 2>&1
+ [ $((i % 500)) -eq 0 ] && echo "Request $i"
 done
 ```
 
 Expected: Around request 1000, you'll see 429 responses (after limit is hit).
 
-✅ **Test**: Per-key rate limiting works (1000 req/min default)
+[x] **Test**: Per-key rate limiting works (1000 req/min default)
 
 ## Stress Tests
 
@@ -252,7 +252,7 @@ Expected: Around request 1000, you'll see 429 responses (after limit is hit).
 ```bash
 # Test 1000 requests in parallel
 for i in {1..1000}; do
-  curl http://localhost:8080/api/data &
+ curl http://localhost:8080/api/data &
 done | wait
 ```
 
@@ -300,7 +300,7 @@ jq 'select(.response_time_ms > "100")' gateway.log
 ### Measure average response time:
 ```bash
 jq -r '.response_time_ms | tonumber' gateway.log | \
-  awk '{sum+=$1; n++} END {print "Average:", sum/n, "ms"}'
+ awk '{sum+=$1; n++} END {print "Average:", sum/n, "ms"}'
 ```
 
 ### Count by status code:
@@ -360,10 +360,10 @@ rm gateway.log
 ## Expected Results
 
 All tests should pass with:
-- ✅ Proper request routing
-- ✅ Load balancing across backends
-- ✅ Authentication enforcement
-- ✅ Rate limiting enforcement
-- ✅ Health check functionality
-- ✅ Automatic failover
-- ✅ Comprehensive logging
+- [x] Proper request routing
+- [x] Load balancing across backends
+- [x] Authentication enforcement
+- [x] Rate limiting enforcement
+- [x] Health check functionality
+- [x] Automatic failover
+- [x] Comprehensive logging

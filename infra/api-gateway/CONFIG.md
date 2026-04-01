@@ -28,22 +28,22 @@ Detailed guide for configuring the API Gateway.
 
 # Custom port and backends
 ./api-gateway -mode gateway \
-  -port 9000 \
-  -backends http://service1.local:3000,http://service2.local:3000
+ -port 9000 \
+ -backends http://service1.local:3000,http://service2.local:3000
 
 # Strict rate limiting
 ./api-gateway -mode gateway \
-  -rate-limit 50 \
-  -key-rate-limit 500
+ -rate-limit 50 \
+ -key-rate-limit 500
 
 # Permissive rate limiting
 ./api-gateway -mode gateway \
-  -rate-limit 10000 \
-  -key-rate-limit 100000
+ -rate-limit 10000 \
+ -key-rate-limit 100000
 
 # Single backend
 ./api-gateway -mode gateway \
-  -backends http://localhost:3000
+ -backends http://localhost:3000
 ```
 
 ### Backend Mode
@@ -126,10 +126,10 @@ Detailed guide for configuring the API Gateway.
 ```bash
 # Loose rate limits for testing
 ./api-gateway -mode gateway \
-  -port 8080 \
-  -backends http://localhost:8081,http://localhost:8082 \
-  -rate-limit 10000 \
-  -key-rate-limit 100000
+ -port 8080 \
+ -backends http://localhost:8081,http://localhost:8082 \
+ -rate-limit 10000 \
+ -key-rate-limit 100000
 ```
 
 ### Testing
@@ -137,10 +137,10 @@ Detailed guide for configuring the API Gateway.
 ```bash
 # Realistic rate limits for testing
 ./api-gateway -mode gateway \
-  -port 8080 \
-  -backends http://localhost:8081,http://localhost:8082 \
-  -rate-limit 100 \
-  -key-rate-limit 1000
+ -port 8080 \
+ -backends http://localhost:8081,http://localhost:8082 \
+ -rate-limit 100 \
+ -key-rate-limit 1000
 ```
 
 ### Production (Single Instance)
@@ -148,10 +148,10 @@ Detailed guide for configuring the API Gateway.
 ```bash
 # Moderate rate limits
 ./api-gateway -mode gateway \
-  -port 8080 \
-  -backends http://api1.prod:8000,http://api2.prod:8000,http://api3.prod:8000 \
-  -rate-limit 1000 \
-  -key-rate-limit 10000
+ -port 8080 \
+ -backends http://api1.prod:8000,http://api2.prod:8000,http://api3.prod:8000 \
+ -rate-limit 1000 \
+ -key-rate-limit 10000
 ```
 
 ### Production (High Traffic)
@@ -159,10 +159,10 @@ Detailed guide for configuring the API Gateway.
 ```bash
 # Stricter rate limits, more backends
 ./api-gateway -mode gateway \
-  -port 8080 \
-  -backends http://api1.prod:8000,http://api2.prod:8000,http://api3.prod:8000,http://api4.prod:8000 \
-  -rate-limit 5000 \
-  -key-rate-limit 50000
+ -port 8080 \
+ -backends http://api1.prod:8000,http://api2.prod:8000,http://api3.prod:8000,http://api4.prod:8000 \
+ -rate-limit 5000 \
+ -key-rate-limit 50000
 ```
 
 ## API Key Configuration
@@ -201,19 +201,19 @@ To support external API key management:
 ```yaml
 # config.yaml
 gateway:
-  port: 8080
-  rate_limit: 100
-  key_rate_limit: 1000
-  
+ port: 8080
+ rate_limit: 100
+ key_rate_limit: 1000
+ 
 backends:
-  - http://api1.local:8000
-  - http://api2.local:8000
-  
+ - http://api1.local:8000
+ - http://api2.local:8000
+ 
 api_keys:
-  - key-test-1
-  - key-test-2
-  - key-admin
-  - production-key-xyz
+ - key-test-1
+ - key-test-2
+ - key-admin
+ - production-key-xyz
 ```
 
 Then load from file:
@@ -232,11 +232,11 @@ Capacity = Rate Limit (requests per minute)
 Refill Rate = Capacity / 60 (tokens per second)
 
 Example: 100 requests/minute
-  Capacity = 100 tokens
-  Refill Rate = 100/60 = 1.67 tokens/second
-  
-  If idle for 60 seconds: bucket refills to 100 tokens
-  If idle for 30 seconds: bucket refills to ~50 tokens
+ Capacity = 100 tokens
+ Refill Rate = 100/60 = 1.67 tokens/second
+ 
+ If idle for 60 seconds: bucket refills to 100 tokens
+ If idle for 30 seconds: bucket refills to ~50 tokens
 ```
 
 ### Rate Limit Recommendations
@@ -267,7 +267,7 @@ Example: 100 requests/minute
 
 # Update gateway (restart required)
 ./api-gateway -mode gateway \
-  -backends http://localhost:8081,http://localhost:8082,http://localhost:8083,http://localhost:8084
+ -backends http://localhost:8081,http://localhost:8082,http://localhost:8083,http://localhost:8084
 ```
 
 ### Removing Backends
@@ -281,12 +281,12 @@ Example: 100 requests/minute
 Backends must be valid HTTP URLs:
 
 ```
-http://localhost:8080      ✓ Local HTTP
-http://api.example.com     ✓ Domain name
-http://192.168.1.1:8000    ✓ IP with port
-https://secure.api.com     ✗ HTTPS (not yet supported)
-localhost:8000             ✗ Missing scheme
-http://api.example.com/api ✓ With path (path is kept)
+http://localhost:8080 [x] Local HTTP
+http://api.example.com [x] Domain name
+http://192.168.1.1:8000 [x] IP with port
+https://secure.api.com [ ] HTTPS (not yet supported)
+localhost:8000 [ ] Missing scheme
+http://api.example.com/api [x] With path (path is kept)
 ```
 
 ## Health Check Configuration
@@ -305,7 +305,7 @@ To customize, edit in `main.go`:
 HealthCheckInterval: 10 * time.Second
 
 // In checkBackendHealth():
-healthURL := fmt.Sprintf("%s/health", backend.URL.String())  // Customize endpoint
+healthURL := fmt.Sprintf("%s/health", backend.URL.String()) // Customize endpoint
 ```
 
 ## Logging Configuration
@@ -343,10 +343,10 @@ Add automatic rotation:
 import "github.com/natefinch/lumberjack.v2"
 
 logFile := &lumberjack.Logger{
-    Filename:   "gateway.log",
-    MaxSize:    100,      // MB
-    MaxBackups: 3,
-    MaxAge:     28,       // days
+ Filename: "gateway.log",
+ MaxSize: 100, // MB
+ MaxBackups: 3,
+ MaxAge: 28, // days
 }
 ```
 
@@ -366,11 +366,11 @@ make test
 
 ```bash
 ./api-gateway \
-  -mode gateway \
-  -port ${PORT:-8080} \
-  -backends ${BACKENDS:-http://localhost:8081,http://localhost:8082} \
-  -rate-limit ${RATE_LIMIT:-100} \
-  -key-rate-limit ${KEY_RATE_LIMIT:-1000}
+ -mode gateway \
+ -port ${PORT:-8080} \
+ -backends ${BACKENDS:-http://localhost:8081,http://localhost:8082} \
+ -rate-limit ${RATE_LIMIT:-100} \
+ -key-rate-limit ${KEY_RATE_LIMIT:-1000}
 ```
 
 ### Docker Compose Example
@@ -378,28 +378,28 @@ make test
 ```yaml
 version: '3'
 services:
-  gateway:
-    build: .
-    ports:
-      - "8080:8080"
-    environment:
-      - BACKENDS=http://backend1:8000,http://backend2:8000
-      - RATE_LIMIT=100
-    depends_on:
-      - backend1
-      - backend2
+ gateway:
+ build: .
+ ports:
+ - "8080:8080"
+ environment:
+ - BACKENDS=http://backend1:8000,http://backend2:8000
+ - RATE_LIMIT=100
+ depends_on:
+ - backend1
+ - backend2
 
-  backend1:
-    build: .
-    command: ./api-gateway -mode backend -port 8000 -name Backend-1
-    expose:
-      - "8000"
+ backend1:
+ build: .
+ command: ./api-gateway -mode backend -port 8000 -name Backend-1
+ expose:
+ - "8000"
 
-  backend2:
-    build: .
-    command: ./api-gateway -mode backend -port 8000 -name Backend-2
-    expose:
-      - "8000"
+ backend2:
+ build: .
+ command: ./api-gateway -mode backend -port 8000 -name Backend-2
+ expose:
+ - "8000"
 ```
 
 ## Performance Tuning
@@ -424,9 +424,9 @@ In `main.go`, adjust server timeouts:
 
 ```go
 server := &http.Server{
-    ReadTimeout:  15 * time.Second,   // Increase for slow clients
-    WriteTimeout: 15 * time.Second,   // Increase for slow backends
-    IdleTimeout:  60 * time.Second,   // Keep-alive timeout
+ ReadTimeout: 15 * time.Second, // Increase for slow clients
+ WriteTimeout: 15 * time.Second, // Increase for slow backends
+ IdleTimeout: 60 * time.Second, // Keep-alive timeout
 }
 ```
 
@@ -464,25 +464,25 @@ cwl := logs.NewLogsClient()
 ```go
 // IP whitelisting
 var whitelist = []string{
-    "10.0.0.0/8",      // Private network
-    "203.0.113.0/24",  // Known clients
+ "10.0.0.0/8", // Private network
+ "203.0.113.0/24", // Known clients
 }
 
 // IP blacklisting
 var blacklist = []string{
-    "192.0.2.1",       // Troublemaker
+ "192.0.2.1", // Troublemaker
 }
 
 // Custom middleware
 func ipFilterMiddleware(next http.Handler) http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        ip := getClientIP(r)
-        if isBlacklisted(ip) {
-            http.Error(w, "Forbidden", http.StatusForbidden)
-            return
-        }
-        next.ServeHTTP(w, r)
-    })
+ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+ ip := getClientIP(r)
+ if isBlacklisted(ip) {
+ http.Error(w, "Forbidden", http.StatusForbidden)
+ return
+ }
+ next.ServeHTTP(w, r)
+ })
 }
 ```
 

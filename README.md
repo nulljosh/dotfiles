@@ -2,7 +2,7 @@
 
 # dotfiles
 
-![version](https://img.shields.io/badge/version-v1.0.0-blue)
+![version](https://img.shields.io/badge/version-v1.0.1-blue)
 
 Shell and terminal config for macOS (Apple Silicon).
 ![architecture](architecture.svg)

@@ -1,8 +1,8 @@
-![dotfiles](icon.svg)
+<img src="icon.svg" width="80">
 
 # dotfiles
 
-![version](https://img.shields.io/badge/version-v1.0.1-blue)
+![version](https://img.shields.io/badge/version-v2.0.0-blue)
 
 Shell and terminal config for macOS (Apple Silicon).
 ![architecture](architecture.svg)

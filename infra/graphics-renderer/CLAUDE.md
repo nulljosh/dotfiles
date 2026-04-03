@@ -4,7 +4,7 @@
 Software rasterizer / ray tracer in Rust. Renders 3D scenes to PPM/PNG images.
 
 ## Stack
-Rust, no GPU — pure software rendering
+Rust, no GPU  --  pure software rendering
 
 ## Build
 ```bash

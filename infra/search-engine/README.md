@@ -38,14 +38,14 @@ Crawler → Tokenizer → Inverted Index → Document Store
                        Query Parser → BM25 Ranker → REST API
 ```
 
-**Ingestion pipeline** — builds the index:
+**Ingestion pipeline**  --  builds the index:
 
 1. Crawler fetches pages (BFS, robots.txt aware)
 2. Tokenizer splits and normalizes text
 3. Inverted Index maps terms to document postings
 4. Document Store persists raw text as JSON
 
-**Query pipeline** — answers searches:
+**Query pipeline**  --  answers searches:
 
 5. Query Parser handles Boolean/phrase syntax
 6. BM25 Ranker scores and sorts matching documents
@@ -78,6 +78,6 @@ Crawler → Tokenizer → Inverted Index → Document Store
 
 ## Pairs With
 
-- **query-language** — SQL-style query frontend for structured search
-- **key-value-store** — swap the JSON document store for a real KV backend
-- **shell** — pipe search results through shell pipelines
+- **query-language**  --  SQL-style query frontend for structured search
+- **key-value-store**  --  swap the JSON document store for a real KV backend
+- **shell**  --  pipe search results through shell pipelines

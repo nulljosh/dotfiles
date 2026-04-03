@@ -1,8 +1,8 @@
-# Search Engine — Claude Notes
+# Search Engine  --  Claude Notes
 
 ## Overview
 
-Local text search engine — inverted index, TF-IDF/BM25, optional web crawler.
+Local text search engine  --  inverted index, TF-IDF/BM25, optional web crawler.
 
 ## Stack
 

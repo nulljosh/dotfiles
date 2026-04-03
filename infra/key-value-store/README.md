@@ -26,7 +26,7 @@ A persistent key-value database in Rust, inspired by Bitcask/RocksDB.
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 340" width="680" height="340" style="font-family:monospace;background:#f8fafc;border-radius:12px">
   <rect width="680" height="340" rx="12" fill="#f8fafc"/>
-  <text x="340" y="28" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e293b">Key-Value Store — Rust Bitcask Structure</text>
+  <text x="340" y="28" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e293b">Key-Value Store  --  Rust Bitcask Structure</text>
   <rect x="240" y="44" width="200" height="32" rx="6" fill="#0071e3" opacity="0.9"/>
   <text x="340" y="65" text-anchor="middle" font-size="11" fill="white" font-weight="bold">key-value-store/ (root)</text>
   <rect x="60" y="118" width="100" height="28" rx="5" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="1"/>
@@ -54,7 +54,7 @@ A persistent key-value database in Rust, inspired by Bitcask/RocksDB.
   <line x1="220" y1="146" x2="295" y2="190" stroke="#818cf8" stroke-width="1.5"/>
   <line x1="220" y1="146" x2="395" y2="190" stroke="#818cf8" stroke-width="1.5"/>
   <rect x="80" y="270" width="520" height="28" rx="5" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
-  <text x="340" y="288" text-anchor="middle" font-size="10" fill="#92400e">Bitcask-style persistent KV store in Rust — append-only log + in-memory index</text>
+  <text x="340" y="288" text-anchor="middle" font-size="10" fill="#92400e">Bitcask-style persistent KV store in Rust  --  append-only log + in-memory index</text>
 </svg>
 ```
 
@@ -63,7 +63,7 @@ A persistent key-value database in Rust, inspired by Bitcask/RocksDB.
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 420" width="680" height="420" style="font-family:monospace;background:#f8fafc;border-radius:12px">
   <rect width="680" height="420" rx="12" fill="#f8fafc"/>
-  <text x="340" y="28" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e293b">key-value-store — File Structure</text>
+  <text x="340" y="28" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e293b">key-value-store  --  File Structure</text>
   <rect x="240" y="44" width="200" height="32" rx="6" fill="#0071e3" opacity="0.9"/>
   <text x="340" y="65" text-anchor="middle" font-size="11" fill="white" font-weight="bold">key-value-store/ (root)</text>
   <rect x="160" y="118" width="100" height="28" rx="5" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="1"/>

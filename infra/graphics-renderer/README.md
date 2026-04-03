@@ -4,7 +4,7 @@
 
 ![version](https://img.shields.io/badge/version-v0.1.0-blue)
 
-A software rasterizer / ray tracer in Rust — render 3D scenes to images.
+A software rasterizer / ray tracer in Rust  --  render 3D scenes to images.
 
 ## Scope
 - Ray tracer: rays, spheres, planes, triangles
@@ -28,7 +28,7 @@ A software rasterizer / ray tracer in Rust — render 3D scenes to images.
 ```svg
 <svg viewBox="0 0 680 420" width="680" height="420" xmlns="http://www.w3.org/2000/svg" style="font-family:monospace;background:#f8fafc;border-radius:12px">
   <rect width="680" height="420" fill="#f8fafc" rx="12"/>
-  <text x="340" y="28" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e293b">graphics-renderer — software rasterizer / ray tracer in Rust</text>
+  <text x="340" y="28" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e293b">graphics-renderer  --  software rasterizer / ray tracer in Rust</text>
 
   <!-- Root node -->
   <rect x="255" y="45" width="170" height="34" rx="8" fill="#0071e3"/>

@@ -3484,7 +3484,7 @@ All tests should pass with:
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 340" width="680" height="340" style="font-family:monospace;background:#f8fafc;border-radius:12px">
  <rect width="680" height="340" rx="12" fill="#f8fafc"/>
- <text x="340" y="28" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e293b">API Gateway — File Structure</text>
+ <text x="340" y="28" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e293b">API Gateway  --  File Structure</text>
  <rect x="255" y="44" width="170" height="32" rx="6" fill="#0071e3" opacity="0.9"/>
  <text x="340" y="65" text-anchor="middle" font-size="11" fill="white" font-weight="bold">api-gateway/ (root)</text>
  <rect x="40" y="118" width="110" height="28" rx="5" fill="#e0e7ff" stroke="#818cf8" stroke-width="1"/>
@@ -3509,7 +3509,7 @@ All tests should pass with:
  <rect x="390" y="210" width="110" height="28" rx="5" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="1"/>
  <text x="445" y="228" text-anchor="middle" font-size="10" fill="#0369a1">start.sh</text>
  <rect x="80" y="280" width="520" height="28" rx="5" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
- <text x="340" y="298" text-anchor="middle" font-size="10" fill="#92400e">Go HTTP server — rate limiting, auth, routing, proxy (915 LOC)</text>
+ <text x="340" y="298" text-anchor="middle" font-size="10" fill="#92400e">Go HTTP server  --  rate limiting, auth, routing, proxy (915 LOC)</text>
  <line x1="340" y1="76" x2="170" y2="210" stroke="#86efac" stroke-width="1.5"/>
  <line x1="340" y1="76" x2="315" y2="210" stroke="#86efac" stroke-width="1.5"/>
  <line x1="340" y1="76" x2="445" y2="210" stroke="#7dd3fc" stroke-width="1.5"/>

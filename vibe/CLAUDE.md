@@ -1,4 +1,4 @@
-# vibe — Claude Notes
+# vibe  --  Claude Notes
 
 ## Overview
 TODO: Add project overview.

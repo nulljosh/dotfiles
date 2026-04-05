@@ -44,3 +44,11 @@ chmod +x install.sh
 
 ### Vibe (vibe/)
 - Portfolio design reference. Dark editorial aesthetic template.
+
+### Scaffold (scaffold/)
+- Project template extracted from Tally. Express API + PWA + iOS/macOS companions.
+- Auth: encrypted cookies, session rehydration, CSRF, security headers, rate limiting.
+- PWA: service worker, design tokens, login page with theme toggle.
+- iOS: APIClient, KeychainHelper, AppState with biometric + session check bootstrap.
+- macOS: MacAPIClient, MacAppState with widget sync.
+- Deployment: Vercel serverless config, Blob persistence helpers.

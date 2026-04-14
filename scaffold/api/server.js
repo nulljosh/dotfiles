@@ -163,6 +163,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
+    name: 'sid',
     secure: IS_PRODUCTION,
     httpOnly: true,
     sameSite: 'strict',

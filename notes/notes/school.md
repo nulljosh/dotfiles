@@ -1,4 +1,20 @@
-# UVIC CS Transfer -- Updated Mar 2026
+# School -- Updated May 21, 2026
+
+## Capilano University -- BLS Paralegal
+
+- **Program**: Bachelor of Legal Studies (BLS) -- degree credential, not a diploma
+- **Duration**: 3-4 years
+- **Why BLS**: Only CapU program qualifying for law school admission; uses same textbooks as Canadian law schools
+- **Campus**: 2055 Purcell Way, North Vancouver, BC V7J 3H5
+- **Housing**: On-campus residence + meal plan available
+- **Application**: Apply ASAP -- Fall 2026 spots filling. Conditional admission available (coursework doesn't need to be complete first)
+- **Requirements**: Resume, two references, handwritten essay, transcripts
+- **Info sessions**: None until Fall 2026 -- can arrange faculty meeting on request
+- **Contact**: legalstudies@capilanou.ca | 604-983-7594
+
+---
+
+## UVIC CS Transfer -- Updated Mar 2026
 
 ## Deadlines
 - Fall 2026: Jan 31 (PASSED)

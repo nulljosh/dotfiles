@@ -34,6 +34,14 @@ atuin init fish | source
 # === fzf ===
 fzf --fish | source
 
+# === Update everything ===
+function update
+    brew update; and brew upgrade
+    gem update
+    npm update -g
+    brew doctor
+end
+
 # === Aliases ===
 alias ls "eza --icons"
 alias ll "eza -la --icons"

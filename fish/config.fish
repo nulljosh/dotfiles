@@ -66,3 +66,8 @@ alias cvwake "clawvault wake"
 alias cvsleep "clawvault sleep"
 alias cvcheck "clawvault doctor"
 alias code-sync "~/.openclaw/workspace/shortcuts/code-sync"
+
+
+if test -f ~/.config/fish/secrets.fish
+    source ~/.config/fish/secrets.fish
+end

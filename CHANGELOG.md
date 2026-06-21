@@ -1,3 +1,9 @@
+## [v2.0.0] — 2026-06-21
+
+- security: move Cloudflare token out of tracked config into untracked secrets file
+- fix: Project Map SVGs not rendering
+- feat: add `update` fish function (brew/gem/npm + doctor)
+
 ## [v0.0.1] — 2026-05-22
 
 - c9af677 docs: add CapU BLS Paralegal details to school notes

@@ -61,3 +61,4 @@ else
   export STARSHIP_CONFIG="$HOME/.config/starship.toml"
 fi
 eval "$(starship init zsh)"
+export PATH="/opt/homebrew/sbin:$PATH"

@@ -35,7 +35,10 @@ function mostFrequent(map) {
 }
 
 async function extractTokens(url) {
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({
+    headless: true,
+    executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+  });
   try {
     const page = await browser.newPage();
     await page.setViewport({ width: 1280, height: 900 });

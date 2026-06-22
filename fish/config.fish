@@ -71,3 +71,4 @@ alias code-sync "~/.openclaw/workspace/shortcuts/code-sync"
 if test -f ~/.config/fish/secrets.fish
     source ~/.config/fish/secrets.fish
 end
+set -gx PATH /opt/homebrew/sbin $PATH

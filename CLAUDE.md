@@ -45,6 +45,11 @@ chmod +x install.sh
 ### Vibe (vibe/)
 - Portfolio design reference. Dark editorial aesthetic template.
 
+### Claude (claude/)
+- `claude/commands/` - symlinked to `~/.claude/commands` (slash commands, e.g. `/work`).
+- `claude/skills/` - symlinked to `~/.agents/skills` (asc-* App Store Connect skills).
+- Edits in either location are the same files; no separate sync step needed.
+
 ### Scaffold (scaffold/)
 - Project template extracted from Tally. Express API + PWA + iOS/macOS companions.
 - Auth: encrypted cookies, session rehydration, CSRF, security headers, rate limiting.

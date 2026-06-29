@@ -13,7 +13,8 @@ Mode: first word of "$ARGUMENTS" must be `start` or `stop`. Filter: the rest of 
 1. **Scope**: Gather work from whichever sources exist:
    - PDFs: `ls ~/Downloads/*.pdf`, keep files matching the filter.
    - Roadmap: find `roadmap.md`/`ROADMAP.md` in cwd, then git root, then one level down (`*/roadmap.md`); collect open `- [ ]` (or plain list) items matching the filter.
-   If neither source has anything, say so and stop.
+   - Wiki (Obsidian vault): check `~/Library/Mobile Documents/com~apple~CloudDocs/Documents/Code/wiki/pages/` for open `- [ ]` items in entity/concept pages matching the filter. Also check `wiki/pages/security.md` for urgent items.
+   If none of the above have anything, say so and stop.
 2. **Triage**: For PDFs, read page 1 only and infer the task + target project. For roadmap items, read as-is. Order by a two-key sort:
    - **Primary — project priority tier**:
      1. Live-product blockers/bugs (broken app, account recovery, missing asset on an already-shipped version)

@@ -48,6 +48,7 @@ chmod +x install.sh
 ### Claude (claude/)
 - `claude/commands/` - symlinked to `~/.claude/commands` (slash commands, e.g. `/work`).
 - `claude/skills/` - symlinked to `~/.agents/skills` (asc-* App Store Connect skills).
+- `claude/claude-skills/` - symlinked to `~/.claude/skills` (all Claude Code skills: /night, /journal, /xcode-cleanup, etc).
 - Edits in either location are the same files; no separate sync step needed.
 
 ### Scaffold (scaffold/)

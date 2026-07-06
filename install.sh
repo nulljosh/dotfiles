@@ -23,5 +23,6 @@ link "$DOTFILES/starship/starship.toml" "$HOME/.config/starship.toml"
 link "$DOTFILES/starship/starship-terminal.toml" "$HOME/.config/starship-terminal.toml"
 link "$DOTFILES/claude/commands"               "$HOME/.claude/commands"
 link "$DOTFILES/claude/skills"                 "$HOME/.agents/skills"
+link "$DOTFILES/claude/claude-skills"          "$HOME/.claude/skills"
 
 echo "done. secrets files are NOT managed by this repo."

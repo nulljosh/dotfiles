@@ -165,6 +165,20 @@ Flag high-value combos in recommendations.
 - App not tracked in Astro → skip with note: "Add app to Astro with `mcp__astro__add_app` for gap analysis"
 - Store not tracked for a locale → add tracking with `add_keywords` before querying
 
+## Phase 3: AppSigma Competitor Signals (optional)
+
+If the `appsigma` MCP server is connected, pull competitor review/ranking signals to complement Astro's keyword gaps.
+
+### Steps
+
+1. For each competitor app ID already used in Phase 2, fetch recent reviews and rating histogram.
+2. Surface recurring complaint themes (e.g. "crashes on iOS 18", "no dark mode") as feature-gap opportunities — not ASO fields, but relevant to `whatsNew`/description positioning.
+3. Fetch current chart position/history for the competitor set to gauge whether keyword gaps found in Phase 2 are worth prioritizing (a keyword a #3-ranked competitor owns matters more than one from a #400 app).
+
+### Skip Conditions
+
+- `appsigma` MCP not connected → skip with note: "Add `appsigma` MCP server for competitor review/chart signals (`claude mcp add --transport http appsigma https://api.appsigma.io/mcp --header \"X-API-Key: YOUR_KEY\"`)"
+
 ## Output Format
 
 Present results as a single audit report. The report covers only the latest version directory.

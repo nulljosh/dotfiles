@@ -1,9 +1,17 @@
 ---
 description: Low-token mode - terse, minimal exploration, no subagents
+argument-hint: [usage info or screenshot — e.g. "4 USD, 2h22m left"]
 ---
 
-Switch to lean/low-token mode for the rest of this session:
+Switch to lean/low-token mode for the rest of this session.
 
+If $ARGUMENTS is given (usage stats, a pasted screenshot, or a description of remaining budget/time), read it and scale strictness:
+- Plenty of budget/time left relative to session length → apply the baseline rules below.
+- Usage high or time short → go stricter: fewer tool calls per turn, skip even single-file verification unless critical, 1 sentence responses.
+- Already near/over limit → bare minimum: answer directly from context when possible, avoid tool calls entirely unless the task requires an edit.
+If $ARGUMENTS is omitted, use the current usage hook context if present in this session, otherwise apply the baseline rules.
+
+Baseline rules:
 - Run `/effort low` now (if not already low).
 - Skip broad exploration: go straight for the one most-likely file via a targeted grep/find instead of multi-step searches.
 - No subagents (Agent tool) for routine work — only for genuinely large/parallel research.

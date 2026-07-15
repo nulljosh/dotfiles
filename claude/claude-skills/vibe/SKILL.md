@@ -29,7 +29,7 @@ Extract design aesthetic (colors, typography, effects) from a reference URL and 
 ## Example
 
 ```bash
-cd ~/Library/Mobile\ Documents/com~apple~CloudDocs/Documents/Code/apps/cadence
+cd ~/Library/Mobile\ Documents/iCloud~md~obsidian/Documents/Code/apps/cadence
 /vibe https://heyitsmejosh.com
 # → generates portfolio-tokens.css with design palette reference
 ```

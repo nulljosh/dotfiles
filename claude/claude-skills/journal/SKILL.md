@@ -35,6 +35,14 @@ Create or update weekly journal entries for journal.heyitsmejosh.com, following 
 - Filename format: `YYYY-MM-DD-slug.md` (slug becomes URL)
 - No em-dashes, filler phrases, or emojis
 - Posts must be in natural English, not tool-spam
+
+## Voice (entries were getting spammy — follow these)
+
+- Write like a person recapping their day to a friend, not a changelog. Full sentences, first person.
+- A day section is 2-5 sentences. Pick the 1-3 things that mattered; drop the rest. Never enumerate every commit or repo.
+- No commit hashes, no version numbers unless the release itself is the story, no file paths, no tool names unless essential.
+- Ban list: "shipped X, Y, Z" comma trains; "various fixes"; "cleanup"; starting every sentence with a repo name; bullet lists inside day sections (prose only).
+- Read it back once: if a sentence could appear in `git log`, rewrite it or cut it.
 - Titles under 6 words, punchy and short
 - Day-by-day sections (sunday through saturday, selective)
 - Include apps summary section at end

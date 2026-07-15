@@ -9,6 +9,8 @@ One command to log tonight's work everywhere.
 
 **Run cheap:** delegate the whole wrap to one subagent — Agent tool, `subagent_type: general-purpose`, `model: haiku` — with the Steps below as its prompt. Relay its TLDR to the user. The main session's model is untouched.
 
+**Delta re-runs:** if a wrap agent already ran tonight (this session), don't spawn a fresh agent or redo the full wrap — SendMessage the same agent with only what changed since its run, telling it to update journal/wiki status lines, redeploy, and return a short TLDR.
+
 ## Steps
 
 1. **Collect** — from `~/Documents/Code`, for each repo with `.git`:
@@ -24,7 +26,11 @@ One command to log tonight's work everywhere.
    - Bullet style, no frontmatter, no emojis (see notes/CLAUDE.md).
    - Commit + push.
 
-4. **TLDR** — end with a short bullet list of what landed in journal and wiki, plus the journal URL.
+4. **Stale-memory check** — for each repo touched tonight, grep `~/.claude/projects/-Users-joshua/memory/project_*.md` for a matching memory file. If tonight's commits look like they change status the memory records (version bump, submission, ship, fix), flag it in the TLDR as "memory may be stale: <file>" — don't edit memory files yourself, just flag.
+
+5. **TLDR** — end with a short bullet list of what landed in journal and wiki, the count of commits and repos touched tonight, any stale-memory flags (or "memory: nothing stale"), plus the journal URL.
+
+6. **Notify** — call the `PushNotification` tool with the TLDR summary so the wrap is visible even if this ran in the background.
 
 ## Rules
 - Work lean: batch git scans, no subagents.

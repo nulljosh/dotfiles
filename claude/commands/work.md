@@ -22,7 +22,7 @@ Mode: first word of "$ARGUMENTS" must be `start`, `stop`, or `dump`. For `start`
 ## start — pick up pending work
 
 1. **Scope**: Gather work from whichever sources exist:
-   - PDFs: `ls ~/Downloads/*.pdf`, keep files matching the filter.
+   - PDFs: `find ~/Downloads -iname "*.pdf"` (recurses into subfolders like `misc/` — a flat `ls ~/Downloads/*.pdf` misses those), keep files matching the filter.
    - Roadmap: find `roadmap.md`/`ROADMAP.md` in cwd, then git root, then one level down (`*/roadmap.md`); collect open `- [ ]` (or plain list) items matching the filter.
    - README/CLAUDE.md: same search pattern (cwd, git root, one level down); collect open `- [ ]` items or an explicit TODO/Roadmap section matching the filter.
    - Wiki (Obsidian vault): check `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Code/wiki/pages/` for open `- [ ]` items in entity/concept pages matching the filter. Also check `wiki/pages/security.md` for urgent items.

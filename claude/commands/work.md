@@ -8,6 +8,8 @@ Mode: first word of "$ARGUMENTS" must be `start`, `stop`, or `dump`. For `start`
 
 **With a filter**: work on that one matched group only — one fork, no parallel blast. Use this to limit scope: `/work start epiphany`, `/work start invoice.pdf`, `/work start spark`. If the filter matches more than one group, pick the highest-priority match and say so — don't silently expand scope.
 
+**Where things land**: (1) genuinely trivial → banged out and committed immediately, never filed. (2) actionable but not done → target repo's `roadmap.md` (default bucket). (3) no `roadmap.md` in that repo → `README.md`/`CLAUDE.md` as fallback. (4) not actionable / no project owner (ideas, notes, personal info, open-ended research) → wiki (`wiki/pages/`), or the repo's roadmap.md under `## Someday / Explore` if it's project-scoped but not ready.
+
 ## dump — ingest a braindump, then start
 
 1. **Collect**: If no dump text came with the command, ask the user to paste it. Multiple pastes are fine — keep collecting until they say done / "that's all".
@@ -21,6 +23,7 @@ Mode: first word of "$ARGUMENTS" must be `start`, `stop`, or `dump`. For `start`
 
 ## start — pick up pending work
 
+0. **Export Notes**: run `~/.claude/skills/notes-inbox/notes-export.sh Notes ~/Downloads --delete-source` — headlessly (osascript read + `chrome --headless --print-to-pdf`, no UI automation) dumps every Apple Note as a PDF into `~/Downloads` and deletes the source note once its PDF is written. They flow through the normal PDF pipeline below (triaged, banged out or filed to a roadmap, then cleaned up) — no separate notes flow.
 1. **Scope**: Gather work from whichever sources exist:
    - PDFs: `find ~/Downloads -iname "*.pdf"` (recurses into subfolders like `misc/` — a flat `ls ~/Downloads/*.pdf` misses those), keep files matching the filter.
    - Roadmap: find `roadmap.md`/`ROADMAP.md` in cwd, then git root, then one level down (`*/roadmap.md`); collect open `- [ ]` (or plain list) items matching the filter.

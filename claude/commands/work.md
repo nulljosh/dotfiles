@@ -24,9 +24,10 @@ Mode: first word of "$ARGUMENTS" must be `start`, `stop`, or `dump`. For `start`
 1. **Scope**: Gather work from whichever sources exist:
    - PDFs: `ls ~/Downloads/*.pdf`, keep files matching the filter.
    - Roadmap: find `roadmap.md`/`ROADMAP.md` in cwd, then git root, then one level down (`*/roadmap.md`); collect open `- [ ]` (or plain list) items matching the filter.
+   - README/CLAUDE.md: same search pattern (cwd, git root, one level down); collect open `- [ ]` items or an explicit TODO/Roadmap section matching the filter.
    - Wiki (Obsidian vault): check `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Code/wiki/pages/` for open `- [ ]` items in entity/concept pages matching the filter. Also check `wiki/pages/security.md` for urgent items.
    If none of the above have anything, say so and stop.
-2. **Triage**: For PDFs, read page 1 only and infer the task + target project. For roadmap items, read as-is. Order by a two-key sort:
+2. **Triage**: For PDFs, read the whole file (all pages, not just page 1 — a single page misses tasks/context further in) and infer the task + target project. For roadmap items, read as-is. Order by a two-key sort:
    - **Primary — project priority tier**:
      1. Live-product blockers/bugs (broken app, account recovery, missing asset on an already-shipped version)
      2. Explicit ship/App-Store pushes
@@ -34,6 +35,7 @@ Mode: first word of "$ARGUMENTS" must be `start`, `stop`, or `dump`. For `start`
      4. Portfolio/meta (site copy, design reviews)
      5. Exploratory/research with no deadline
    - **Secondary — relevancy/actionability/ease**, used to break ties within a tier.
+   - **Not a discrete action** (open-ended research, "explore X", "think about Y", no concrete next step): don't dispatch a fork for these. File them straight to the wiki (`~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Code/wiki/pages/`, topic-appropriate page) as a note, or to the target project's roadmap.md under a `## Someday / Explore` heading if it's project-scoped but not actionable yet. Then treat as done for this run (checked off / PDF cleaned up per step 8) — shelving IS the completion for these.
 3. **Group**: Cluster by target project/working directory. Within a group, keep tier order (serial — same files/repo). Across groups, independent.
 4. **Check usage**: run `~/.claude/scripts/usage.sh` (real plan-limit percentages from the OAuth usage endpoint). If it fails, skip silently — don't block the rest of `/work` on it.
 5. **Plan**: Print one line per task — `N. source → task (project, tier) → dispatched to agent` — grouped by project, in execution order — followed by the usage line verbatim, e.g. `Usage: session 8% | weekly_all 50% | weekly_scoped[Fable] 83% WARNING`, or `Usage: unknown` if the script failed. If any limit is ≥90% or severity is not normal on the session limit, warn before dispatching and prefer a single fork over a parallel blast.
@@ -47,7 +49,7 @@ Mode: first word of "$ARGUMENTS" must be `start`, `stop`, or `dump`. For `start`
    - Within any fork: smallest correct diff, batch independent tool calls, one targeted verification per task (not full suites), terse output.
    - Usage watch: after finishing each task, re-run `~/.claude/scripts/usage.sh` (cheap — once per task, not more often). If the session limit hits ≥90%, or any limit reports severity WARNING and is rising fast, stop dispatching further tasks in this group after the current one, skip to step 8 for everything still queued (deferred note: "usage limit near cap: <usage line>"), and end the fork early rather than continuing through the rest of the group's queue.
    - Don't poll forks. The orchestrating turn ends immediately after dispatch — report "N group(s) dispatched" and stop; do not wait for completion notifications before ending the turn.
-8. **Cleanup (PDFs only, done by each fork for its own group)**: Never leave a PDF/sidecar sitting in Downloads. For any task not fully done+verified, append it as a TODO under `## From <file>.pdf (imported <date>)` in that project's roadmap.md (or README.md/CLAUDE.md if no roadmap) — one line, carrying over the blocked-reason note. Then `rm` the PDF and its sidecar regardless of completion state. Skip deletion only if the task couldn't be matched to any project.
+8. **Cleanup (PDFs only, done by each fork for its own group)**: Never leave a PDF/sidecar sitting in Downloads. For any task not fully done+verified, append it as a TODO under `## From <file>.pdf (imported <date>)` in that project's roadmap.md (or README.md/CLAUDE.md if no roadmap) — carry over enough of the PDF's actual content (not just a title) that the item is resumable cold: key details, numbers, names, blocked-reason. A one-line stub that drops the source content counts as data loss, not shelving. Then `rm` the PDF and its sidecar regardless of completion state. Skip deletion only if the task couldn't be matched to any project.
 9. **Confirm (done by each fork for its own group)**: `git add`+commit the roadmap/README/CLAUDE.md updates for that group's repo, then end the fork with one terse summary: changes made, verification results, what got imported into the project doc. This summary arrives as that fork's own completion notification — there is no combined end-of-run summary from the orchestrator.
 
 ## stop — shelve unfinished work

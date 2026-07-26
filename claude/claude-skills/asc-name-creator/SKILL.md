@@ -27,7 +27,9 @@ curl -s "https://api.appstoreconnect.apple.com/v1/appInfos/$INFO_ID/appInfoLocal
 
 ### 2. Brainstorm 8-10 candidates
 
-Short, brandable, on-theme with the product. Prefer one word or a tight two-word phrase over a generic "X: Subtitle" pattern (subtitles read as more genuic/AI-named and collide more). Vary root words, not just suffixes, so a rejection doesn't kill the whole batch (e.g. don't just try Spark/Sparkly/Sparker — mix in unrelated roots too).
+Short, brandable, on-theme with the product. **Single word by default** — do not propose or PATCH-test multi-word/compound names (e.g. "Briefkeeper", "Case File") unless the user explicitly says two words are fine. Vary root words, not just suffixes, so a rejection doesn't kill the whole batch (e.g. don't just try Spark/Sparkly/Sparker — mix in unrelated roots too).
+
+If the user gives inspiration keywords or themes (e.g. "law-inspired", "brief-inspired", "something nautical"), root every candidate in those themes — don't drift to generic startup-name filler once a batch gets rejected. Ask for themes up front if the app's domain alone doesn't make good candidates obvious.
 
 ### 3. Pre-filter with search (cheap, not authoritative)
 
@@ -50,9 +52,22 @@ curl -s -X PATCH "https://api.appstoreconnect.apple.com/v1/appInfoLocalizations/
 
 Loop through candidates until one succeeds. Since a successful PATCH is live immediately, only run this on names the user actually wants applied — don't PATCH-test names you'd reject on taste grounds.
 
-### 5. Report
+### 5. Propagate the rename everywhere else
 
-Tell the user the final live name, plus which candidates were tried and rejected (useful context if they want to dispute a trademark-eligible name later via Apple's name release process).
+The ASC `appInfoLocalizations.name` PATCH only changes the App Store listing name — it does **not** touch the on-device display name, the repo, or any other hosting surface. After a successful PATCH, always sweep all of these (skip whichever don't apply to the app):
+
+- **iOS/macOS display name**: `INFOPLIST_KEY_CFBundleDisplayName` in `ios/project.yml` and `macos/project.yml` (only if the macOS target has its own override — some inherit the Xcode target name instead, check first). Re-run `xcodegen generate` after editing.
+- **Repo docs**: `grep -rl "<OLD_NAME>" <repo>` (excluding `.git/`, `.asc/artifacts/`) and sed-replace across README, CLAUDE.md, roadmap.md, and any web `index.html` / `manifest.json` (`name`, `short_name`, `<title>`, on-page brand strings).
+- **Machine-wide docs**: check `~/Documents/Code/CLAUDE.md` for a reference table row naming the old app.
+- **Memory**: update or add a `project_app_renames`-style memory entry with the new name, date, and what got touched — plus any rejected candidates (useful context for later trademark/name-release disputes).
+- **GitHub repo**: `gh repo rename <new-name> --repo nulljosh/<old-name>` (confirm with the user first — this changes the clone URL; GitHub auto-redirects the old URL, but update `git remote -v` locally after: `git remote set-url origin https://github.com/nulljosh/<new-name>.git`).
+- **Vercel project**: if the app has a web deploy, check `vercel project ls` / project name — Vercel project names rarely need to change (the production domain/alias usually stays separate from the project name), but confirm before assuming no action needed.
+- **Cloudflare DNS**: only touches DNS if the app's domain/subdomain itself contains the old name (e.g. `oldname.heyitsmejosh.com`) — check `CLOUDFLARE_API_TOKEN` + `curl` against the zone before assuming this is a no-op; most renames keep the same subdomain and need nothing here.
+- **Commit + push + deploy**: commit repo doc changes, push, and redeploy the web app if the repo auto-deploys (Vercel) or needs a manual trigger (`deploy.sh`-style repos).
+
+### 6. Report
+
+Tell the user the final live name, everywhere it was propagated, and which candidates were tried and rejected.
 
 ## Notes
 

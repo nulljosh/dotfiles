@@ -18,7 +18,7 @@ Processes photographed book chapters in iCloud → writes summary.md per chapter
 ## Paths
 
 - iCloud books: `~/Library/Mobile Documents/com~apple~CloudDocs/Documents/Misc/Books/`
-- Books repo: `~/Documents/Code/books/`
+- Books repo: `~/Documents/Code/spine/`
 - Books site: `books.heyitsmejosh.com` (GitHub Pages, `nulljosh/books`)
 
 ## Step-by-step
@@ -45,6 +45,7 @@ For each chapter folder without `summary.md`:
    - Section-by-section breakdown
    - Key definitions and concepts
    - Examples and tables (markdown)
+   - Photos/figures: if a page contains a photo, illustration, or diagram (not just body text), add a one-sentence description of what it shows (e.g. "Photo: Jobs waving to a crowd at the iPad 2 launch, March 2011") inline near the relevant section or under a small "Photos in this chapter" list. Don't save/embed the image itself — text description only.
    - Key takeaways
 5. Write the file with the Write tool to `<chapter_folder>/summary.md`.
 6. Validate: file must be >300 chars and contain a `#` heading. If not, do NOT write it — note the failure and move on.
@@ -75,12 +76,12 @@ Slug = book name lowercased, non-alphanumeric replaced with `-`, trimmed.
 ### 4. Sync to books repo
 
 ```bash
-cd ~/Documents/Code/books && ./sync-summaries.sh
+cd ~/Documents/Code/spine && ./sync-summaries.sh
 ```
 
 ### 5. Add Summary badge in index.html
 
-In `~/Documents/Code/books/index.html`, find the `<div class="book-title">` for the book and add a badge link if not already present:
+In `~/Documents/Code/spine/index.html`, find the `<div class="book-title">` for the book and add a badge link if not already present:
 
 ```html
 <a href="summary.html?b=<slug>" class="badge">Summary</a>
@@ -96,7 +97,7 @@ Also update `book_rankings.md` in the same repo — add `[Summary](summary.html?
 ### 6. Commit and push
 
 ```bash
-cd ~/Documents/Code/books
+cd ~/Documents/Code/spine
 git add summaries/ index.html book_rankings.md
 git commit -m "Add <Book Name> summary + badge"
 git push

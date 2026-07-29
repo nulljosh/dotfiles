@@ -1,7 +1,7 @@
 ---
 name: summarize-books
 description: Summarize photographed book chapters from iCloud, sync to books site, push live. Replaces summarize.sh — uses Read tool directly so no subprocess, no iCloud eviction issues.
-model: sonnet
+model: haiku
 ---
 
 # summarize-books
@@ -113,6 +113,7 @@ git push
 
 ## Notes
 
+- **Model: Haiku** — this is OCR-style page reading + templated summarization, not hard reasoning; Haiku handles it fine at a fraction of Sonnet's cost. Bump back to Sonnet only if a book's content needs deeper synthesis (e.g. technical/math-heavy chapters where Haiku's summary quality visibly degrades).
 - **Do not use `summarize.sh`** — that script spawns `claude -p` subprocesses which burn session tokens waiting. The Read tool is faster and handles iCloud-evicted files correctly.
 - If a chapter has no images (empty folder), skip it and log a warning.
 - If summary validation fails, write `summary.failed.md` instead and do not delete originals.

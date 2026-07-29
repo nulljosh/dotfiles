@@ -32,7 +32,9 @@ Create or update weekly journal entries for journal.heyitsmejosh.com, following 
 ## Rules
 
 - One post per week (Friday or Sunday date)
-- Filename format: `YYYY-MM-DD-slug.md` (slug becomes URL)
+- **Title is one word.** Frontmatter `title:` is a single word, no ampersands, no commas, no "X and Y" ("Typeface", "Avatar", "Merge"). Pick the one thing the week was actually about.
+- **Length ceiling: ~350 words per post.** Two or three day sections, each 2-4 sentences, plus a two-line Apps line. If it's longer than a phone screen or two, cut. Entries got bloated to 8-12KB walls of text; that's the failure mode to avoid.
+- Filename format: `YYYY-MM-DD-slug.md` (slug becomes URL). Slug is a single word — pick whichever topic mattered most that week, don't hyphenate multiple words together (e.g. "renames and widgets" → `renames`, not `renames-and-widgets`).
 - No em-dashes, filler phrases, or emojis
 - Posts must be in natural English, not tool-spam
 
@@ -49,7 +51,7 @@ Create or update weekly journal entries for journal.heyitsmejosh.com, following 
 **Good (human, first person, what it means):** "Spent a chunk of tonight actually making Epiphany's Stripe setup work right — turned out the webhook had been silently failing to record what people paid for, so I fixed that, plus what happens if a card gets declined. Also put the People search and Daily Brief behind the paid tier, since they were fully built and just... free this whole time."
 
 - **Never create a second `##` heading for a day that already has one.** Grep the post for the existing heading (`## Friday`, `## Saturday (2026-07-18)`, etc.) before writing anything. If it exists, append a new paragraph inside that section — don't add "## Friday (evening)" or "## Friday (continued)" next to it. One heading per day, always.
-- Titles under 6 words, punchy and short
+- Explain what a change means in plain terms, not what the code does. "the booking form had been throwing away every lead" beats "the form used alert() with no persistence". Skip function names, parameter names, regex details, commit hashes, build numbers.
 - Day-by-day sections (sunday through saturday, selective)
 - Include apps summary section at end
 - Deploy via `./scripts/deploy.sh` only (never plain `git push`)

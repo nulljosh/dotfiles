@@ -1,6 +1,6 @@
 ---
 name: news
-description: Pull today's top stories via newsline's RSS API (CNN, Fox, BBC, Hacker News + more) plus WSJ/Bloomberg/CNBC markets backfill, and give a market + news briefing — biggest stories of the day, the week's read, and market/stock commentary. Use when the user invokes /news, /market, /morning, or /goodmorning.
+description: Pull today's top stories via newsline's RSS API (CNN, Fox, BBC, Hacker News, Vancouver Sun, The Province + more) plus WSJ/Bloomberg/CNBC markets backfill, and give a market + news briefing — biggest stories of the day, the week's read, and market/stock commentary. Use when the user invokes /news, /market, /morning, or /goodmorning.
 ---
 
 # News & market morning briefing
@@ -9,8 +9,8 @@ Invoked as `/news`, `/market`, `/morning`, or `/goodmorning`.
 
 ## Workflow
 1. Pull the day's top headlines + URLs from **newsline**, which already
-   aggregates 15 RSS sources (CNN, Fox, BBC, NPR, Guardian, Hacker News, …)
-   with no scraping/block headaches:
+   aggregates 17 RSS sources (CNN, Fox, BBC, NPR, Guardian, Hacker News,
+   Vancouver Sun, The Province, …) with no scraping/block headaches:
    ```sh
    curl -s "https://news.heyitsmejosh.com/api/stories?_=$RANDOM" \
      | python3 -c "import sys,json; [print(x['outlet'],'—',x['title'],x['link']) for x in json.load(sys.stdin)['latest'][:60]]"

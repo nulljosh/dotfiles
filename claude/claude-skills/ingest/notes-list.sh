@@ -8,7 +8,7 @@ FOLDER="${1:-Notes}"
 OUTDIR="${2:-$(mktemp -d /tmp/notes_ingest_XXXX)}"
 mkdir -p "$OUTDIR"
 
-osascript <<APPLESCRIPT > /tmp/notes_ingest_manifest.tsv
+/usr/bin/osascript <<APPLESCRIPT > /tmp/notes_ingest_manifest.tsv
 tell application "Notes"
   set out to ""
   repeat with n in notes of folder "$FOLDER"
@@ -22,10 +22,10 @@ while IFS= read -r noteId; do
   [[ -z "$noteId" ]] && continue
   safeId=$(echo "$noteId" | tr -c 'A-Za-z0-9' '_')
   # ponytail: one bad note (locked, attachment-only) must not kill the run
-  name=$(osascript -e "tell application \"Notes\" to get name of note id \"$noteId\"" 2>/dev/null) || {
+  name=$(/usr/bin/osascript -e "tell application \"Notes\" to get name of note id \"$noteId\"" 2>/dev/null) || {
     echo "skip (unreadable name): $noteId" >&2; continue
   }
-  body=$(osascript -e "tell application \"Notes\" to get plaintext of note id \"$noteId\"" 2>/dev/null) || {
+  body=$(/usr/bin/osascript -e "tell application \"Notes\" to get plaintext of note id \"$noteId\"" 2>/dev/null) || {
     echo "skip (unreadable body): $name" >&2; continue
   }
   { echo "$name"; echo "$body"; } > "$OUTDIR/$safeId.txt"

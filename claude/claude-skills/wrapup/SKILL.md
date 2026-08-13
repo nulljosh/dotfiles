@@ -1,15 +1,15 @@
 ---
 name: wrapup
-description: End-of-night wrap — refresh the weekly journal with today's work, ingest current project state into the notes wiki, deploy both. Use when the user says /wrapup or /wrap-up.
+description: Session wrap — refresh the journal with this session's work, ingest current project state into the notes wiki, deploy both. Use when the user says /wrapup, /wrap-up, /goodnight, /goodbye, or asks to wrap up.
 ---
 
-# /wrapup — nightly wrap
+# /wrapup — session wrap
 
-One command to log tonight's work everywhere.
+One command to log this session's work everywhere.
 
 **Run cheap:** delegate the whole wrap to one subagent — Agent tool, `subagent_type: general-purpose`, `model: haiku` — with the Steps below as its prompt. Relay its TLDR to the user. The main session's model is untouched.
 
-**Delta re-runs:** if a wrap agent already ran tonight (this session), don't spawn a fresh agent or redo the full wrap — SendMessage the same agent with only what changed since its run, telling it to update journal/wiki status lines, redeploy, and return a short TLDR.
+**Delta re-runs:** if a wrap agent already ran in this session, don't spawn a fresh agent or redo the full wrap — SendMessage the same agent with only what changed since its run, telling it to update journal/wiki status lines, redeploy, and return a short TLDR.
 
 ## Steps
 
@@ -25,19 +25,19 @@ One command to log tonight's work everywhere.
 
 3. **Wiki** — update `~/Documents/Code/notes/notes/master.md` AND the Obsidian wiki vault:
    - `master.md`: bump the "Updated" date, refresh the Roadmap / Active Projects table and Ship Now list with current state, prune completed `- [x]` items.
-   - Obsidian vault (`~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Code/wiki/`): ingest tonight's work per `wiki/CLAUDE.md`'s ingest workflow — update/create the touched apps' entity pages in `wiki/pages/`, then refresh `wiki/index.md` and `wiki/pages/_overview.md` so they match what the entity pages now say. This is the actual "Wiki Index" surface people read — don't skip it just because master.md got updated.
+   - Obsidian vault (`~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Code/wiki/`): ingest this session's work per `wiki/CLAUDE.md`'s ingest workflow — update/create the touched apps' entity pages in `wiki/pages/`, then refresh `wiki/index.md` and `wiki/pages/_overview.md` so they match what the entity pages now say. This is the actual "Wiki Index" surface people read — don't skip it just because master.md got updated.
    - Run `~/.claude/skills/wiki-refresh/SKILL.md` (read it in full) across all three surfaces it covers (Obsidian vault, master.md, `~/Documents/Code/CLAUDE.md`): catch stale app names in index/current-state sections left over from any rename. Only touch current-state/index lines, never past wrap-log entries or entity-page changelog/history sections.
-   - **Roadmap sweep**: for each repo touched tonight, `grep -c "^- \[ \]"` its `roadmap.md`/`ROADMAP.md` and spot-check open items against tonight's commits/memory files — check off (`- [x]`) anything actually shipped, don't just leave it stale. Small drift check, not a full re-audit.
-   - **Roadmap prune**: after the sweep above, run the `roadmap-prune` skill on each repo touched tonight (`python3 ~/.claude/skills/roadmap-prune/scripts/prune.py <repo>/roadmap.md`) to strip the `- [x]` items back out — history lives in git log, the roadmap file should only ever show what's still open. Commit the prune as part of that repo's wiki-wrap commit.
+   - **Roadmap sweep**: for each repo touched this session, `grep -c "^- \[ \]"` its `roadmap.md`/`ROADMAP.md` and spot-check open items against this session's commits/memory files — check off (`- [x]`) anything actually shipped, don't just leave it stale. Small drift check, not a full re-audit.
+   - **Roadmap prune**: after the sweep above, run the `roadmap-prune` skill on each repo touched this session (`python3 ~/.claude/skills/roadmap-prune/scripts/prune.py <repo>/roadmap.md`) to strip the `- [x]` items back out — history lives in git log, the roadmap file should only ever show what's still open. Commit the prune as part of that repo's wiki-wrap commit.
    - Bullet style, no frontmatter, no emojis (see notes/CLAUDE.md).
    - Commit + push.
 
-4. **Stale-memory check** — for each repo touched tonight, grep `~/.claude/projects/-Users-joshua/memory/project_*.md` for a matching memory file. If tonight's commits change status the memory records (version bump, submission, ship, fix, or code the memory describes as removed/added that a commit touches again), edit that memory file directly to correct it — update the stale claim, keep the `**Why:**`/`**How to apply:**` structure intact, note what changed. Then list it in the TLDR as "memory fixed: <file>".
+4. **Stale-memory check** — for each repo touched this session, grep `~/.claude/projects/-Users-joshua/memory/project_*.md` for a matching memory file. If this session's commits change status the memory records (version bump, submission, ship, fix, or code the memory describes as removed/added that a commit touches again), edit that memory file directly to correct it — update the stale claim, keep the `**Why:**`/`**How to apply:**` structure intact, note what changed. Then list it in the TLDR as "memory fixed: <file>".
 
-5. **TLDR** — end with a short bullet list of what landed in journal and wiki, the count of commits and repos touched tonight, any memory fixes made (or "memory: nothing stale"), plus the journal URL.
+5. **TLDR** — end with a short bullet list of what landed in journal and wiki, the count of commits and repos touched, any memory fixes made (or "memory: nothing stale"), plus the journal URL.
 
 6. **Notify** — call the `PushNotification` tool with the TLDR summary so the wrap is visible even if this ran in the background.
 
 ## Rules
 - Work lean: batch git scans, no subagents.
-- Don't invent work — only what git shows tonight.
+- Don't invent work — only what git shows for this window.

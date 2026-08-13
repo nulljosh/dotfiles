@@ -1,6 +1,6 @@
 ---
 name: roadmap-prune
-description: Strip checked-off (- [x]) items out of a repo's roadmap.md/ROADMAP.md, dropping any heading section left empty, so the roadmap only shows what's still open. History lives in git log, not the roadmap. Use when a roadmap.md has grown long with completed items, or as part of /night's wrap-up.
+description: Strip checked-off (- [x]) items out of a repo's roadmap.md/ROADMAP.md, dropping any heading section left empty, so the roadmap only shows what's still open. History lives in git log, not the roadmap. Use when a roadmap.md has grown long with completed items, or as part of /wrapup.
 ---
 
 # Roadmap Prune
@@ -45,6 +45,6 @@ covers the common case but isn't foolproof for oddly-formatted entries.
 Commit the prune as its own small commit, e.g.
 `git commit -m "roadmap: prune checked-off items"`.
 
-## Wired into /night
-`/night`'s wiki step runs this across every repo touched that night, right
+## Wired into /wrapup
+`/wrapup`'s wiki step runs this across every repo it touched, right
 before the wiki refresh, so roadmaps never grow unbounded across sessions.

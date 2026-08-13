@@ -29,5 +29,17 @@ while IFS= read -r noteId; do
     echo "skip (unreadable body): $name" >&2; continue
   }
   { echo "$name"; echo "$body"; } > "$OUTDIR/$safeId.txt"
+  # ponytail: image-only notes export as blank text and look like "nothing to file".
+  # Save attachments next to the .txt so the caller can actually read them.
+  if [[ $(echo "$body" | tr -d '[:space:]\357\277\274' | wc -c) -lt 40 ]]; then
+    i=0
+    while read -r att; do
+      [[ -z "$att" ]] && continue
+      i=$((i+1))
+      ext="${att##*.}"; [[ "$ext" == "$att" ]] && ext=png
+      /usr/bin/osascript -e "tell application \"Notes\" to save attachment $i of note id \"$noteId\" in POSIX file \"$OUTDIR/$safeId.att$i.$ext\"" 2>/dev/null \
+        && echo "  attachment: $OUTDIR/$safeId.att$i.$ext" >&2
+    done < <(/usr/bin/osascript -e "tell application \"Notes\" to get name of attachments of note id \"$noteId\"" 2>/dev/null | tr ',' '\n')
+  fi
   echo "$OUTDIR/$safeId.txt	$noteId"
 done < /tmp/notes_ingest_manifest.tsv

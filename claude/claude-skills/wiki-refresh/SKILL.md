@@ -1,6 +1,6 @@
 ---
 name: wiki-refresh
-description: Refresh every index/catalog surface (Obsidian wiki index+overview, notes/master.md, ~/Documents/Code/CLAUDE.md) for stale app names after a rename, and catch small drift like it. Use when asked to refresh the wiki index, or after any app/repo rename, as part of /night step 3.
+description: Refresh every index/catalog surface (Obsidian wiki index+overview, notes/master.md, ~/Documents/Code/CLAUDE.md) for stale app names after a rename, and catch small drift like it. Use when asked to refresh the wiki index, or after any app/repo rename, as part of /wrapup step 3.
 ---
 
 # wiki-refresh

@@ -1,18 +1,21 @@
 ---
 name: duolingo
-description: Scrape Duolingo courses via Chrome and export as Lexly course content, one unit at a time
+description: Scrape Duolingo courses via Chrome and export as Lexly course content, one unit at a time. Also pulls public profile stats (XP, streak, courses) via Duolingo's public API, no browser needed.
 ---
 
 ## Usage
 
 ```
 /duolingo [course] [unit]
+/duolingo profile [username]
 ```
 
 - `/duolingo` — show status, next unfinished course/unit
 - `/duolingo spanish` — start/resume Spanish course
 - `/duolingo spanish 1` — jump to Spanish unit 1
 - `/duolingo spanish 1 --go` — start the unit (default is to show preview only)
+- `/duolingo profile [username]` — print public profile stats (defaults to `nulljosh`): runs `scripts/profile.sh [username]`, which hits `https://www.duolingo.com/2017-06-30/users?username=<name>` directly. No login/Chrome required.
+  - **Known gap:** this legacy endpoint's `courses`/`totalXp` only cover language courses. It excludes Math (`MATH_BT`) and Music courses entirely, so the total will undercount vs. the app if the user has XP there. No public API exposes Math/Music XP; would need an authenticated Chrome session to get the true total.
 ```
 
 ## What it does

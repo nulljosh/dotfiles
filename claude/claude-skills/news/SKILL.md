@@ -35,16 +35,16 @@ Invoked as `/news`, `/market`, `/morning`, or `/goodmorning`.
 5. WebSearch for today's major index moves (S&P 500, Nasdaq, Dow — % change)
    and the past week's performance for the same indices, plus any stocks
    that are leading the day's news (movers tied to the stories above).
-6. Present:
-   - **Market snapshot**: today's index moves + one-line why, and the past
-     week's trend.
-   - **Top stories**: ranked list, source tag(s), summary, verification note.
-   - **Stocks/sectors in focus**: names or sectors tied to today's news and
-     why they're moving — informational context, not personalized advice;
-     say so explicitly, don't tell the user what to buy.
-   - **The week ahead/read**: 2-3 sentences tying the stories together —
-     what theme is driving markets this week and what to watch next.
-   Keep it skimmable — this is a briefing, not an essay.
+6. Present in **TLDR mode** by default — this user wants brief:
+   - One-line market summary (indices + driver)
+   - 3-5 bullet points: top stories (1-2 words each, no summaries)
+   - 3-5 stock tickers tied to today's moves (what's moving, why — a few words)
+   - Sources hyperlinked
+
+   Keep it skimmable — this is a briefing, not an essay. Only give the
+   **full briefing** (market snapshot paragraph, per-story 2-4 sentence
+   summaries, verification notes, week-ahead read) if the user explicitly
+   asks for "full", "long", or "more detail".
 
 ## Adding more sources
 Headlines come from newsline — add a source by appending a `[outlet, bias, url]`

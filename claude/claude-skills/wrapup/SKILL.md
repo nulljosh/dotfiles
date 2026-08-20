@@ -21,6 +21,7 @@ One command to log this session's work everywhere.
    - **Grep the post for the day's existing `##` heading before writing.** If today already has one (from an earlier wrap this same session or an earlier run today), append a new paragraph inside it. Never add a second heading for the same day ("## Friday (evening)", "## Friday (continued)", etc.) — that's the exact bug that caused duplicate/fragmented sections before. One heading per day, full stop.
    - Write first person, like Joshua recapping his day to a friend — not third person, not a changelog. 2-5 sentences, pick what actually mattered, skip commit hashes/bundle IDs/error codes unless the story is genuinely about that error. See journal SKILL.md's Voice section for a bad/good example before writing.
    - Update the apps summary.
+   - **Run `python3 scripts/lint-posts.py` and fix every violation before committing.** It caps length, bans commit hashes, version and build numbers, em dashes and lists inside day sections, and rejects a second heading for the same weekday. `deploy.sh` runs it too and will refuse to publish. The session dump you were handed is long; the entry is not. Compress it, do not transcribe it.
    - Commit, deploy via `./scripts/deploy.sh` (never plain git push for deploy), and `git push`.
 
 3. **Wiki** — update `~/Documents/Code/notes/notes/master.md` AND the Obsidian wiki vault:

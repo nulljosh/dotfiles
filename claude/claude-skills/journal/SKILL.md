@@ -33,7 +33,8 @@ Create or update weekly journal entries for journal.heyitsmejosh.com, following 
 
 - One post per week (Friday or Sunday date)
 - **Title is one word.** Frontmatter `title:` is a single word, no ampersands, no commas, no "X and Y" ("Typeface", "Avatar", "Merge"). Pick the one thing the week was actually about.
-- **Length ceiling: ~350 words per post.** Two or three day sections, each 2-4 sentences, plus a two-line Apps line. If it's longer than a phone screen or two, cut. Entries got bloated to 8-12KB walls of text; that's the failure mode to avoid.
+- **`scripts/lint-posts.py` in the journal repo now enforces every rule below and runs from `deploy.sh`.** Run it before committing and fix what it reports; do not raise the caps to make it pass. These rules were prose-only twice and ignored twice, which is why the gate exists.
+- **Length ceiling: ~350 words per post** (500 for `categories: journal monthly`)**.** Two or three day sections, each 2-4 sentences, plus a two-line Apps line. If it's longer than a phone screen or two, cut. Entries got bloated to 8-12KB walls of text; that's the failure mode to avoid.
 - Filename format: `YYYY-MM-DD-slug.md` (slug becomes URL). Slug is a single word — pick whichever topic mattered most that week, don't hyphenate multiple words together (e.g. "renames and widgets" → `renames`, not `renames-and-widgets`).
 - No em-dashes, filler phrases, or emojis
 - Posts must be in natural English, not tool-spam
@@ -76,3 +77,17 @@ Create or update weekly journal entries for journal.heyitsmejosh.com, following 
 ## Implementation
 
 Uses Jekyll locally to build, then deploys prebuilt static output to Vercel via the Build Output API.
+
+## Header SVG (house style, not optional)
+
+The header is an **information card summarizing the entry**, never decorative icons.
+800x500, rounded border frame, one-word title at 42px weight 300, lowercase subtitle,
+hairline rule, repos touched, four or five short lines of what happened, a right-hand
+panel (200x280 at x=560) with a label + one big number + in-flight items, date bottom
+left. Copy `journal/_includes/headers/2026-08-17-fortified.svg` and edit the text.
+
+Never draw clipart (shields, locks, puzzle pieces) and never fall back to a big title
+word on a 1200x200 banner. Both happened and both were reverted 2026-08-18. Use
+`currentColor` on every shape, give the file a `viewBox`, and never put colour only
+inside a `prefers-color-scheme` block. Save to `_includes/headers/` and reference it
+with `{% include headers/<name>.svg %}`.

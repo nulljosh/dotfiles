@@ -5,71 +5,76 @@ description: Brainstorm and verify App Store app name candidates, checking real-
 
 # ASC Name Creator
 
-App name availability on the App Store is exact-match, per-account, and *not* fully reflected in search results — a name can look free in `asc apps public search` and still get rejected as a duplicate. The only reliable check is attempting the write and reading the response.
+App name availability is exact-match, per-account, and *not* reflected in search results — a name can look free in `asc apps public search` and still be rejected as a duplicate (confirmed: "Sparkboard" had no search hit and was still rejected). Every public checker (namecheckly, checkappnames, appdrift) just queries the iTunes Search API, so they're all wrong the same way. The only truth is attempting the rename and reading Apple's response.
+
+`probe.sh` does that **against a throwaway app record**, so the check is free and repeatable — the real app is never touched until the user picks a name.
 
 ## Preconditions
 
-- `asc auth token --confirm` works (auth configured).
-- You have the target app's ASC id and its `appInfoLocalizations` id (see below).
+- `asc auth token --confirm` works.
+- A throwaway ASC record to probe against. Default is `6783501927` (Lexly Mac — the duplicate record slated for deletion). `probe.sh` refuses to run against anything with a version in READY_FOR_SALE / IN_REVIEW / WAITING_FOR_REVIEW / PENDING_*.
 
 ## Workflow
 
-### 1. Get the appInfoLocalizations id (once per app)
+### 1. Brainstorm ~20 candidates
 
-```bash
-TOKEN=$(asc auth token --confirm)
-INFO_ID=$(curl -s "https://api.appstoreconnect.apple.com/v1/apps/<APP_ID>/appInfos" \
-  -H "Authorization: Bearer $TOKEN" | python3 -c "import json,sys; print(json.load(sys.stdin)['data'][0]['id'])")
-curl -s "https://api.appstoreconnect.apple.com/v1/appInfos/$INFO_ID/appInfoLocalizations" \
-  -H "Authorization: Bearer $TOKEN"
-# take the en-US localization's "id" — this is what you PATCH
-```
+Probing is cheap now, so go wide.
 
-### 2. Brainstorm 8-10 candidates
+- **Single word by default.** Do not propose multi-word/compound names ("Briefkeeper", "Case File") unless the user says two words are fine.
+- **Vary roots, not suffixes** — don't submit Spark/Sparkly/Sparker; mix in unrelated roots so one rejection doesn't kill the batch.
+- If the user gives themes ("law-inspired", "something nautical"), root *every* candidate in them and don't drift to generic startup filler after rejections. Ask for themes up front if the app's domain doesn't make good candidates obvious.
 
-Short, brandable, on-theme with the product. **Single word by default** — do not propose or PATCH-test multi-word/compound names (e.g. "Briefkeeper", "Case File") unless the user explicitly says two words are fine. Vary root words, not just suffixes, so a rejection doesn't kill the whole batch (e.g. don't just try Spark/Sparkly/Sparker — mix in unrelated roots too).
-
-If the user gives inspiration keywords or themes (e.g. "law-inspired", "brief-inspired", "something nautical"), root every candidate in those themes — don't drift to generic startup-name filler once a batch gets rejected. Ask for themes up front if the app's domain alone doesn't make good candidates obvious.
-
-### 3. Pre-filter with search (cheap, not authoritative)
+### 2. Cheap pre-filter (optional, not authoritative)
 
 ```bash
 asc apps public search --term "<candidate>" --country us
 ```
 
-Skip candidates with an exact-name hit in results. This does NOT guarantee availability — different accounts can still collide invisibly (confirmed: "Sparkboard" had no search hit but was still rejected as duplicate).
+Drop exact-name hits. Skipping this step costs nothing but a few probe calls.
 
-### 4. Confirm by attempting the write
+### 3. Probe (authoritative)
 
 ```bash
-curl -s -X PATCH "https://api.appstoreconnect.apple.com/v1/appInfoLocalizations/<LOCALIZATION_ID>" \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d "{\"data\":{\"type\":\"appInfoLocalizations\",\"id\":\"<LOCALIZATION_ID>\",\"attributes\":{\"name\":\"<candidate>\"}}}"
+./probe.sh Foo Bar Baz Qux        # prints "Foo  AVAILABLE" / "Bar  TAKEN"
+ASC_PROBE_APP=<id> ./probe.sh ... # different throwaway record
 ```
 
-- Success: response has `"data"` with the new name — the name is now live, done.
-- Taken: response has `"errors"` with code `ENTITY_ERROR.ATTRIBUTE.INVALID.DUPLICATE.DIFFERENT_ACCOUNT` — try the next candidate.
+Nothing is applied — the script restores the probe record's name on exit, including on Ctrl-C. If it ever prints a restore WARNING, rename that record back manually before doing anything else.
 
-Loop through candidates until one succeeds. Since a successful PATCH is live immediately, only run this on names the user actually wants applied — don't PATCH-test names you'd reject on taste grounds.
+### 4. Present the shortlist
 
-### 5. Propagate the rename everywhere else
+Give the user the AVAILABLE names and let them choose. Do not auto-apply the first hit.
 
-The ASC `appInfoLocalizations.name` PATCH only changes the App Store listing name — it does **not** touch the on-device display name, the repo, or any other hosting surface. After a successful PATCH, always sweep all of these (skip whichever don't apply to the app):
+Optional, only when the app has a web presence: check `.com` (Vercel MCP `check_domain_availability_and_price`) and the GitHub name (`gh repo view nulljosh/<name>`). Trademark screening is out of scope — say so rather than implying it was checked.
 
-- **iOS/macOS display name**: `INFOPLIST_KEY_CFBundleDisplayName` in `ios/project.yml` and `macos/project.yml` (only if the macOS target has its own override — some inherit the Xcode target name instead, check first). Re-run `xcodegen generate` after editing.
-- **Repo docs**: `grep -rl "<OLD_NAME>" <repo>` (excluding `.git/`, `.asc/artifacts/`) and sed-replace across README, CLAUDE.md, roadmap.md, and any web `index.html` / `manifest.json` (`name`, `short_name`, `<title>`, on-page brand strings).
-- **Machine-wide docs**: check `~/Documents/Code/CLAUDE.md` for a reference table row naming the old app.
-- **Memory**: update or add a `project_app_renames`-style memory entry with the new name, date, and what got touched — plus any rejected candidates (useful context for later trademark/name-release disputes).
-- **GitHub repo**: `gh repo rename <new-name> --repo nulljosh/<old-name>` (confirm with the user first — this changes the clone URL; GitHub auto-redirects the old URL, but update `git remote -v` locally after: `git remote set-url origin https://github.com/nulljosh/<new-name>.git`).
-- **Vercel project**: if the app has a web deploy, check `vercel project ls` / project name — Vercel project names rarely need to change (the production domain/alias usually stays separate from the project name), but confirm before assuming no action needed.
-- **Cloudflare DNS**: only touches DNS if the app's domain/subdomain itself contains the old name (e.g. `oldname.heyitsmejosh.com`) — check `CLOUDFLARE_API_TOKEN` + `curl` against the zone before assuming this is a no-op; most renames keep the same subdomain and need nothing here.
-- **Commit + push + deploy**: commit repo doc changes, push, and redeploy the web app if the repo auto-deploys (Vercel) or needs a manual trigger (`deploy.sh`-style repos).
+### 5. Apply to the real app
 
-### 6. Report
+```bash
+asc apps rename --app <APP_ID> --locale en-US --name "<Chosen>"
+```
 
-Tell the user the final live name, everywhere it was propagated, and which candidates were tried and rejected.
+Live immediately.
+
+### 6. Propagate the rename everywhere else
+
+The rename only changes the App Store listing name — not the on-device display name, the repo, or any hosting surface. Sweep all of these (skip what doesn't apply):
+
+- **iOS/macOS display name**: `INFOPLIST_KEY_CFBundleDisplayName` in `ios/project.yml` and `macos/project.yml` (some macOS targets inherit the Xcode target name instead — check first). Re-run `xcodegen generate`.
+- **Repo docs**: `grep -rl "<OLD_NAME>" <repo>` (excluding `.git/`, `.asc/artifacts/`), sed-replace across README, CLAUDE.md, roadmap.md, and any web `index.html` / `manifest.json` (`name`, `short_name`, `<title>`, on-page brand strings).
+- **Machine-wide docs**: `~/Documents/Code/CLAUDE.md` reference table row.
+- **Memory**: update the `project_app_renames` entry with the new name, date, what got touched, and the rejected candidates (useful later for trademark/name-release disputes).
+- **GitHub repo**: `gh repo rename <new> --repo nulljosh/<old>` (confirm first — changes the clone URL; then `git remote set-url origin https://github.com/nulljosh/<new>.git`).
+- **Vercel project**: project names rarely need changing (the domain/alias is separate) — confirm before assuming a no-op.
+- **Cloudflare DNS**: only if the subdomain itself contains the old name (`oldname.heyitsmejosh.com`).
+- **Commit + push + deploy.**
+
+### 7. Report
+
+Final live name, everywhere it propagated, and which candidates came back TAKEN.
 
 ## Notes
 
-- This same `appInfoLocalizations.name` PATCH is the only way to rename an app in ASC — there is no `asc apps update --name` flag as of this writing.
-- For brand-new apps (not yet created in ASC), use `asc-app-create-ui` instead — creation is a different flow, but the same taken-name rejection applies at creation time.
+- `asc apps rename` is `[experimental]`. If it breaks, the underlying call is a PATCH to `appInfoLocalizations/<id>` with `attributes.name`; get the id via `GET /v1/apps/<APP_ID>/appInfos` → `GET /v1/appInfos/<id>/appInfoLocalizations`, auth `Bearer $(asc auth token --confirm)`.
+- Taken looks like `ENTITY_ERROR.ATTRIBUTE.INVALID.DUPLICATE.DIFFERENT_ACCOUNT` / "The app name you entered is already being used".
+- ASC reads are eventually consistent — a name read straight after a write can be stale. `probe.sh` retries its restore for this reason.
+- For brand-new apps not yet in ASC, creation goes through `asc web apps create` (see `asc-app-create-ui`); the same duplicate rejection applies there, so probe the name first.

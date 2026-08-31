@@ -1,12 +1,12 @@
 # Duolingo → Lexly Sync Progress
 
-Last updated: 2026-08-04 (bootstrap complete)
+Last updated: 2026-08-31
 
 ## Status
 
 No courses started yet. Courses will populate on first `/duolingo` invocation after reading the user's Duolingo course list.
 
-## Courses
+## Math
 
 - [x] grade-2 (completed: 5/5 units)
 - [x] grade-3 (completed: 13/13 units)
@@ -19,6 +19,14 @@ No courses started yet. Courses will populate on first `/duolingo` invocation af
 - [ ] grade-10 (in progress: 12/27 units)
 - [ ] grade-11 (in progress: 32/37 units)
 - [ ] grade-12 (completed: 27/27 units)
+
+## Chess
+
+- [ ] not started
+
+## Languages
+
+- [ ] not started
 
 ## Notes
 

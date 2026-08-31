@@ -7,6 +7,42 @@ description: Drive duolingo.com in the logged-in Chrome session to complete less
 
 Drives the user's already-logged-in Chrome session. No API, no credentials.
 
+## The loop
+
+0. `duo.py <username>` — if `today: done` and the user only wanted the
+   streak, stop here. Zero browser, zero tokens.
+1. `tabs_context_mcp` (close other Duolingo tabs), `navigate` to `/lesson`.
+2. Inject `scripts/duo.js`. Re-inject after every `navigate`.
+3. `await __duo.run(15)` — one call does the whole lesson. It returns
+   `{trail, halted}`.
+4. `halted` is how it hands back:
+   - `manual` → the question needs real mouse input. Solve it with `computer`
+     at **CSS coordinates** (see below), then `run()` again.
+   - `wrong` / `no hearts` / `choice match failed` → read the payload, fix,
+     resume. Never guess: a handback is free, a wrong CHECK is a heart.
+5. End of lesson is 3-4 CONTINUE clicks (`__duo.go()`), then `/lesson` again.
+6. `duo.py <username>` to confirm the XP landed.
+
+Everything below is why each of those steps looks the way it does.
+
+## What is verified, and what is not
+
+| Technique | Status | Evidence |
+|---|---|---|
+| Grader extraction (`__duo.answer()`) | **VERIFIED** 2026-08-31 | returns the answer verbatim, Math |
+| Multiple choice / select-all by text match | **VERIFIED** 2026-08-31 | `blame-correct` |
+| Type-the-answer via native setter | **VERIFIED** 2026-08-31 | `blame-correct` |
+| Match-the-pairs | **VERIFIED** 2026-08-31 | `blame-correct` |
+| Tile bank via real `computer` clicks, CSS coords | **VERIFIED** 2026-08-31 | `16 = 19 - 5 + 2` |
+| Number-line via `left_click_drag`, CSS coords | **VERIFIED** 2026-08-31 | `12 - 4 + 5` |
+| `__duo.place()` (synthetic `.click()`) | **DEAD** | reports `fail:null`, CHECK enables, slots stay empty |
+| Synthetic `PointerEvent` on sliders | **DEAD** | widget ignores them; arrow keys too |
+| `__duo.solve()` / `run()` | **UNVERIFIED** — written 2026-08-31, never run live | exercise on one lesson before trusting a long run |
+| Chess / language graders | **UNVERIFIED** | never probed |
+| Course switching on web | **UNSOLVED** | three failed attempts, see Navigation |
+
+Anything marked DEAD stays dead — do not re-litigate it mid-lesson.
+
 ## Read this first: cost and scope
 
 Measured on Joshua's account, 2026-08-31, Math course. Chess and language
@@ -245,19 +281,12 @@ than just the ones you can compute.
 
 `__duo.norm()` handles 2 and 3; use it on both sides of every comparison.
 
-### Sliders and number lines without the computer tool
+### Sliders without the computer tool: there is no such thing
 
-Synthetic `PointerEvent`s dispatched on `.slider1d-thumb` inside the iframe do
-move the handle — after one, `player-next.disabled` flipped to `false`. Dispatch
-`pointerdown`, ~12 interpolated `pointermove`s, then `pointerup`, with
-`bubbles/cancelable/composed: true`, `pointerId: 1`, `buttons: 1`. Target x
-comes from the labelled ticks (see the drag section above).
-
-**Caveat: not fully confirmed.** The call that did this timed out on return
-(CDP `Runtime.evaluate`, 45s) because of the sleeps between moves. The page
-survived and CHECK enabled, but the final value was never read back. Keep the
-move loop under ~2s of total sleep, and verify the landed value before trusting
-it.
+Synthetic `PointerEvent`s on `.slider1d-thumb` were tried and abandoned. One
+run appeared to enable CHECK, but the call timed out before the landed value
+could be read back, so it never confirmed anything — and arrow keys do nothing
+at all. Use `left_click_drag` at CSS coordinates. It is one call and it works.
 
 ### One honest note before using this
 
@@ -293,14 +322,13 @@ then respect the answer.
   two round handles. Drag each handle to *opposite corners* so the cut is a true
   diagonal; the default vertical cut yields two rectangles, not triangles.
 
-### The operator-tile quirk — solved by selectors
+### The operator-tile quirk
 
-Historically `•`, `/`, `+`, `−` tiles needed two clicks and the tray reflowed
-after every placement, staling any coordinates captured up front. Both problems
-were coordinate problems. `__duo.place('14','+','6','-','4')` re-queries the
-bank between placements and matches by value, so reflow is harmless. If a
-placement reports `{fail: v, have: [...]}`, the bank genuinely lacks that tile —
-recheck your arithmetic rather than re-clicking.
+`•`, `/`, `+`, `−` tiles historically needed two clicks and the tray reflows
+after every placement, staling any coordinates captured up front. Both were
+coordinate problems, and the fix is the real-click recipe above: re-read the
+bank between every click and let the shrinking list confirm the landing.
+`__duo.place()` is DEAD — it looks like it works and does not.
 
 ## Math notes (course: Math)
 

@@ -26,7 +26,8 @@ window.__duo = {
         .map((e, i) => [i, e.innerText.replace(/\n/g, ' ')]),
       tokens: [...d.querySelectorAll('.token-bank .token')].map((e, i) => [i, e.textContent.trim()]),
       slots: [...d.querySelectorAll('.token-slot')].map(e => e.textContent.trim()),
-      keypad: [...document.querySelectorAll('button[aria-label]')].map(b => b.getAttribute('aria-label')),
+      keypad: [...this.keys()].map(b => b.getAttribute('aria-label')),
+      hearts: this.hearts(),
       input: !!document.querySelector('[data-test="challenge-text-input"]'),
       blame: (document.querySelector('[data-test^="blame"]') || { dataset: {} }).dataset.test,
       next: (document.querySelector('[data-test="player-next"]') || {}).innerText,
@@ -50,21 +51,30 @@ window.__duo = {
     el.dispatchEvent(new Event('input', { bubbles: true }));
   },
 
-  // Tile bank fills left-to-right; place by VALUE in answer order.
-  // ponytail: marks used tiles with a data attr instead of tracking indices,
-  // because the bank reflows after every placement and indices go stale.
+  // DEAD as of 2026-08-31: the tile bank ignores synthetic .click(). This
+  // reports fail:null and even enables CHECK, but the slots stay empty.
+  // Use real `computer` clicks at CSS coordinates (see SKILL.md). Kept only
+  // to read the bank back; do not trust its placements.
   async place(...vals) {
     const d = this.frame();
     for (const v of vals) {
       const t = [...d.querySelectorAll('.token-bank .token')]
-        .find(e => e.textContent.trim() === String(v) && !e.dataset.u);
+        .find(e => e.textContent.trim() === String(v));
       if (!t) return { fail: v, have: [...d.querySelectorAll('.token-bank .token')].map(e => e.textContent.trim()) };
-      t.dataset.u = 1; t.click(); await this.sleep(350);
+      t.click(); await this.sleep(350);
     }
     return this.read();
   },
 
-  key(label) { [...document.querySelectorAll('button[aria-label]')].find(b => b.getAttribute('aria-label') === label).click(); },
+  // ponytail: aria-label is the only handle these buttons expose.
+  keys() { const c = document.querySelector('[data-test^="challenge "]') || document;
+    return c.querySelectorAll('button[aria-label]'); },
+
+  // Rules say stop at zero hearts; nothing could see them until now.
+  hearts() { const e = document.querySelector('[data-test="hearts-count"],[data-test="player-hearts"]');
+    return e ? parseInt(e.innerText, 10) : null; },
+
+  key(label) { [...this.keys()].find(b => b.getAttribute('aria-label') === label).click(); },
 
   async go() {  // CHECK or CONTINUE, then read what came next
     document.querySelector('[data-test="player-next"]').click();
@@ -107,6 +117,55 @@ Object.assign(window.__duo, {
     const idx = c.map((e, i) => [i, this.norm(e.innerText)])
                  .filter(([, t]) => want.includes(t)).map(([i]) => i);
     return { want, dom: c.map(e => this.norm(e.innerText)), idx, ok: idx.length === want.length };
+  },
+});
+
+
+// ---- the loop: one javascript_exec per question instead of four ----
+// Handles every type the grader + selectors cover. Anything needing real mouse
+// input (tile bank, sliders, number lines, images, chess) is HANDED BACK.
+Object.assign(window.__duo, {
+  MANUAL: /token|slider|number-line|image|shape|polygon|chess|blocks/i,
+
+  // Can this question be done from JS alone?
+  auto(r) {
+    if (this.MANUAL.test(r.type || '')) return false;
+    if (r.tokens && r.tokens.length) return false;   // tile bank present
+    return !!(r.choices.length || r.input);
+  },
+
+  async solve() {
+    const r = this.read();
+    if (r.hearts === 0) return { stop: 'no hearts', r };
+    if (!this.auto(r)) return { stop: 'manual', type: r.type, r };
+
+    if (r.input) {
+      const a = this.answer();
+      if (!a) return { stop: 'no grader answer', r };
+      this.type(a[0]);
+    } else {
+      const s = this.solveChoices();
+      // ponytail: bail rather than guess — a wrong CHECK costs a heart, a
+      // handback costs nothing.
+      if (!s.ok) return { stop: 'choice match failed', s, r };
+      this.choose(...s.idx);
+    }
+    const after = await this.go();
+    if (after.blame === 'blame-incorrect') return { stop: 'wrong', r, after };
+    // clear the post-answer CONTINUE so the next read() is a real question
+    if (after.next) await this.go();
+    return { ok: true, was: r.type, next: this.read() };
+  },
+
+  // Run until something needs a human/mouse. Returns the trail for one report.
+  async run(n = 15) {
+    const trail = [];
+    for (let i = 0; i < n; i++) {
+      const s = await this.solve();
+      trail.push(s.ok ? s.was : s.stop);
+      if (!s.ok) return { trail, halted: s };
+    }
+    return { trail, halted: null };
   },
 });
 

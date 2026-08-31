@@ -72,4 +72,42 @@ window.__duo = {
     return this.read();
   },
 };
+
+// ---- grader extraction: the client-side grade() reports the correct answer ----
+Object.assign(window.__duo, {
+  blob() {
+    const el = document.querySelector('[data-test^="challenge "]');
+    if (!el) return null;
+    let f = el[Object.keys(el).find(k => k.startsWith('__reactFiber$'))], d = 0;
+    while (f && d++ < 10) { if (f.memoizedProps && f.memoizedProps.challenge) return f.memoizedProps.challenge.challengeBlob; f = f.return; }
+    return null;
+  },
+
+  // innerText is doubled, and the minus is U+2212 while the grader emits ASCII.
+  norm(s) {
+    s = String(s).replace(/\s+/g, '').replace(/[\u2212\u2013\u2014]/g, '-');
+    const h = s.length / 2;
+    return (s.length % 2 === 0 && s.slice(0, h) === s.slice(h)) ? s.slice(0, h) : s;
+  },
+
+  // Calling grade() with no user selection returns [false, {value:"...Correct Answer: \mathbf{X}"}]
+  answer() {
+    const b = this.blob(); if (!b || !b.grading_function) return null;
+    const r = new Function('return (' + b.grading_function + ')')()(b);
+    const v = (r && r[1] && r[1].value) || '';
+    const m = v.match(/mathbf\{([^}]*)\}/);
+    return m ? m[1].split(',').map(x => x.trim()) : null;
+  },
+
+  // ponytail: matches by normalised text, NOT blob index — the display order is
+  // shuffled relative to the blob, and indexing by blob picks the distractor.
+  solveChoices() {
+    const want = (this.answer() || []).map(x => this.norm(x));
+    const c = [...document.querySelectorAll('[data-test="challenge-choice"]')];
+    const idx = c.map((e, i) => [i, this.norm(e.innerText)])
+                 .filter(([, t]) => want.includes(t)).map(([i]) => i);
+    return { want, dom: c.map(e => this.norm(e.innerText)), idx, ok: idx.length === want.length };
+  },
+});
+
 '__duo ready'

@@ -427,3 +427,335 @@ Language lessons are mostly text and audio, and are the cheapest to automate.
   it still fails, stop and ask. Do not grind.
 - Automated play is against Duolingo's ToS and the XP ranks the user against
   real people in their league. Say so once, then respect their decision.
+
+### The reflection line drawn on a graph IS in the DOM (2026-08-31)
+
+"Select the distance between the point and the line" shows the line only as a
+drawing, with nothing in the LaTeX. It is a **`.bedrock` element**, shaped
+tall-and-narrow for a vertical line, wide-and-short for a horizontal one.
+Filter out `grid-line` / `axis` / `label` / `arrow--` / `numberline-arrow`
+first or the grid drowns it. Convert its centre to a grid coordinate with the
+same axis-label scaling `pts()` uses — see `__duo.drawnLine()`, chained into
+`axisLine()` as a fallback. This removes the last screenshot-per-question type.
+
+Dead ends already tried, do not repeat: `.math-diagram__arrow--reference-line`
+and `.math-diagram__numberline-arrow__image` are zero-size, and the raw SVG
+`line`/`path` attributes are marker definitions only.
+
+### "Reflect the point" still needs a real drag
+
+Synthetic `pointerdown/pointermove/pointerup` on `.draggable-point__dot-path`
+does nothing — verified again 2026-08-31, the handle does not move. These
+questions require `computer` `left_click_drag` at CSS coordinates, so they
+cannot run unattended if drag permission is declined. Everything else in the
+loop is synthetic-event driven and needs no approval.
+
+### Reflections across y = x and y = -x (2026-08-31)
+
+`y=x` swaps coordinates, `y=-x` swaps and negates both. The old solver only
+knew `y=k` / `x=k` and got two wrong before this was caught. `reflectPt()`
+covers all four.
+
+**Axis scaling was silently broken.** Duolingo renders positive and negative
+axis labels in *different* rows and columns (negatives at one y, positives at
+another). Clustering labels by "shared coordinate" therefore split them and
+produced a garbage y-mapping. `scale()` now clusters by spread and fits from
+the min and max label instead.
+
+### The 2D slider is the point control
+
+Some reflect questions expose no draggable point. Instead a `role="slider"`
+thumb (`.slider2d-thumb`, `aria-valuenow` / `valuemin` / `valuemax`) sits below
+the graph and is the ONLY focusable element. **Value 0 is the original point,
+and each notch moves it one unit perpendicular to the mirror line**, so the
+answer's notch is just the distance between the point and its reflection —
+which is always `valuemax`. `notch()` computes it; `plan()` returns either a
+`point` drag or a `slider` drag so callers need one code path.
+
+Keyboard does NOT work on it: `.focus()` succeeds and `document.activeElement`
+becomes the thumb, but real arrow keys go to the top document and synthetic
+`KeyboardEvent`s are ignored. Only a real `left_click_drag` along the track
+moves it.
+
+### Three more answer sources, all cheaper than a screenshot
+
+- `\duodisplay{A}{B}` — **A is the correct answer, B is the current state.**
+  Solving is just dragging until they match.
+- "Select the line of reflection" — the ghost shape IS the reflected copy.
+  Compare the two centroids and name the transform (`solveLineOfReflection`).
+- `\phantom{}` fill-in-the-blank — already known to hold the answer, but the
+  choice text is **doubled**, so compare with `norm(ascii(x))` on BOTH sides or
+  it silently misses.
+
+### Loop gate
+
+The stock `run()`/`auto()` rejects `mathChallengeBlob` before any solver sees
+it, so these all came back as `manual:choice`. `run2()` inverts it: try every
+solver, and stop only when `plan()` says a real drag is genuinely needed.
+
+### Rotations (unit 126) — 2026-08-31
+
+The same slider widget means two different things. Check `aria-valuemax`:
+
+- **max is small (5, 6, 7)** — notches along the path to a reflection; the answer
+  is the distance between point and image, i.e. always `valuemax`.
+- **max is 360** — it is an ANGLE in degrees. The value is simply the angle in
+  the prompt (negated to `360-a` for plain "clockwise"), or, when a
+  `\duodisplay` is present, `atan2(want) - atan2(current)` normalised to 0-360.
+
+`target()` returns where a point must end up for either a reflection or a
+rotation, so `plan()` handles both with one code path.
+
+**Ghost is the PRE-image, solid is the image.** Getting this backwards silently
+produces a plausible wrong answer — it only showed up on a centre-of-rotation
+question, because reflections and 180° rotations are symmetric enough to work
+either way. `solveCenterChoice` now tries both orders.
+
+**Centre of rotation: test the candidates, don't invert the matrix.** For each
+offered centre c, check `rotate(source - c) + c == image`. One line, any angle.
+
+### Solver dispatch: gate every solver on its own prompt
+
+With several reflection/rotation solvers loaded, an eager one answers a question
+that belongs to another and gets it wrong (this cost a heart on a
+"select the point rotated" question that `solveCenterChoice` grabbed first).
+`__duo.RULES` pairs each solver with the prompt regex that owns it, and
+`solveChoices()` walks it **looking solvers up by name** — capture them in a
+closure and later fixes silently never take effect.
+
+### Three more traps
+
+- `\duoblank{X}` holds the answer, exactly like `\phantom{X}`.
+- `\,` is a thin space: strip it BEFORE removing backslashes, or `(6,\,0)`
+  becomes `(6,,0)` and every coordinate regex misses. Same for `\text{}` —
+  put `textbf` before `text` in the alternation.
+- **Latex includes the CHOICE labels**, so a coordinate appearing among the
+  choices is never the question's source point. Fall back to the highlighted
+  point on the diagram.
+
+### Keep the injected solver in localStorage, not sessionStorage
+
+And cache the **source text**, never `String(fn)` of the live functions —
+re-stringifying methods produced `functionfunction(){...}` and corrupted the
+cache, costing a full re-injection. Direct URL navigation
+(`/lesson/unit/<N>/level/<M>`) works and is far cheaper than clicking the tree,
+but it is a full page load, so the solver must be re-injected from storage.
+
+### CORRECTION: `\duodisplay{A}{B}` — A is NOT the answer
+
+Earlier notes in this file claimed A is the correct answer. **It is not.** On a
+"Rotate the point 90° clockwise" question with `(1,2)`, the prompt's own maths
+gives `(2,-1)`, while `\duodisplay` showed `(-1,-2)` (a 180° turn). Submitting
+the duodisplay value was marked **incorrect**; the prompt's value was correct.
+
+It read as reliable at first only because reflections and 180° rotations are
+symmetric enough that A coincided with the right answer. Treat **B as the
+current widget state** — that part holds, and it is what makes
+"drag until it matches" verifiable — and always compute the answer from the
+prompt.
+
+### The angle slider counts CLOCKWISE degrees
+
+Verified by dragging to 270 and reading the point back: it landed on the 90°
+**counter**clockwise image. So the slider value is `a` for a clockwise prompt
+and `360-a` for a counterclockwise one — the opposite of the maths convention
+used in `target()`, which stays CCW-positive. Two different conventions in the
+same question; keep `sliderDeg()` and `target()` separate.
+
+**Read the widget back before every CHECK.** Both of the above were caught that
+way, and it is the only reason the second one cost nothing.
+
+### CORRECTION 2: the angle slider is the rotation MAGNITUDE
+
+The note above ("slider counts clockwise degrees, use 360-a for CCW") is wrong —
+it came from one reading taken mid-animation. Submitting 270 on a
+"90° counterclockwise" question was marked **incorrect**, while 90 on a
+"90° clockwise" one was correct, and 90 on the CCW retry was correct.
+
+**The widget already turns in the direction the prompt states; the slider is
+just how far.** So `sliderDeg()` is the bare number in the prompt, no direction
+maths at all.
+
+The lesson worth keeping: don't generalise a widget's convention from one
+observation. Verify against the resulting POINT — `after()` now checks
+`pts()` against `target()` rather than trusting the slider's own number,
+because the point is ground truth and the slider's meaning was twice not what
+it looked like.
+
+### Text inputs need the same solver chain as choices
+
+`run2` sent every `input` question straight to the grader, skipping
+`\duoblank` / `\phantom` entirely. `typeAnswer()` tries those first, then falls
+back to the grader.
+
+### Guided lessons: gate on the CHOICES, not the prompt text
+
+Multi-step "Use alternate exterior angles" lessons keep every step's LaTeX in
+the annotation list, so `tex()` still contains *"Select the equation…"* long
+after that step is answered. A solver gated on a prompt regex therefore fires
+on a later question and answers it with nonsense — this produced **five wrong
+answers in a row** before I caught it.
+
+Gate on the shape of what is on screen instead: the equation solver requires
+every choice to contain `=`; the relationship-name solver requires every choice
+to end in "angles". That always describes the question actually being asked.
+
+`run2()` now also **halts after 2 wrong in a row**. A mis-gated solver is
+confident and fast, and without the guard it will spend a whole lesson.
+
+### Angle diagrams are fully readable
+
+The angle labels AND the given degree value are `<text>` in the iframe — an
+over-tight filter (letters only) hid them. Group by y into the two
+intersections, assign quadrants 0=UL 1=UR 2=LR 3=LL, then everything follows
+from parity: quadrants differing by an EVEN number are equal, ODD are
+supplementary. That single rule covers corresponding, vertical, alternate,
+co-interior and "measure of angle X". No degree label at all means right-angle
+markers, so every angle is 90.
+
+Note `ascii()` maps the math-italic CAPITAL block to lowercase, so uppercase
+before matching a label. And `\degree` vs `°` must both be stripped.
+
+### Transversal problems: one rule, and read the line's real endpoints
+
+Two marked angles on a transversal reduce to `s = (above XOR right)`:
+**equal s means congruent, different s means supplementary.** That single
+expression covers vertical, corresponding, both alternates and co-interior —
+no need to classify the relationship by name at all.
+
+But `above`/`right` must be computed in the SVG's own coordinate space. A
+bounding box cannot distinguish a `\` transversal from a `/` one, and guessing
+the lean silently flipped `right`, which cost two answers. The `<line>` element
+carries real `x1,y1,x2,y2` and the `<svg>` a `viewBox` — convert the label
+centres into that space and interpolate the transversal's x at the label's y.
+
+One label and no number on the diagram means right-angle markers, so the angle
+is 90.
+
+### Direct URL navigation works — but the tree gates on chests
+
+`/lesson/unit/<N>/level/<M>` loads any lesson directly and it completes
+normally (XP, quests, "Lesson Complete"), which is far cheaper than clicking
+the tree. But the visible tree does NOT advance past an unopened chest node, so
+after a URL-driven run the map can still show an earlier unit. Clicking the
+chest did not open it (gems unchanged) — treat chests as a known gap.
+
+### Guided lessons: the traps that actually cost answers
+
+- **They stack iframes.** Every step's iframe stays in the DOM (8 by the end)
+  and the last one is EMPTY. `querySelector('iframe')` returns a stale table,
+  so every lookup silently answers a previous question. Use the lowest iframe
+  that still has content (`frameEl()`).
+- **`latex[0]` is the LESSON TITLE**, not the question. The live step is the
+  last `\text{}` instruction — and `read().latex` also contains the CHOICES'
+  annotations, so `prompt()` must exclude anything inside a
+  `challenge-choice`, or it returns an answer option as the question.
+- **`tex()` concatenates the choices**, so `x = 4` followed by choices 2,1,0
+  parses as `x = 4210`, and `y = 8x - 4` becomes `-4524804`. Parse the prompt
+  line alone, or scan latex entries one at a time.
+
+### Two-way tables
+
+Some are a real `<table>`, others are positioned text. For the latter, cluster
+cells by coordinate into a grid so EMPTY cells survive — a ragged row-by-row
+parse shifts every value left and quietly corrupts the lookup. If the table
+already has a Total row, READ it rather than summing (double-counting it gave
+33 where the answer was 19). Header "9th" vs prompt "Grade 9" needs a
+digit-based fallback match.
+
+Relative frequency: **joint = cell/grand, marginal = margin/grand (also over
+the grand total), conditional = cell/margin.** Treating "not joint" as "not
+over the grand total" cost two answers. Choices arrive simplified (40/64 shown
+as 5/8) and may be fractions, decimals or percentages — compare by VALUE.
+
+### Timed match-the-pairs
+
+Pairs **auto-advance** when all are matched: there is no CHECK and no blame, so
+the normal loop bails with "noblame". They are also genuinely timed — the
+default ~350ms sleeps solved 20 pairs and still ran out. `runPairs()` uses
+90/130ms taps and took the level from 0 to 3 stars.
+
+## Loading the solver (2026-09-01)
+
+`scripts/duo.js` is now **self-contained and authoritative** — it is the whole solver
+(~7,100 lines), not a mirror of something living in the browser. Load it into the page
+in one call:
+
+```bash
+cd ~/.claude/skills/duolingo/scripts && (nohup python3 serve.py 8777 >/dev/null 2>&1 &)
+```
+
+```js
+const src = await (await fetch('http://127.0.0.1:8777/duo.js', {cache:'no-store'})).text();
+localStorage.setItem('duoSrc', src); localStorage.removeItem('duoPatch');
+(0, eval)(src);
+```
+
+Two things make that fetch work, and both are easy to lose:
+
+- Chrome blocks an https page from fetching `http://127.0.0.1` **with no error at all —
+  it just hangs** — unless the server answers the Private Network Access handshake with
+  `Access-Control-Allow-Private-Network: true`. `serve.py` sends it.
+- Every appended block ends `;'__duo ready';`. A bare `'__duo ready'` followed by a block
+  starting `(function(){...})()` is parsed as *calling a string*, which breaks the whole
+  file. Keep the semicolons.
+
+History note: the solver used to live only in `localStorage` as `duoSrc` + `duoPatch`,
+with this file a partial copy. Clearing the cached patch once destroyed ~4,000 lines that
+existed nowhere else, and `ascii()`/`tap()` turned out never to have been in the file at
+all. Edit `duo.js`, re-fetch, never hand-patch the page.
+
+## Running
+
+```js
+window.__auto = {running:true, out:[]};
+(async () => { for (let k = 0; k < 40; k++) {
+  if (!__auto.running) break;
+  const r = await __duo.autoLesson(); __auto.out.push(r);
+  if (r.ok) { const st = JSON.parse(localStorage.getItem('duoAuto'));
+    location.href = '/lesson/unit/' + st.unit + '/level/' + st.level; return; }
+  if (!r.done) break;
+} __auto.running = false; })();
+```
+
+Launch it **detached and poll** — a lesson often runs longer than the 45 s CDP call limit,
+and awaiting it makes the call look like a frozen renderer. `duoAuto` in localStorage
+carries unit/level across the navigation.
+
+## Known blocker: the table-cell widget
+
+"Complete the table" puts its answer cells in the diagram iframe and its maths keypad at
+about y=1400, while the viewport is 907 tall. The document does not scroll
+(`body.scrollHeight` is 24), `resize_window` cannot grow the viewport past the display,
+zoom shortcuts are unavailable, and CSS zoom does not help because the keypad is
+positioned in viewport units. Synthetic clicks and synthetic KeyboardEvents are both
+ignored by this widget. **Give Chrome a taller window (~1500px of viewport) and these
+lessons work** — `solveTableFill` is already written.
+
+## The diagram iframe exposes its own instance (2026-09-01)
+
+`iframe.contentWindow.mathDiagram` is the LIVE widget. This is the single most
+useful handle in the whole skill — prefer it over measuring pixels:
+
+- **Table** (`M.rows`, `M.tokens`, `M.cellElements`): filled by DRAGGING tokens.
+  `M.handleCellDrop(row, col, value, tokenEl)` is the real drop path;
+  `M.setCellValue` alone is reverted by `recalculateComputedCells()`.
+- **Grid2D** (`M.components.components`): each component reports its position in
+  GRID units (`P.x`, `P.y`), and a draggable one has `_targetX`. Drag its
+  `P.element`, then read `P.x`/`P.y` back and calibrate pixels-per-unit from what
+  actually moved. No axis-label fitting, which fails outright on graphs with no
+  labels.
+- Do **not** call `endDrag()` without a real drag in progress — it nulls the
+  position and leaves the widget wedged until the lesson is reloaded.
+
+**A correction to an earlier note:** the "unreachable maths keypad" was a
+misdiagnosis. That element is a closed drawer translated down by exactly the
+viewport height; it opens for challenge types that use it. The table questions
+never wanted a keypad at all — they are token drags. Window height was never the
+problem.
+
+**Tap tokens are real `<button>`s: use the native `el.click()`.** The synthetic
+pointer+mouse sequence is ignored on some screens, and where both register the
+token toggles twice and nets out — the cause of the endless `p1,p1,p1...` pairs
+loops. `tap()` now calls `.click()` for buttons and keeps the synthetic path for
+everything else.

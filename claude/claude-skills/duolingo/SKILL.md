@@ -389,25 +389,28 @@ Language lessons are mostly text and audio, and are the cheapest to automate.
 
 ## Course / unit navigation
 
-- **Switching courses is unsolved on web — verified 2026-08-31, three failed
-  attempts.** What is now known:
-  - `/settings/courses` lists every enrolled course (this account: Math,
-    Spanish, Chess, Indonesian, Swedish, Italian, Greek, German, Japanese,
-    Hebrew, Korean, Chinese). Clicking a course row there does **not** switch
-    the active course — `/learn` still loads the previous one. Do not click
-    the red REMOVE link at the right of each row.
-  - The top-bar course icon (the leftmost of the four icons, ~x=1027 at
-    1568px) takes focus but opens no dropdown on click.
-  - The `MORE` sidebar item is `ref_8` in the accessibility tree; the top-bar
-    buttons are ref_9-ref_11 and none of them opened a course menu.
-  **Most likely cause (user, 2026-08-31): another Duolingo tab was open and
-  active.** Two tabs share one server-side session, so the other tab keeps
-  resetting the active course. Check for other Duolingo tabs with
-  `tabs_context_mcp` and ask the user to close them before switching courses.
-  Next thing to try: the mobile app or a hard reload after the settings click,
-  or watch the network tab for the course-switch request and whether the web
-  client sends it at all. Until this is solved, only the currently active
-  course can be automated, and on this account that is Math.
+- **Switching courses: SOLVED via the API — 2026-09-01.** The UI is a dead end
+  (`/settings/courses` rows and the top-bar icon do nothing), but one PATCH works:
+
+  ```js
+  const uid = JSON.parse(atob(document.cookie.split('; ')
+    .find(c=>c.startsWith('jwt_token=')).split('=')[1].split('.')[1])).sub;
+  await fetch(`/2017-06-30/users/${uid}?fields=currentCourseId`, {
+    method:'PATCH', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({currentCourseId:'DUOLINGO_ES_EN'})});
+  ```
+  Then reload `/learn`. Course IDs come from
+  `GET /2017-06-30/users/${uid}?fields=courses,currentCourseId` — `DUOLINGO_<LANG>_EN`
+  for languages, `MATH_BT` for Math, `CHESS_CH` for Chess. Guessed IDs return
+  `400 {"details":"invalid course"}`, so always read the list first.
+  For a course not yet enrolled, navigate to `/enroll/<lang>/<from>` (the href on
+  the course card at `/courses`, e.g. `/enroll/chess/ch`) — it enrolls AND switches
+  in one navigation.
+- **Only one course can be active at a time, and it is server-side state.**
+  `currentCourseId` lives on the user record, so a second tab does not get its own
+  course — switching in one tab switches both. **There is no per-tab or per-session
+  course.** Never try to run two courses in parallel; run them sequentially,
+  switching with the PATCH above between them.
 - The section banner's back arrow opens `/sections` — the full grade list with
   per-unit ✓ / `>` status. This is the fastest way to find what's actually
   incomplete. Scroll up inside it for the grade headers and X/Y totals.

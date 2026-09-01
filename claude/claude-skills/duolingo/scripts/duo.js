@@ -8330,3 +8330,33 @@ window.__duo.RULES.splice(2, 0, ['solveIneq2Point', /solution to the inequality|
   };
 })();
 ;'__duo ready';
+
+// "Select the solution" given an inequality and a value for x: substitute and
+// compare against the choices, which are themselves inequalities in y.
+window.__duo.solveIneq2Substitute = function () {
+  let op = null, f = null, xv = null;
+  // the inequality and the x value usually share ONE latex entry, separated by \\
+  const parts = [];
+  for (const s of this.promptLatex()) for (const p of this.ascii(s).split(/\\\\/)) parts.push(p);
+  for (const s of parts) {
+    const t = this.ineqNorm(s);
+    const m = t.match(/^y(<=|>=|<|>)(.+)$/);
+    if (m) { const g = this.compile(m[2]); if (g) { op = m[1]; f = g; continue; } }
+    const v = t.match(/^x=(-?[\d.]+)$/);
+    if (v) xv = parseFloat(v[1]);
+  }
+  if (!f || xv === null) return null;
+  let want; try { want = f(xv); } catch (e) { return null; }
+  if (!isFinite(want)) return null;
+  const ann = [...document.querySelectorAll('[data-test="challenge-choice"] annotation')].map(a => a.textContent);
+  const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
+  if (!ch.length) return null;
+  const S = ann.length === ch.length ? ann : ch.map(e => this.ascii(e.innerText));
+  const i = S.findIndex(s => {
+    const m = this.ineqNorm(s).match(/^y(<=|>=|<|>)(-?[\d.]+)$/);
+    return m && m[1] === op && Math.abs(parseFloat(m[2]) - want) < 1e-9;
+  });
+  return i < 0 ? { miss: op + want } : { i, want: op + want };
+};
+window.__duo.RULES.splice(2, 0, ['solveIneq2Substitute', /select the solution/i]);
+;'__duo ready';

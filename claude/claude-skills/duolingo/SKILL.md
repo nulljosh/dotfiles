@@ -393,3 +393,176 @@ localStorage.setItem('duoSrc', src); localStorage.removeItem('duoPatch');
 - Login wall → stop and ask the user to sign in. Never attempt to log in.
 - 2-3 failed calls on the same element → screenshot, re-read the layout, and if
   it still fails, stop and ask. Do not grind.
+
+## Course id and the URL trap (2026-09-01)
+
+`/lesson/unit/<N>/level/<M>` is relative to the account's ACTIVE course. If that
+course changes, the same URLs silently redirect to `/learn` and it looks like the
+tree ended.
+
+- Math's course id is **`MATH_BT`**. Check with
+  `GET /2017-06-30/users/<id>?fields=currentCourseId`.
+- `PATCH currentCourseId` with a guessed id returns 400, and Math does not appear
+  in the user's `courses` array (that lists language courses only).
+- What works: open `/courses`, click **Math**, which routes through
+  `/enroll/math/Learn-Math` and sets the active course.
+- The user id is the `sub` claim of the `jwt_token` cookie.
+- The active course is per-ACCOUNT, not per-tab, so a second tab cannot run a
+  different course in parallel — the two would overwrite each other.
+
+## Open issues (2026-09-01)
+
+**1. Two-inequality graphing is still wrong (unit 148 L3).** With four draggable
+points and two inequalities, placing both boundary lines correctly — verified by
+reading the components back — is still graded incorrect. The likely missing piece
+is the SHADING side and the dashed-vs-solid boundary, which nothing in the solver
+sets. The single-inequality version passes, so only the plural case is affected.
+Pairing note that IS settled: the components arrive in line order (line 1's two
+points, then line 2's); re-sorting them by position mixes the boundaries.
+
+**2. Every new question type used to stall the loop.** This was the real reason
+progress went in bursts. Now all three input shapes have a fallback so a lesson
+always advances, each bounded by run2's 2-wrong halt:
+  - choices → guess (max 3 per lesson)
+  - typed → type "0" (max 3)
+  - drags → press CHECK anyway (max 2)
+Counters reset per lesson in `autoLesson`, which matters: they used to persist, so
+after three guesses anywhere in a run every later unsolved screen deadlocked again.
+
+**3. Match-the-pairs no longer needs a solver at all.** A wrong pair simply does
+not stick, so `bruteForcePairs` tries combinations until they latch. Write a
+specific pairs solver only to save time, never to avoid a stall.
+
+**Known-bad level: unit 150 level 4 (simplify radicals).** The guided lesson halts
+repeatedly. Solved so far: the split step (choices are products — pick the pair
+containing the largest perfect square) and the final step (pick the choice that
+evaluates to sqrt(n)). Two traps fixed along the way: `radicand()` must take the
+FIRST `\sqrt{n}` (scanning in reverse picks the `\sqrt{3}` out of the working), and
+`4\sqrt{3}` needs an implicit `*` inserted before `\sqrt`/`\frac` or it compiles to
+the syntax error `4Math.sqrt(3)`. Something in the remaining steps still misses.
+Skip the level and revisit; each failed attempt restarts the lesson from scratch,
+so retrying blind makes no progress.
+
+## Diagnosing a stuck lesson — do this FIRST (2026-09-01)
+
+Do not guess screen by screen. Install the fail-capture, run a lesson, and read
+exactly which questions failed and what was chosen:
+
+```js
+window.__fails = [];
+(function () { const b = __duo.blame.bind(__duo);
+  __duo.blame = async function () {
+    const p = __duo.promptLatex().slice(-2).join(' ').slice(0, 90);
+    const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')]
+      .map(e => __duo.ascii(e.innerText).replace(/\s+/g, '')).join('|').slice(0, 60);
+    const sel = [...document.querySelectorAll('[data-test="challenge-choice"]')]
+      .findIndex(e => e.getAttribute('aria-checked') === 'true');
+    const inp = (document.querySelector('[data-test="challenge-text-input"]') || {}).value;
+    const r = await b();
+    if (r === 'incorrect') __fails.push({ p, ch, sel, inp });
+    return r; };})();
+```
+
+This found in one pass what several rounds of guessing had missed: `solveChoices`
+was returning `idx: [0, 1]` on single-answer screens (an old multi-select path), so
+it selected BOTH and the toggle landed on the wrong one. `\duoblank{}` now wins
+outright when it resolves to exactly one choice.
+
+## Prefer general solvers over per-screen ones
+
+The fastest wins have all been "evaluate, don't pattern-match":
+- `compile()` turns a LaTeX expression into a JS function (handles `\frac`,
+  `\sqrt[n]`, `|x|`, powers, implicit multiplication, and any single-letter
+  variable). Anything asking "which of these equals this" is then just sampling
+  both at a few x values — that one rule covers expand/factor, radical/exponent
+  equivalence, and inverse verification.
+- A clipped parabola's drawn extreme is NOT its vertex. Least-squares fit
+  y = ax^2+bx+c to the sampled points and take x = -b/2a.
+- A parabola is drawn as SEVERAL `class="line"` paths, one per branch; sample all
+  of them.
+
+## Widget families (all via `iframe.contentWindow.mathDiagram`)
+
+| shape | key fields | how to answer |
+|---|---|---|
+| Table | `rows`, `tokens`, `cellElements` | drag tokens onto cells |
+| Token slots | `entries`, `tokenBank.tokenSlots` (`slot.__token`) | drag tokens onto `cellElements[i]` |
+| Grid2D | `components.components` (`P.x`, `P.y`, `_targetX`) | drag `P.element`, re-read, calibrate |
+
+**Writing the model directly does not count.** `handleCellDrop` / `setCellValue`
+fill `entries` and even update the DOM, but the answer is graded WRONG — the grader
+reads state only a real drag produces. Always drag with `dragXY`. And aim at the
+slot you actually want (`cellElements[i]`), not "the first empty one".
+
+## Stale-text hijacking is the #1 cause of wrong answers (2026-09-01)
+
+Guided lessons accumulate every step's prompt text, so a rule gated on words fires
+on a step that has already been answered. Confirmed cases, each of which cost a
+lesson: "factor pairs of 12" answering a factored-form question; "factors of 12 …
+add to 7" answering "create the factored form"; "largest perfect square factor"
+answering the split step.
+
+**Gate on the SHAPE of the choices, not on the prompt text.** Examples now in the
+file: factor-pair rules require the choices to look like `(3,4)`; the factors rule
+requires bare numbers; linear-vs-quadratic requires those two words to be present.
+
+Also strip LaTeX before testing any phrase — `\mathbf{x}\textbf{-intercepts}` has
+markup between the `x` and the word, so `/x-intercepts/` never matches the raw
+string.
+
+When a screen is answered wrongly but your solver returns the right index, walk
+`RULES` in order and print the FIRST rule that returns a hit — that is the one
+actually answering, and it is usually a stale-gated one.
+
+## Two wrapper hazards that broke everything at once (2026-09-01)
+
+**1. Mutual recursion between wrappers.** `formulaAB` fell back to
+`slopeOfFormula`, and a later `slopeOfFormula` wrapper fell back to `formulaAB`.
+They recursed until the stack blew, which killed `plan()` outright and made every
+lesson stall on `needdrag`. Each now has a non-recursing core: `formulaAB` derives
+m and b numerically from `compile()`, and `slopeOfFormula` just reads `.m` from it.
+Symptom to watch for: `RangeError: Maximum call stack size exceeded` from a call
+that used to work. Diagnose by catching the error and printing `e.stack` — the
+repeating pair of frames names the cycle immediately.
+
+**2. Re-`eval`ing on the same page stacks the wrappers again.** `__duo` survives
+between loads, so every reload re-applies all ~34 `plan` wrappers on top of the
+previous chain. After a few dozen reloads the chain is over a thousand frames deep.
+**Always `delete window.__duo` before `(0, eval)(src)`** — or reload the page, which
+clears it for you.
+
+**Known-bad levels (skip, revisit later):** 150 L4 and 153 L4 (guided "simplify
+radicals"), 160 L3 (guided nonlinear systems). Each restarts from the beginning on
+every failure, so blind retries make no progress — skip the level and continue; the
+tree does not require it to advance.
+
+## Solver families (added 2026-09-01)
+
+Everything below is generic — it reads the live widget, not a hard-coded answer.
+
+| Family | Approach |
+|---|---|
+| Exponentials | least-squares fit on the drawn curve; value tables via `tableXY` |
+| Transformations | rebuild each candidate from the DRAWN pre-image and test against the image |
+| Statistics | Pearson r, residuals, trend lines, two-way tables, dot plots |
+| Geometry | reflections across a measured mirror, rigid motions, midpoints, vectors, rotations, congruence/similarity by side-length comparison |
+| Trigonometry | SOHCAHTOA from real triangle geometry (`trianglePolygon` + `triangleLabelsAt`), inverse trig, Law of Sines/Cosines |
+| Probability | spinner sections, compound/conditional probability, independence |
+| Counting | factorials, permutations, combinations |
+| Circles/parabolas | least-squares circle fit (works on a partial arc), vertex form |
+
+### Rules that keep costing time if forgotten
+
+1. **Never stack another wrapper on a broken one.** Delete the old block. Stale
+   wrappers silently override newer fixes and two wrappers can both act.
+2. **Use the VISIBLE diagram iframe.** Old questions' iframes stay in the DOM.
+3. **`plan()` is checked before the choice branch in `run2`** — returning a plan
+   on a multiple-choice screen means the question is never answered.
+4. **Real-mouse-only widgets:** dot-plot dots and spinner wedges. Compute the
+   points in JS (`dotPlotDrags`, `spinnerSegments`), then click/drag them with
+   the `computer` tool in SCREENSHOT space (`toShot`, scale 1568/innerWidth).
+5. **Parse fractions from RAW LaTeX** (`promptFraction`) — flattened text turns
+   `\frac{11}{12}` into the ambiguous "frac1112".
+6. **Choice innerText is doubled**; halve before comparing.
+7. **In guided lessons the printed equation is often the PREVIOUS step's** —
+   prefer the drawing (`currentCircle` does this).

@@ -4,15 +4,15 @@
 
 ![version](https://img.shields.io/badge/version-v2.0.0-blue)
 
-Shell and terminal config for macOS (Apple Silicon).
+My shell, my terminal, my prompt. Everything a fresh Mac needs to feel like mine in one command.
 ![architecture](architecture.svg)
 
 ## Features
 
-- **fish** - Fish shell config (aliases, abbreviations, tool init)
-- **zsh** - Zsh config (PATH, aliases, completions, tool init)
-- **ghostty** - Ghostty terminal (JetBrainsMono Nerd Font, fish shell)
-- **starship** - Starship prompt (Catppuccin Mocha, Powerline glyphs)
+- **fish**: the daily shell. Aliases, abbreviations, tool init
+- **zsh**: the same PATH, aliases and completions, for scripts and remote boxes
+- **ghostty**: the terminal. JetBrainsMono Nerd Font, fish inside
+- **starship**: the prompt. Catppuccin Mocha, Powerline glyphs
 
 ## Run
 
@@ -23,8 +23,9 @@ chmod +x install.sh
 ./install.sh
 ```
 
-Prerequisites: [Homebrew](https://brew.sh); fish, starship, eza, bat, fd, fzf, zoxide, atuin, fnm (all via brew); [JetBrainsMono Nerd Font](https://www.nerdfonts.com/); [Ghostty](https://ghostty.org).
-Secrets (API keys) are stored in `~/.config/fish/secrets.fish` and `~/.config/zsh/secrets.zsh`, which are not tracked.
+You need [Homebrew](https://brew.sh), then fish, starship, eza, bat, fd, fzf, zoxide, atuin and fnm from it. Plus [JetBrainsMono Nerd Font](https://www.nerdfonts.com/) and [Ghostty](https://ghostty.org).
+
+API keys live in `~/.config/fish/secrets.fish` and `~/.config/zsh/secrets.zsh`. Neither is tracked. Neither ever will be.
 
 ## Roadmap
 

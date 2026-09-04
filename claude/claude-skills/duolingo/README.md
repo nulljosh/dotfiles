@@ -1,4 +1,6 @@
-# duolingo-solver
+<img src="icon.svg" width="80" style="border-radius:18px">
+
+# pwnlingo
 
 Autopilot for Duolingo Math, driven through an already-signed-in Chrome tab.
 

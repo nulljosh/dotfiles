@@ -26,21 +26,29 @@ user against real people in their league. Say that once, then respect the answer
 5. End of lesson is 3-4 CONTINUE clicks (`__duo.go()`), then `/lesson` again.
 6. `duo.py <username>` to confirm the XP landed.
 
-Long runs: launch detached and poll. A lesson often exceeds the 45s CDP call
-limit and awaiting it looks like a frozen renderer.
+Long runs (days): one injection, no polling. `boot.js` loops in the page and
+changes levels by SPA navigation (bounce through `/learn`, then pushState to the
+lesson URL, which remounts it) so the document and `__duo` never reload. It
+skips a level after 3 failed attempts (`duoAuto.skipped`), gives a lesson 12
+min before moving on, and POSTs `duoAuto` + the ledger after every lesson to
+`serve.py`, which writes `scripts/state.json`.
 
-```js
-window.__auto = {running:true, out:[]};
-(async () => { for (let k = 0; k < 40; k++) {
-  if (!__auto.running) break;
-  const r = await __duo.autoLesson(); __auto.out.push(r);
-  if (r.ok) { const st = JSON.parse(localStorage.getItem('duoAuto'));
-    location.href = '/lesson/unit/' + st.unit + '/level/' + st.level; return; }
-  if (!r.done) break;
-} __auto.running = false; })();
-```
+Start (from a Claude session, once):
+1. `python3 scripts/serve.py &` and `caffeinate -dims &`.
+2. `navigate` to `/lesson/unit/U/level/L`, then one `javascript_tool` call:
+   ```js
+   localStorage.duoAuto = JSON.stringify({running:true, unit:U, level:L, log:[], skipped:[]});
+   try { delete window.__duo } catch (e) {}
+   for (const f of ['duo.js','boot.js']) (0, eval)(await (await fetch('http://127.0.0.1:8777/'+f, {cache:'no-store'})).text());
+   ```
+3. Keep that tab in its own window, visible. Hidden tabs get their timers
+   throttled to once a minute after 5 min and the loop crawls.
 
-`duoAuto` in localStorage carries unit/level across the navigation.
+Status: `cat scripts/state.json`. Zero browser. Stop: `__auto.running = false`.
+`duoAuto.skipped` is the work list for the next solver session. A hard reload
+kills the loop: re-run step 2 (or load `scripts/` as an unpacked extension once
+at chrome://extensions and it re-injects itself; that page cannot be automated).
+
 
 ## Dead ends — do not re-litigate mid-lesson
 

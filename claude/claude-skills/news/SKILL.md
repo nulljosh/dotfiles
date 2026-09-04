@@ -1,6 +1,6 @@
 ---
 name: news
-description: Pull today's top stories via newsline's RSS API (Fox, BBC, NPR, Hacker News, Vancouver Sun, The Province + more) plus WSJ/Bloomberg/CNBC markets backfill, and give a market + news briefing — biggest stories of the day, the week's read, and market/stock commentary. Use when the user invokes /news, /market, /morning, or /goodmorning.
+description: Pull today's top stories via sidewise's RSS API (Fox, BBC, NPR, Hacker News, Vancouver Sun, The Province + more) plus WSJ/Bloomberg/CNBC markets backfill, and give a market + news briefing — biggest stories of the day, the week's read, and market/stock commentary. Use when the user invokes /news, /market, /morning, or /goodmorning.
 ---
 
 # News & market morning briefing
@@ -8,18 +8,18 @@ description: Pull today's top stories via newsline's RSS API (Fox, BBC, NPR, Hac
 Invoked as `/news`, `/market`, `/morning`, or `/goodmorning`.
 
 ## Workflow
-1. Pull the day's top headlines + URLs from **newsline**, which already
+1. Pull the day's top headlines + URLs from **sidewise** (ex-newsline), which already
    aggregates 16 RSS sources (Fox, BBC, NPR, Guardian, Hacker News,
    Vancouver Sun, The Province, …) with no scraping/block headaches:
    ```sh
-   curl -s "https://news.heyitsmejosh.com/api/stories?_=$RANDOM" \
+   curl -sL "https://sidewise.heyitsmejosh.com/api/stories?_=$RANDOM" \
      | python3 -c "import sys,json; [print(x['outlet'],'—',x['title'],x['link']) for x in json.load(sys.stdin)['latest'][:60]]"
    ```
    The `stories` array (vs `latest`) gives the same headlines pre-clustered by
    how many outlets cover each — a built-in importance signal for step 2.
    Skip evergreen/explainer items, keep dated/breaking stories.
 
-   **Business/markets gap:** newsline is general news, so for market-specific
+   **Business/markets gap:** sidewise is general news, so for market-specific
    depth, backfill via WebSearch for today's top WSJ/Bloomberg/CNBC markets
    headlines (those three hard-block scrapers; don't fight them with curl).
 2. Across all sources, pick the 6-10 most significant stories of the day —
@@ -47,7 +47,7 @@ Invoked as `/news`, `/market`, `/morning`, or `/goodmorning`.
    asks for "full", "long", or "more detail".
 
 ## Adding more sources
-Headlines come from newsline — add a source by appending a `[outlet, bias, url]`
-row to `FEEDS` in `~/Documents/Code/newsline/worker.js` (any RSS/Atom feed),
+Headlines come from sidewise — add a source by appending a `[outlet, bias, url]`
+row to `FEEDS` in `~/Documents/Code/sidewise/worker.js` (any RSS/Atom feed),
 not here. WSJ/Bloomberg/CNBC markets depth stays a WebSearch backfill in step 1.
 Business, CNBC.

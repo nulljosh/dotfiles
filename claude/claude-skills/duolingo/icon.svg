@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="14" fill="#58CC02"/>
+  <!-- owl body -->
+  <ellipse cx="32" cy="38" rx="17" ry="18" fill="#3F9E00"/>
+  <ellipse cx="32" cy="42" rx="10" ry="11" fill="#89E219"/>
+  <!-- eye discs -->
+  <circle cx="24" cy="30" r="8" fill="#fff"/>
+  <circle cx="40" cy="30" r="8" fill="#fff"/>
+  <!-- dizzy X eyes -->
+  <g stroke="#111" stroke-width="2.6" stroke-linecap="round">
+    <path d="M20.5 26.5l7 7M27.5 26.5l-7 7"/>
+    <path d="M36.5 26.5l7 7M43.5 26.5l-7 7"/>
+  </g>
+  <!-- beak, drooping -->
+  <path d="M28 38 L36 38 L32 44 Z" fill="#F49000"/>
+  <!-- tongue out -->
+  <path d="M31 44 q1 5 4 5.5 q-2.5 2 -5.5 0.5 Z" fill="#FF5C7A"/>
+  <!-- stars circling -->
+  <g fill="#FFC800">
+    <path d="M12 14l1.4 3 3.2.4-2.4 2.2.7 3.2L12 21.2 9.1 22.8l.7-3.2-2.4-2.2 3.2-.4z"/>
+    <path d="M52 10l1.1 2.4 2.6.3-1.9 1.8.5 2.6L52 15.8l-2.3 1.3.5-2.6-1.9-1.8 2.6-.3z"/>
+    <path d="M32 6l.9 1.9 2.1.3-1.5 1.4.4 2.1L32 10.7l-1.9 1 .4-2.1L29 8.2l2.1-.3z"/>
+  </g>
+</svg>

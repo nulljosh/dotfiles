@@ -1,6 +1,6 @@
 ---
-name: bang-out
-description: Bang out small, well-scoped codebase chores by delegating them to a free local model (Ollama) instead of doing them yourself, then verify and apply the result. Use when the user wants busywork offloaded to save usage — missing package.json descriptions, version bumps, one-line fixes, boilerplate — across one or many repos. Use when the user says "bang out", "use llama for this", "delegate to local model", or "/bang-out".
+name: cheap-fix
+description: Fix as much of the codebase as possible for free by delegating small, well-scoped chores to a local model (Ollama/llama3.1) instead of doing them yourself, then verify and apply the result. Use when the user wants busywork offloaded to save usage — missing package.json descriptions, version bumps, one-line fixes, boilerplate — across one or many repos. Use when the user says "cheap fix", "bang out", "use llama for this", "delegate to local model", or "/cheap-fix".
 ---
 
 Delegate mechanical, single-file, zero-judgment edits to a local model running on Ollama, instead of burning your own tokens on typing. You stay the orchestrator: you scope the task, pick the model, verify every result before it touches disk, and you're the one who commits.

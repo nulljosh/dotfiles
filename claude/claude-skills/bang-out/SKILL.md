@@ -39,6 +39,27 @@ curl -s -m 30 http://localhost:11434/v1/chat/completions -H "Content-Type: appli
 ```
 Look for a real `"tool_calls":[...]` array with `"finish_reason":"tool_calls"`. If the tool call shows up as text inside `content` instead (e.g. `<tool_call>` tags, raw JSON dumped in content), that model can't do structured tool-calling — use it for plain-text generation only, or not at all for this task.
 
+## Task catalogue (grown from real runs, 2026-09-04)
+
+Confirmed good fits, cheapest to run first:
+- **package.json `description`**: pull the real README intro, have the model write one line from it. Never invent from the name alone.
+- **package.json `keywords`**: generate 3-5 from the description you already wrote. Cheap follow-on once descriptions exist.
+- **Version bumps**: a plain string edit (`1.0.0` → `1.0.1`), model or not — doesn't even need one, just do it directly.
+- **GitHub repo description/topics sync**: mirror what you just wrote into package.json onto the actual GitHub repo page (`gh repo edit --description`). Verify with `gh repo view --json description` after — `gh` edits fail silently in ways that leave stale text.
+
+Checked and already fine, don't bother: alt text on images, debug `console.log`/`debugger` leftovers, GitHub topics (already set fleet-wide as of 2026-09-04).
+
+Ruled out — needs house voice or investigation, not mechanical:
+- WHITEPAPER.md, README rewrites, CHANGELOG generation, anything touching prose style
+- Bug fixes without a named location, refactors "to match the other apps"
+
+## Known failure modes (models produce plausible-looking wrong output — verify anyway)
+
+- **Regex/sed extraction on single-line minified JSON**: a greedy `sed` pattern grabbing a `"description"` value from a one-line `package.json` will overrun into the next fields. Use a real JSON parser (`python3 -c "import json..."`), never a hand-rolled regex, when reading structured output back out.
+- **Stray formatting the model adds unprompted**: markdown code fences (` ```json `) around what should be a bare value, or literal quote marks wrapping a string that's already going inside quotes. Strip before applying, every time — don't assume "return only X" instructions were obeyed.
+- **Hallucinated context**: asked for keywords from a plain description with no other context, llama3.1:8b once returned `["game-map", "world-builder", "multiplayer"]` for a finance/markets dashboard app — invented a genre that was never mentioned. It pattern-matched to "everything on one screen" and guessed "game." Spot-check outputs against what you actually know the project to be, not just whether the output is well-formed.
+- **Garbled compound words**: same run produced `"swiftnative"` (merged "swift" + "native") for a SwiftUI app's keywords. Small models blend adjacent tokens under length pressure — read every short output word-by-word, don't just skim for shape.
+
 ## Workflow
 
 1. **Scope it**: find the real targets with grep/find — don't invent hypothetical ones. E.g. `grep -L '"description"' */package.json` for missing descriptions across repos.

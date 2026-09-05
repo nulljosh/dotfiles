@@ -25,3 +25,6 @@ Steps:
 11. Leave everything on the `money-audit-<date>` branch — never auto-merge into main/master.
 
 Keep the whole pass efficient: prefer Grep to enumerate candidates before reading file bodies, and avoid re-reading files already read.
+
+## Usage awareness
+This runs against one project at a time, not a fleet sweep — no subagents needed regardless of budget. If usage is tight and the user passed no scope, ask/default to a subdirectory (e.g. `src/`) rather than auditing the whole repo function-by-function in one pass.

@@ -24,3 +24,6 @@ Run `~/.claude/skills/localization-sweep/audit.sh` and report the table.
 
 ## When to run
 Manually, per `~/Documents/Code/CLAUDE.md`'s no-background-automation rule — no CI/cron wiring. Good candidates: after shipping new UI in any app, before a release, or periodically across the whole codebase (`/localization-sweep`).
+
+## Usage awareness
+`audit.sh` itself is cheap (one script, no subagents) — the cost is in the fixing step. When usage is tight, fix the highest-signal gap first (a catalog with zero call sites, or a project with recent UI commits and no `i18n/strings.json` at all) instead of wiring every flagged project in one sitting. Wiring per-project is manual Edit work, not something to fan out across parallel agents.

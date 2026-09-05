@@ -13,3 +13,6 @@ description: Scan every project under ~/Documents/Code (READMEs, roadmap.md, TOD
    - S = 0.5h, M = 2h, L = 6h, XL = 16h (agent-assisted hours)
 6. Cost model: assume Claude Code agent-assisted work; use user's plan (Pro/Max flat) → cost is mostly time, but report token-equivalent: ~$3–6/hr of active agent work as API-equivalent.
 7. Output one table: project | open items | est. hours | est. cost, then totals and top 3 biggest-ticket items. Keep it one screen. No per-item essays.
+
+## Usage awareness
+Read files directly in the main thread, never one subagent per project — 15+ projects fanned out would be far more expensive than the grep-based scan itself. When usage is tight, skip projects with no roadmap/TODO markers at all (nothing to estimate) and cap total files read rather than reading every README in full.

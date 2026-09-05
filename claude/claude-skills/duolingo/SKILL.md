@@ -574,3 +574,6 @@ Everything below is generic — it reads the live widget, not a hard-coded answe
 6. **Choice innerText is doubled**; halve before comparing.
 7. **In guided lessons the printed equation is often the PREVIOUS step's** —
    prefer the drawing (`currentCircle` does this).
+
+## Usage awareness
+This runs as a long autopilot loop in Chrome — check `scripts/hb.json` on a slow cadence (minutes, not seconds) rather than tight polling, and only re-invoke a solver family when the widget actually changed type. No subagents; it's one browser session driven directly.

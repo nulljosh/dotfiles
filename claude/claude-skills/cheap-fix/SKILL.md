@@ -76,3 +76,6 @@ Ruled out — needs house voice or investigation, not mechanical:
 - One task = one model call per file. Don't batch unrelated files into one prompt — it degrades quality and makes verification harder.
 - If a model's output is wrong more than once in a batch, stop delegating that class of task to it and say so — don't push through bad output to finish the batch.
 - Report what you delegated vs. did yourself, and why, in one line per item — not a essay.
+
+## Usage awareness
+This skill is itself the low-usage path — when Claude usage/context budget is tight, other sweep/audit skills should fall back to this pattern (local model does the mechanical pass, you only verify) rather than spawning multiple parallel Agent calls. Within a run, still prioritize: scope to repos/files with a real signal (recently touched, user-named) before grinding through every repo alphabetically.

@@ -17,3 +17,6 @@ description: Sweep every git repo under ~/Documents/Code for unpushed commits or
 4. **Verify**: re-run the scan loop, confirm clean except intentionally-skipped untracked artifacts.
 
 5. **Report**: short TLDR — what got pushed, what got committed+pushed, what's still broken (e.g. dead remote) needing the user's attention.
+
+## Usage awareness
+This is a plain loop over repos, not a fanout candidate — do the whole scan in the main thread, no subagents. If session/weekly usage is high, skip the full `~/Documents/Code` sweep and target only repos with recent activity (`git log -1 --since="3 days ago"`) or ones the user names, rather than every directory.

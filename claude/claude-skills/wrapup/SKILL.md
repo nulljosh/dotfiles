@@ -42,3 +42,6 @@ One command to log this session's work everywhere.
 ## Rules
 - Work lean: batch git scans, no subagents.
 - Don't invent work — only what git shows for this window.
+
+## Usage awareness
+If usage is high going into a wrap, still do steps 1-2 (journal is the durable record) but trim the wiki/roadmap-prune sweep to repos actually touched this session — skip the fleet-wide entity-page pass across untouched apps. Memory-fix check (step 4) stays scoped to touched repos already, so it's cheap regardless.

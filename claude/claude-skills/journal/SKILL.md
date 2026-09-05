@@ -91,3 +91,6 @@ word on a 1200x200 banner. Both happened and both were reverted 2026-08-18. Use
 `currentColor` on every shape, give the file a `viewBox`, and never put colour only
 inside a `prefers-color-scheme` block. Save to `_includes/headers/` and reference it
 with `{% include headers/<name>.svg %}`.
+
+## Usage awareness
+Already runs on `haiku`, the cheap model — keep it that way rather than escalating to a heavier model for entry writing. Pull only `git log --since` the last entry's date across touched repos, not full history, to keep the source material small.

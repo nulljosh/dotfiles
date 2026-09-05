@@ -29,3 +29,6 @@ Pilot repo: `~/Documents/Code/bank` (simple npm project, low stakes). Do not poi
 4. Wrap the whole loop in `timeout 23400` (6.5h) so it can't run past morning regardless.
 
 5. On completion (or timeout), print a short summary: tasks attempted, passed, failed, log file path, branch name. Do not merge or push — that's `/overnight-review`'s job.
+
+## Usage awareness
+This is already the zero-Claude-usage path (qwen2.5-coder via opencode does the work, not the Claude session) — that's the point of running it overnight instead of live. Keep it that way: don't add Claude subagent calls into the per-task loop, and check on progress via the log file, not by re-running the loop live.

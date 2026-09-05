@@ -44,3 +44,6 @@ One-shot summary: what was filed, what was auto-fixed, what was stale/skipped. N
 - Don't set up any recurring/background job for this — always user-invoked.
 - Don't UI-script Mail.app or open it visibly; AppleScript reads only.
 - Don't re-file something already tracked as resolved in project memory — check first.
+
+## Usage awareness
+This is a single-pass scan, not a fanout task — no subagents per email. If many emails match, batch-read them together rather than one tool round-trip per message, and fix only what's trivially mechanical (per step 4); anything ambiguous goes to roadmap.md instead of burning turns investigating it deeply.

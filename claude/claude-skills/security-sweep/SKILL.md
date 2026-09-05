@@ -22,3 +22,6 @@ Walk the current project and find security issues, rate each by severity, then p
 5. Present findings grouped by severity, critical and high first, as a scannable list: `file:line — issue — severity — why`.
 
 6. Ask once whether to auto-patch. Default: patch critical and high findings immediately with Edit, list medium and low findings for the user to approve individually. After patching, re-grep the affected patterns to confirm they're resolved, then give a final summary: what was patched, what's still open, and why anything was left unpatched (e.g. needs a design decision, not just a code fix).
+
+## Usage awareness
+Multi-project mode is the expensive path (15+ repos). If session/weekly usage is high, don't run every subdirectory in one pass: order projects by last-commit recency or ones the user flagged as concerning, sweep those first, and stop once several consecutive projects turn up nothing — note which were skipped rather than silently covering only some. Keep the grep-first, read-only-matches discipline regardless of budget; that's what keeps a single-project sweep cheap already.

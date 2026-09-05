@@ -16,3 +16,6 @@ Immediately switch to lean mode: invoke the `lean` skill first, then:
 5. **Report.** ≤5 lines: what shipped, what's parked, where to resume.
 
 Do not start anything new after this fires. If mid-response when the screenshot lands, treat the current step as the last one.
+
+## Usage awareness
+This skill IS the usage-triggered response — the screenshot is the signal that budget is already tight, so every step above defaults to the cheapest option: no subagents, no re-exploration, commit-or-stash rather than polishing. Don't second-guess whether to go lean here — that decision was already made by the trigger.

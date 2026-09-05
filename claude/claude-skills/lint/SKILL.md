@@ -31,3 +31,6 @@ Optional: a path or glob to scope the cleanup. Default: whole project.
 - Don't refactor working code into a different style just because you'd write it differently.
 - Don't add comments explaining what the code does — the code should speak for itself after cleanup.
 - Scope creep kills: if you notice a real bug while cleaning, flag it, don't fix it here.
+
+## Usage awareness
+Single project, direct edits — no subagent fanout warranted here even on a large repo; batch file reads instead. If usage is tight and no scope was given, default to the most-recently-touched files/dirs rather than a full-repo pass.

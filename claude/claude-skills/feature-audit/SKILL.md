@@ -28,3 +28,6 @@ Run exactly one phase per invocation — re-read the CSV first to resume where t
 ## Notes
 - Keep edits lean: minimal exploration, no subagents unless a project is large enough that parallel inventory across unrelated modules is clearly faster.
 - Skip projects with no real end-user features (pure config/dotfiles/reference repos).
+
+## Usage awareness
+Phases are already checkpointed via the CSV, so lean on that when budget is tight: run only Phase 1 (inventory) or Phase 2 (test) in a session rather than pushing through all three. When testing many stories, batch several into one pass instead of one subagent per story, and stop at `fix_attempts = 2` per the rule above rather than grinding a blocked story. Prioritize projects with the most `untested`/`fail` rows over exhaustively re-touching already-`pass` ones.

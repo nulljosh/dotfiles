@@ -51,3 +51,6 @@ Headlines come from sidewise — add a source by appending a `[outlet, bias, url
 row to `FEEDS` in `~/Documents/Code/sidewise/worker.js` (any RSS/Atom feed),
 not here. WSJ/Bloomberg/CNBC markets depth stays a WebSearch backfill in step 1.
 Business, CNBC.
+
+## Usage awareness
+No subagents here regardless of budget — it's a handful of WebFetch/WebSearch calls, not a fanout task. If usage is tight, cut the fact-check step (step 4) to the single most load-bearing claim instead of two, and skip the week-ahead market backfill unless the user asked for the full briefing.

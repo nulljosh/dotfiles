@@ -71,3 +71,6 @@ answered* question — double-counts score/streak and fires a second
 `nextQuestion`, which desyncs the auto-advance from the pool and can
 `pool.pop()` past a quote you never saw. `loop.js` tracks `lastQuote` and
 only answers when the shown quote text changes.
+
+## Usage awareness
+The loop runs inside the page's own JS once started — it costs nothing further in tool calls. Don't poll for progress on a tight timer; check in only when the user asks, spaced minutes apart, not back-to-back `javascript_tool` reads.

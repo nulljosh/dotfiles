@@ -16,3 +16,6 @@ Target: the CLAUDE.md of the current repo, or `~/Documents/Code/CLAUDE.md` if ru
    - Bump "Last updated" to today.
 4. Aim shorter than before, never longer without new rules. No emojis.
 5. Commit `docs: refresh CLAUDE.md` and push if repo auto-push applies.
+
+## Usage awareness
+Single-file, single-repo edit — no subagents needed. When run against the codebase root, only pull `git log` since the file's own last-updated date, not full history, to keep the read small.

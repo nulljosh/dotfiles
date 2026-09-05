@@ -48,3 +48,6 @@ Commit the prune as its own small commit, e.g.
 ## Wired into /wrapup
 `/wrapup`'s wiki step runs this across every repo it touched, right
 before the wiki refresh, so roadmaps never grow unbounded across sessions.
+
+## Usage awareness
+This is a single Python script pass, not something to spawn agents for — the `find -exec` one-liner above already covers every repo cheaply. Fine to run fleet-wide even under tight budget; the cost concern for a wrap is the wiki/journal steps around it, not this one.

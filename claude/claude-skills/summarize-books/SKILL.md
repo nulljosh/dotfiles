@@ -75,35 +75,57 @@ After all chapters are done, concatenate all `chapter_dir/summary.md` files (sor
 
 Slug = book name lowercased, non-alphanumeric replaced with `-`, trimmed.
 
-### 4. Sync to books repo
+### 4. Sync to books repo and upload to Supabase (auth required since 2026-08-19)
+
+Summaries are **private, per-account rows** in the shared spark Supabase project
+(`tjsxsqlxjmanwvmywwvw`, table `bookrank_summaries`, owner-only RLS). They are no longer
+committed: `summaries/` is gitignored and git history was purged. The repo is only a staging
+dir. Owner account is trommatic@icloud.com.
 
 ```bash
-cd ~/Documents/Code/spine && ./sync-summaries.sh
+cd ~/Documents/Code/bookrank
+./sync-summaries.sh                                   # iCloud <book>-summary.md -> summaries/<slug>.md (shrink-guarded)
+python3 scripts/import-summaries.py --pat <slug> ...  # upsert only the slugs you touched
 ```
 
-### 5. Add Summary badge in rankings.html
+`--pat` is headless: it reads the Supabase Management PAT from the macOS Keychain
+(`security find-generic-password -s "Supabase CLI" -w`) and upserts as the owner via SQL,
+bypassing RLS. No password prompt, do not ask Joshua for his login. Without `--pat` the script
+prompts for the account password; the DEV creds in healstack/epiphany `.env.accounts.local`
+do NOT work on spark, so never fall back to those.
 
-In `~/Documents/Code/bookrank/rankings.html`, find the `<div class="book-title">` for the book and add a badge link if not already present:
+Both steps refuse to overwrite with content under 80% of what is already stored (`FORCE=1`
+overrides). Expect `SKIP` on `the-optimist`: the iCloud copy (304KB) is stale, the DB row
+(498KB) is the real one. Leave it.
 
-```html
-<a href="summary.html?b=<slug>" class="badge">Summary</a>
+Verify: `SKIP`/`upserted` lines per slug; the row also shows up in library.html when signed in.
+
+### 5. Add the book to books.json (badge)
+
+`rankings.html` and `book_rankings.md` are **generated** from `books.json` by
+`scripts/build.py`; never hand-edit them. Add or update the entry in `books.json`:
+
+```json
+{ "title": "<Book Name>", "author": "<Author>", "cover": null, "linked": true, "badge": true, "section": "summary" }
 ```
 
-Pattern (from Agentic AI entry):
-```html
-<div class="book-title">Agentic AI for Dummies <a href="summary.html?b=agentic-ai-for-dummies" class="badge">Summary</a></div>
-```
+`badge: true` renders `<a href="library.html" class="badge">Summary</a>` (there is no per-book
+summary page any more, every badge points to the signed-in library). Then:
 
-Also update `book_rankings.md` in the same repo — add `[Summary](summary.html?b=<slug>)` next to the book title.
+```bash
+python3 scripts/build.py && python3 scripts/test-build.py
+```
 
 ### 6. Commit and push
 
 ```bash
 cd ~/Documents/Code/bookrank
-git add summaries/ rankings.html book_rankings.md
-git commit -m "Add <Book Name> summary + badge"
+git add books.json rankings.html book_rankings.md
+git commit -m "Add <Book Name> summary badge"
 git push
 ```
+
+Never `git add summaries/` (gitignored anyway). Cloudflare Pages deploys from the push.
 
 ## Token efficiency (learned from repeated real runs)
 
@@ -121,5 +143,6 @@ git push
 - If summary validation fails, write `summary.failed.md` instead and do not delete originals.
 - **Never let a low token budget shorten a summary that is about to trigger deletion.** If you are running out of budget, STOP and report the remaining chapters with their originals intact — a chapter left pending is free to resume, a chapter stubbed and deleted is gone forever.
 - **Write original notes, don't reproduce the book.** Near-verbatim reproduction of long stretches of a copyrighted book trips an output content filter and kills the run mid-chapter (hit four times on 2026-08-17 with macOS Tahoe). Paraphrase into your own words, 250-500 words per chapter, capturing the practical layer — steps, menu paths, shortcuts. Study notes, not a reprint.
-- Optimist COMPLETE. AI in Business (ch 3-6, 15-17 done, ch 7-14 + stray image pending). macOS Tahoe (untouched).
+- Books folder also holds one-level-nested series dirs (`for dummies/<book>/`); sync-summaries.sh scans both depths.
+- Chapter folders are sometimes named by page range (`41-60`) or `intro`/`Intro`/`book`; treat any subfolder with images and no summary.md as pending.
 - ML for Dummies `1-3` folder may have iCloud-evicted images — the Read tool should handle it; if images still can't be read, report which files failed.

@@ -49,8 +49,7 @@ alias la "eza -a --icons"
 alias lt "eza --tree --icons"
 alias cat "bat"
 alias find "fd"
-alias claude "CLAUDE_CODE_DISABLE_NONESSENTIAL_NOTIFICATIONS=1 command claude --dangerously-skip-permissions"
-alias c "CLAUDE_CODE_DISABLE_NONESSENTIAL_NOTIFICATIONS=1 command claude --dangerously-skip-permissions"
+alias c claude
 
 # === Abbreviations ===
 abbr -a code "cd ~/Documents/Code"

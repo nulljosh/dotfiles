@@ -1,0 +1,269 @@
+{
+  "$schema": "https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/data/cmux.schema.json",
+  "schemaVersion": 1,
+
+  // This file uses JSON with comments (JSONC).
+  // Uncomment and edit any setting to make it file-managed.
+  // Remove a setting to fall back to the value saved in Settings.
+  // cmux creates this template on launch when ~/.config/cmux/cmux.json is missing.
+  // Legacy settings.json files are read only as fallback for keys not present here.
+
+  //   "app" : {
+  //     "newWorkspacePlacement" : "afterCurrent",
+  //     "sendAnonymousTelemetry" : true,
+  //     "preferredEditor" : "",
+  //     "warnBeforeClosingTab" : true,
+  //     "language" : "system",
+  //     "forkConversationDefaultDestination" : "right",
+  //     "commandPaletteSearchesAllSurfaces" : false,
+  //     "menuBarOnly" : false,
+  //     "appIcon" : "automatic",
+  //     "workspaceInheritWorkingDirectory" : true,
+  //     "confirmQuit" : "always",
+  //     "warnBeforeClosingTabXButton" : false,
+  //     "appearance" : "system",
+  //     "minimalMode" : false,
+  //     "keepWorkspaceOpenWhenClosingLastSurface" : false,
+  //     "openSupportedFilesInCmux" : true,
+  //     "reorderOnNotification" : true,
+  //     "iMessageMode" : false,
+  //     "focusPaneOnFirstClick" : false,
+  //     "renameSelectsExistingName" : true,
+  //     "hideTabCloseButton" : false,
+  //     "openMarkdownInCmuxViewer" : true
+  //   },
+
+  //   "workspaceGroups" : {
+  //     "newWorkspacePlacement" : "afterCurrent"
+  //   },
+
+  //   "terminal" : {
+  //     "showScrollBar" : true,
+  //     "focusTextBoxOnNewTerminals" : false,
+  //     "resumeCommands" : [
+  // 
+  //     ],
+  //     "agentHibernation" : {
+  //       "maxLiveTerminals" : 12,
+  //       "enabled" : false,
+  //       "idleSeconds" : 5
+  //     },
+  //     "copyOnSelect" : false,
+  //     "autoResumeAgentSessions" : true,
+  //     "showTextBoxOnNewTerminals" : false,
+  //     "textBoxMaxLines" : 10
+  //   },
+
+  //   "notifications" : {
+  //     "customSoundFilePath" : "",
+  //     "sound" : "default",
+  //     "dockBadge" : true,
+  //     "command" : "",
+  //     "hooksMode" : "append",
+  //     "hooks" : [
+  // 
+  //     ],
+  //     "paneFlash" : true,
+  //     "showInMenuBar" : true,
+  //     "unreadPaneRing" : true
+  //   },
+
+  //   "sidebar" : {
+  //     "pathLastSegmentOnly" : false,
+  //     "showSSH" : true,
+  //     "makePullRequestsClickable" : true,
+  //     "watchGitStatus" : true,
+  //     "showNotificationMessage" : true,
+  //     "showProgress" : true,
+  //     "showCustomMetadata" : true,
+  //     "showWorkspaceDescription" : true,
+  //     "showBranchDirectory" : true,
+  //     "hideAllDetails" : false,
+  //     "openPullRequestLinksInCmuxBrowser" : true,
+  //     "wrapWorkspaceTitles" : false,
+  //     "showPorts" : true,
+  //     "branchLayout" : "vertical",
+  //     "stackBranchDirectory" : false,
+  //     "showPullRequests" : true,
+  //     "showLog" : true,
+  //     "openPortLinksInCmuxBrowser" : true
+  //   },
+
+  //   "workspaceColors" : {
+  //     "notificationBadgeColor" : null,
+  //     "selectionColor" : null,
+  //     "colors" : {
+  //       "Purple" : "#6A1B9A",
+  //       "Olive" : "#4A5C18",
+  //       "Indigo" : "#283593",
+  //       "Magenta" : "#AD1457",
+  //       "Rose" : "#880E4F",
+  //       "Red" : "#C0392B",
+  //       "Amber" : "#7D6608",
+  //       "Charcoal" : "#3E4B5E",
+  //       "Orange" : "#A04000",
+  //       "Crimson" : "#922B21",
+  //       "Blue" : "#1565C0",
+  //       "Brown" : "#7B3F00",
+  //       "Teal" : "#006B6B",
+  //       "Navy" : "#1A5276",
+  //       "Green" : "#196F3D",
+  //       "Aqua" : "#0E6B8C"
+  //     },
+  //     "indicatorStyle" : "leftRail"
+  //   },
+
+  //   "sidebarAppearance" : {
+  //     "tintColor" : "#000000",
+  //     "matchTerminalBackground" : false,
+  //     "darkModeTintColor" : null,
+  //     "lightModeTintColor" : null,
+  //     "tintOpacity" : 0.17999999999999999
+  //   },
+
+  //   "automation" : {
+  //     "kiroIntegration" : true,
+  //     "kiroNotificationLevel" : "standard",
+  //     "claudeBinaryPath" : "",
+  //     "socketControlMode" : "cmuxOnly",
+  //     "suppressSubagentNotifications" : true,
+  //     "portBase" : 9100,
+  //     "portRange" : 10,
+  //     "geminiIntegration" : true,
+  //     "socketPassword" : "",
+  //     "ripgrepBinaryPath" : "",
+  //     "ampIntegration" : true,
+  //     "cursorIntegration" : true,
+  //     "claudeCodeIntegration" : true
+  //   },
+
+  //   "browser" : {
+  //     "discardHiddenWebViews" : true,
+  //     "hostsToOpenInEmbeddedBrowser" : [
+  // 
+  //     ],
+  //     "defaultSearchEngine" : "google",
+  //     "showImportHintOnBlankTabs" : true,
+  //     "showSearchSuggestions" : true,
+  //     "hiddenWebViewDiscardDelaySeconds" : 300,
+  //     "customSearchEngineURLTemplate" : "https:\/\/www.google.com\/search?q={query}",
+  //     "interceptTerminalOpenCommandInCmuxBrowser" : true,
+  //     "insecureHttpHostsAllowedInEmbeddedBrowser" : [
+  //       "localhost",
+  //       "*.localhost",
+  //       "127.0.0.1",
+  //       "::1",
+  //       "0.0.0.0",
+  //       "*.localtest.me"
+  //     ],
+  //     "customSearchEngineName" : "",
+  //     "openTerminalLinksInCmuxBrowser" : true,
+  //     "urlsToAlwaysOpenExternally" : [
+  // 
+  //     ],
+  //     "reactGrabVersion" : "0.1.29",
+  //     "theme" : "system"
+  //   },
+
+  //   "markdown" : {
+  //     "fontSize" : 15,
+  //     "maxWidth" : 980,
+  //     "fontFamily" : ""
+  //   },
+
+  //   "fileEditor" : {
+  //     "wordWrap" : false
+  //   },
+
+  //   "shortcuts" : {
+  //     "bindings" : {
+  //       "diffViewerScrollDown" : "j",
+  //       "equalizeSplits" : "cmd+ctrl+=",
+  //       "closeWorkspace" : "cmd+shift+w",
+  //       "openSettings" : "cmd+,",
+  //       "browserReload" : "cmd+r",
+  //       "diffViewerScrollToBottom" : "shift+g",
+  //       "selectSurfaceByNumber" : "ctrl+1",
+  //       "splitBrowserDown" : "cmd+shift+opt+d",
+  //       "reopenClosedBrowserPanel" : "cmd+shift+t",
+  //       "focusRightSidebar" : "cmd+shift+e",
+  //       "toggleTerminalCopyMode" : "cmd+shift+m",
+  //       "quit" : "cmd+q",
+  //       "groupSelectedWorkspaces" : "cmd+shift+g",
+  //       "browserForward" : "cmd+]",
+  //       "focusHistoryBack" : "cmd+[",
+  //       "showHideAllWindows" : "cmd+opt+ctrl+.",
+  //       "renameTab" : "cmd+r",
+  //       "attachTextBoxFile" : "cmd+shift+opt+a",
+  //       "globalSearch" : "cmd+opt+f",
+  //       "saveFilePreview" : "cmd+s",
+  //       "findInDirectory" : "cmd+shift+f",
+  //       "find" : "cmd+f",
+  //       "toggleSplitZoom" : "cmd+shift+\r",
+  //       "markdownZoomOut" : "cmd+-",
+  //       "browserBack" : "cmd+[",
+  //       "openDiffViewer" : "cmd+shift+ctrl+d",
+  //       "newSurface" : "cmd+t",
+  //       "markOldestUnreadAndJumpNext" : "cmd+ctrl+u",
+  //       "jumpToUnread" : "cmd+shift+u",
+  //       "newTab" : "cmd+n",
+  //       "focusUp" : "cmd+opt+↑",
+  //       "hideFind" : "cmd+shift+opt+f",
+  //       "showBrowserJavaScriptConsole" : "cmd+opt+c",
+  //       "sendFeedback" : "",
+  //       "focusLeft" : "cmd+opt+←",
+  //       "useSelectionForFind" : "cmd+e",
+  //       "editWorkspaceDescription" : "cmd+opt+e",
+  //       "commandPalettePrevious" : "ctrl+p",
+  //       "toggleUnread" : "cmd+opt+u",
+  //       "selectWorkspaceByNumber" : "cmd+1",
+  //       "browserZoomReset" : "cmd+0",
+  //       "nextSurface" : "cmd+shift+]",
+  //       "toggleBrowserFocusMode" : "cmd+opt+\r",
+  //       "diffViewerOpenFileSearch" : "\/",
+  //       "toggleFileExplorer" : "cmd+opt+b",
+  //       "focusRight" : "cmd+opt+→",
+  //       "goToWorkspace" : "cmd+p",
+  //       "closeWindow" : "cmd+ctrl+w",
+  //       "focusDown" : "cmd+opt+↓",
+  //       "browserZoomIn" : "cmd+=",
+  //       "nextSidebarTab" : "cmd+ctrl+]",
+  //       "focusTextBoxInput" : "cmd+shift+a",
+  //       "splitDown" : "cmd+shift+d",
+  //       "reloadConfiguration" : "cmd+shift+,",
+  //       "toggleFullScreen" : "cmd+ctrl+f",
+  //       "openFolder" : "cmd+o",
+  //       "renameWorkspace" : "cmd+shift+r",
+  //       "sendCtrlFToTerminal" : "",
+  //       "browserZoomOut" : "cmd+-",
+  //       "markdownZoomReset" : "cmd+0",
+  //       "toggleReactGrab" : "cmd+shift+g",
+  //       "diffViewerScrollUp" : "k",
+  //       "diffViewerScrollToTop" : [
+  //         "g",
+  //         "g"
+  //       ],
+  //       "prevSurface" : "cmd+shift+[",
+  //       "markdownZoomIn" : "cmd+=",
+  //       "toggleFocusedWorkspaceGroupCollapsed" : "cmd+ctrl+.",
+  //       "findPrevious" : "cmd+opt+g",
+  //       "commandPalette" : "cmd+shift+p",
+  //       "prevSidebarTab" : "cmd+ctrl+[",
+  //       "commandPaletteNext" : "ctrl+n",
+  //       "closeTab" : "cmd+w",
+  //       "newWindow" : "cmd+shift+n",
+  //       "reopenPreviousSession" : "cmd+shift+o",
+  //       "toggleSidebar" : "cmd+b",
+  //       "toggleBrowserDeveloperTools" : "cmd+opt+i",
+  //       "showNotifications" : "cmd+i",
+  //       "splitBrowserRight" : "cmd+opt+d",
+  //       "splitRight" : "cmd+d",
+  //       "triggerFlash" : "cmd+shift+h",
+  //       "closeOtherTabsInPane" : "cmd+opt+t",
+  //       "openBrowser" : "cmd+shift+l",
+  //       "focusHistoryForward" : "cmd+]",
+  //       "findNext" : "cmd+g",
+  //       "focusBrowserAddressBar" : "cmd+l"
+  //     }
+  //   },
+}

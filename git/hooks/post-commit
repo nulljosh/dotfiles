@@ -1,0 +1,24 @@
+#!/bin/bash
+# Drop a wiki inbox note after every commit.
+INBOX="/Users/joshua/Library/Mobile Documents/com~apple~CloudDocs/Documents/Code/Inbox"
+REPO=$(basename "$(git rev-parse --show-toplevel)")
+MSG=$(git log -1 --pretty="%s")
+DATE=$(date +%Y-%m-%d)
+FILE="$INBOX/${DATE}-${REPO}-commit.md"
+
+cat > "$FILE" <<EOF
+# Commit: $REPO — $MSG
+
+- repo: $REPO
+- date: $DATE
+- message: $MSG
+- diff summary: $(git diff HEAD~1 --stat 2>/dev/null | tail -1)
+
+## Changed files
+$(git diff HEAD~1 --name-status 2>/dev/null || git show --stat HEAD | tail -n +2)
+EOF
+
+if [ "$REPO" = "journal" ] && git show --name-only --pretty=format: HEAD | grep -q '^_posts/'; then
+  TOPLEVEL=$(git rev-parse --show-toplevel)
+  ( cd "$TOPLEVEL" && ./scripts/deploy.sh >/tmp/journal-deploy.log 2>&1 & )
+fi

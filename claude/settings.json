@@ -1,0 +1,106 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(supabase *)",
+      "Bash(rm \"/Users/joshua/Library/Mobile Documents/com~apple~CloudDocs/Documents/Misc/Books/*\")",
+      "Bash(rm -f \"/Users/joshua/Library/Mobile Documents/com~apple~CloudDocs/Documents/Misc/Books/*\")"
+    ],
+    "defaultMode": "auto"
+  },
+  "skillOverrides": {
+    "asc-apple-ads": "off",
+    "asc-aso-audit": "off",
+    "asc-build-lifecycle": "off",
+    "asc-crash-triage": "off",
+    "asc-id-resolver": "off",
+    "asc-localize-metadata": "off",
+    "asc-notarization": "off",
+    "asc-ppp-pricing": "off",
+    "asc-revenuecat-catalog-sync": "off",
+    "asc-screenshot-resize": "off",
+    "asc-subscription-localization": "off",
+    "asc-wall-submit": "off",
+    "changelog-generator": "off",
+    "claude-md-refresh": "off",
+    "cloudflare": "off",
+    "cloudflare-email-service": "off",
+    "agents-sdk": "off",
+    "durable-objects": "off",
+    "sandbox-sdk": "off",
+    "workers-best-practices": "off",
+    "icon-creator": "off",
+    "improve": "off",
+    "ios-simulator": "off",
+    "overnight-review": "off",
+    "project-sync": "off",
+    "qwen-overnight": "off",
+    "shannon-pentest": "off",
+    "pentest": "off",
+    "turnstile-spin": "off",
+    "vibe-sync": "off",
+    "web-perf": "off",
+    "xcode-cleanup": "off",
+    "fewer-permission-prompts": "off",
+    "security-review": "off",
+    "review": "off",
+    "audit": "off",
+    "blog-digest": "off",
+    "cli-first": "off",
+    "quick-auth": "off",
+    "roadmap-prune": "off",
+    "cloudflare-one": "off",
+    "cloudflare-one-migrations": "off",
+    "seo-content-autopilot": "off",
+    "wrap-up": "off",
+    "duolingo": "off"
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/usage-context.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash \"/Users/joshua/.claude/plugins/cache/ponytail/ponytail/4.8.1/hooks/ponytail-statusline.sh\""
+  },
+  "enabledPlugins": {
+    "vercel@claude-plugins-official": false,
+    "swift-lsp@claude-plugins-official": true,
+    "clangd-lsp@claude-plugins-official": false,
+    "ponytail@ponytail": true,
+    "claude-security@claude-plugins-official": true,
+    "cloudflare@cloudflare": true
+  },
+  "extraKnownMarketplaces": {
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
+      }
+    },
+    "cloudflare": {
+      "source": {
+        "source": "github",
+        "repo": "cloudflare/skills"
+      }
+    }
+  },
+  "effortLevel": "low",
+  "tui": "fullscreen",
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  },
+  "skipDangerousModePermissionPrompt": true,
+  "theme": "auto",
+  "agentPushNotifEnabled": true,
+  "voiceEnabled": true,
+  "model": "claude-fable-5-1[1m]"
+}

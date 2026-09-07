@@ -127,6 +127,13 @@ git push
 
 Never `git add summaries/` (gitignored anyway). Cloudflare Pages deploys from the push.
 
+## Usage budget (mandatory)
+
+Every `UserPromptSubmit` hook line prints `[usage] session N% | weekly_all N% | weekly_scoped[...] N%`. Read it on every turn. Rules:
+- **Stop reading new images once session usage passes 85% or any weekly figure passes 90%.** Finish the chapter whose images are already in context, write its summary, then write pickup notes to `ROADMAP.md` (exact resume folder + filename) and stop.
+- Never start a chapter folder you cannot finish inside the budget. A chapter left with its HEICs intact is free to resume; a stubbed one gets deleted and is gone.
+- If the hook line is missing, run `~/.claude/scripts/usage.sh` before each new chapter.
+
 ## Token efficiency (learned from repeated real runs)
 
 - **Shrink images aggressively**: `-Z 1500 -r -90 formatOptions 45` — book text stays legible, tokens drop noticeably. This is the single biggest lever since image tokens dominate cost for this task.

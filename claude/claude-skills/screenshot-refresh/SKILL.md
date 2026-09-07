@@ -29,3 +29,13 @@ etc.), sourced from the live deployed web app.
 - Don't touch README image references unless a filename changed.
 - Skip a repo if its live URL 404s or the deploy looks broken — report it, don't screenshot a
   broken page and move on silently.
+
+## Headless fallback (no Chrome needed)
+
+Verified 2026-09-06 on nyc. One hero shot per site, 1280x800, JPEG:
+
+```bash
+uvx --from playwright python shot.py https://<app>.heyitsmejosh.com <repo>/screenshots/<repo>-1.jpg
+```
+
+`shot.py` is ten lines: launch chromium, `goto(url, wait_until='networkidle')`, wait 1.5s, `screenshot(type='jpeg', quality=85)`. Read the file back with the Read tool to confirm it is not a blank or a cookie wall before embedding. README embed is a `## Screenshots` section before the first other `##` heading, `<p><img src="screenshots/<repo>-1.jpg" alt="<Name>"></p>`.

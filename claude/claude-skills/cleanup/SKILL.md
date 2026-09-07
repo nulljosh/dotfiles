@@ -1,19 +1,35 @@
 ---
 name: cleanup
-description: Free disk space hard — mole deep clean + Xcode/dev cache purge. Use when disk is low or the user invokes /cleanup.
+description: Free disk space hard — mole deep clean + Xcode/dev cache purge. Use when disk is low, the user asks for a quick cleanup, or invokes /cleanup.
 ---
 
 # /cleanup — reclaim disk space
 
-Run steps in order, report GB freed after each (`df -h /` before/after overall).
+## Quick mode (default, "quick cleanup" / low disk)
 
-1. **Baseline**: `df -h /`.
-2. **Mole deep clean** (installed via brew, repo at ~/Documents/Code/_external/mole):
-   `mole clean --dry-run` to preview. The current version has NO `--yes` flag and NO headless mode — it blocks on a TTY prompt for user confirmation. If running headless, inform the user that mole must be run manually in a terminal (the `--yes` flag in earlier docs was incorrect and has never existed). Options available: `--dry-run`, `--external`, `--whitelist`, `--debug`.
-3. **Xcode**: `rm -rf ~/Library/Developer/Xcode/DerivedData/*` is the main win (typically 14-20 GB). Then `xcrun simctl delete unavailable`. Note: `du -sh ~/Library/Developer/CoreSimulator/Devices` appears to report 40+ GB but is massively inflated by APFS clones of the shared runtime — erasing every simulator only reclaims ~1 GB in practice, so DerivedData is the real disk hog. Ask before touching `~/Library/Developer/Xcode/Archives` (contains shipped app archives).
-4. **Package caches**: `brew cleanup --prune=all -s`; `npm cache clean --force`; `uv cache clean`; `pod cache clean --all` if present.
-5. **Logs/temp**: `rm -rf ~/Library/Logs/*`; empty Trash (`rm -rf ~/.Trash/*`).
-6. **Ollama**: `ollama list` — flag models unused >30 days to the user, don't auto-delete.
-7. **Report**: final `df -h /`, total freed, and the top 5 remaining space hogs (`mole analyze` or `du -xh -d2 ~ 2>/dev/null | sort -hr | head`).
+One backgrounded command, ~10 GB in under 2 min (measured 2026-09-06: 11 → 21 GB free). Run `df -h /` before and after; it's the only report that matters.
 
-Never delete: user documents, ~/Documents/Code, iCloud data, App archives without asking.
+```
+rm -rf ~/Library/Developer/Xcode/DerivedData/*
+brew cleanup --prune=all -q; rm -rf ~/Library/Caches/Homebrew/*
+npm cache clean --force
+rm -rf ~/Library/Caches/pip ~/Library/Caches/Yarn ~/Library/Caches/com.apple.dt.Xcode
+xcrun simctl delete unavailable
+rm -rf ~/.Trash/*      # fish: may say "no matches found" when already empty, harmless
+```
+
+Wins by size on this machine: DerivedData (6 GB), brew cache + prune (2.4 GB + 2.3 GB), npm cache (1.6 GB). Everything else is noise; skip it in quick mode.
+
+Run it with `run_in_background` and a 300 s timeout so `brew cleanup` doesn't stall the turn.
+
+## Full mode (only when quick mode isn't enough)
+
+1. **Mole deep clean** (brew, repo at ~/Documents/Code/_external/mole): `mole clean --dry-run` to preview. NO `--yes` flag, NO headless mode — it blocks on a TTY prompt. Tell the user to run it in a terminal themselves.
+2. **Simulators**: `du` on ~/Library/Developer/CoreSimulator/Devices reports 40+ GB but that's APFS clones; erasing every simulator reclaims ~1 GB. Not worth it.
+3. **Package caches**: `uv cache clean`; `pod cache clean --all` if present.
+4. **Logs**: `rm -rf ~/Library/Logs/*`.
+5. **Ollama**: `ollama list` — flag models unused >30 days, don't auto-delete.
+6. **Report**: top 5 remaining hogs via `du -xh -d2 ~ 2>/dev/null | sort -hr | head`.
+
+## Never delete
+User documents, ~/Documents/Code, iCloud data. `~/Library/Developer/Xcode/Archives` holds shipped app archives — ask first (it was wiped without asking on 2026-09-06; don't repeat that).

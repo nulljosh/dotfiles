@@ -1,0 +1,11 @@
+#!/bin/sh
+# Prints the 6-digit Apple 2FA code from the trusted-device dialog on screen.
+# Polls up to 60s: screenshot headlessly, OCR with Vision, grep "116 238" style digits.
+f=/tmp/asc-2fa.png; i=0
+while [ $i -lt 20 ]; do
+  screencapture -x "$f" 2>/dev/null
+  code=$(~/.claude/scripts/ocr "$f" 2>/dev/null | grep -oE '\b[0-9]{3} ?[0-9]{3}\b' | head -1 | tr -d ' ')
+  [ -n "$code" ] && { echo "$code"; rm -f "$f"; exit 0; }
+  i=$((i+1)); sleep 3
+done
+rm -f "$f"; exit 1

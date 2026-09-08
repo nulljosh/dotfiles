@@ -26,7 +26,8 @@ class H(http.server.SimpleHTTPRequestHandler):
         # boot.js posts duoAuto + the ledger after every lesson -> state.json on disk.
         # Status checks then read a file instead of driving the browser.
         n = int(self.headers.get('Content-Length', 0))
-        name = 'hb.json' if self.path == '/hb' else 'state.json'
+        names = {'/hb': 'hb.json', '/chess-hb': 'chess-hb.json', '/chess-state': 'chess-state.json'}
+        name = names.get(self.path, 'state.json')
         with open(os.path.join(D, name), 'wb') as f: f.write(self.rfile.read(n))
         self.send_response(204); self.end_headers()
     def do_OPTIONS(self):

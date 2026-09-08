@@ -21268,3 +21268,199 @@ window.__duo.grader = function () {
   };
 })();
 ;'__duo ready';
+
+// ---- 2026-09-08: language courses ----
+// Language challenges are not "blob" challenges: the fiber's `challenge` object
+// IS the answer key (correctIndex / correctIndices / correctTokens /
+// correctSolutions / pairs). Nothing to grade, just read and click. Word-bank
+// tokens here are real <button>s, so native click works (unlike the Math bank).
+// ponytail: no per-type classes — one field-driven dispatch. Unknown shape → hand back.
+(function () {
+  const D = window.__duo;
+  D.chal = function () {
+    const el = document.querySelector('[data-test^="challenge "]'); if (!el) return null;
+    let f = el[Object.keys(el).find(k => k.startsWith('__reactFiber$'))], d = 0;
+    while (f && d++ < 12) { if (f.memoizedProps && f.memoizedProps.challenge) return f.memoizedProps.challenge; f = f.return; }
+    return null;
+  };
+  const txt = e => (e.innerText || e.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+  const tokText = e => { const s = e.querySelector('[data-test="challenge-tap-token-text"]'); return txt(s || e); };
+  const choiceText = c => txt({ innerText: typeof c === 'string' ? c : (c.text || c.phrase || c.character || c.transliteration || '') });
+  const bank = () => [...document.querySelectorAll('[data-test$="challenge-tap-token"]')]
+    .filter(b => b.getAttribute('aria-disabled') !== 'true' && !b.disabled);
+
+  D.solveLang = async function () {
+    const c = this.chal(); if (!c || c.challengeBlob) return null;
+    const dom = [...document.querySelectorAll('[data-test="challenge-choice"]')];
+    const skip = document.querySelector('[data-test="player-skip"]');
+    // listen / speak: never guess audio, take the skip Duolingo offers
+    if (/^(listen|speak|selectPronunciation|listenComplete|listenSpeak)$/.test(c.type) && skip && !c.correctTokens && !c.correctIndex) { skip.click(); return 'skip:' + c.type; }
+    if (Array.isArray(c.pairs) && c.pairs.length) {              // match the pairs
+      for (const p of c.pairs) {
+        const a = [p.learningToken, p.translation, p.fromToken, p.transliteration].filter(Boolean).map(s => s.toLowerCase());
+        const hit = bank().filter(b => a.includes(tokText(b))).slice(0, 2);
+        for (const b of hit) { b.click(); await this.sleep(120); }
+      }
+      return 'pairs';
+    }
+    const input = document.querySelector('[data-test="challenge-text-input"], textarea[data-test="challenge-translate-input"]');
+    const sol = (c.correctSolutions && c.correctSolutions[0]) || (c.correctTokens && c.correctTokens.join(' '));
+    if (input && sol) {
+      Object.getOwnPropertyDescriptor(input.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype, 'value').set.call(input, sol);
+      input.dispatchEvent(new Event('input', { bubbles: true })); return 'type';
+    }
+    if (Array.isArray(c.correctTokens) && bank().length) {        // word bank, in order
+      for (const t of c.correctTokens) {
+        const b = bank().find(b => tokText(b) === t.toLowerCase().trim());
+        if (!b) return null;                                       // token missing → hand back, no heart spent
+        b.click(); await this.sleep(150);
+      }
+      return 'tokens';
+    }
+    if (Array.isArray(c.correctIndices) && c.correctIndices.length && dom.length) {
+      const want = c.correctIndices.map(i => choiceText((c.choices || [])[i]));
+      const idx = dom.map((e, i) => [i, txt(e)]).filter(([, t]) => want.includes(t)).map(([i]) => i);
+      (idx.length === want.length ? idx : c.correctIndices).forEach(i => dom[i] && dom[i].click()); return 'indices';
+    }
+    if (typeof c.correctIndex === 'number' && dom.length) {
+      const w = choiceText((c.choices || [])[c.correctIndex]);
+      const i = dom.findIndex(e => txt(e) === w || (w && txt(e).includes(w)));
+      dom[i >= 0 ? i : c.correctIndex].click(); return 'index';
+    }
+    return null;
+  };
+
+  // Try the language key first; Math (challengeBlob) and unknown shapes fall through.
+  const base = D.solve;
+  D.solve = async function () {
+    const r = this.read();
+    if (r.hearts === 0) return { stop: 'no hearts', r };
+    if (r.blame && /CONTINUE/i.test(r.next || '')) { await this.go(); return { ok: true, was: r.type, next: this.read() }; }
+    let via = null; try { via = await this.solveLang(); } catch (e) { via = null; }
+    if (!via) return base.call(this);
+    await this.sleep(300);
+    const after = await this.go();
+    if (after.blame === 'blame-incorrect') return { stop: 'wrong', via, r, after };
+    if (after.next) await this.go();
+    return { ok: true, was: r.type + ':' + via, next: this.read() };
+  };
+})();
+;'__duo ready';
+
+// ---- 2026-09-08: Duolingo chess ----
+// The puzzle key ships on the fiber: chal().chessPuzzleInfo.correctMoves (UCI)
+// and chal().fen (side to move = board orientation). The board is a Rive canvas:
+// synthetic events do nothing, only real `computer` clicks move a piece, and the
+// select→drop pair needs ~0.5s between clicks or the second one is swallowed.
+// Board = canvas rect inset 9.75% left / 10% top, 80% wide. `computer` takes
+// SCREENSHOT pixels (1568 wide), not CSS, so chessPlan() scales by 1568/innerWidth.
+// ponytail: promotion picker is a canvas popup below the square, queen leftmost;
+// offsets measured once at s=62.5px — recheck if the board size changes.
+(function () {
+  const D = window.__duo;
+  D.chessBoard = function () { return [...document.querySelectorAll('[data-test^="challenge "] canvas')].sort((a, b) => b.width - a.width)[0] || null; };
+  D.chessPlan = function (shotW = 1568) {
+    const c = this.chal(); if (!c || !c.chessPuzzleInfo) return null;
+    const cv = this.chessBoard(); if (!cv) return null;
+    const r = cv.getBoundingClientRect(), k = shotW / innerWidth;
+    const bx = r.left + r.width * 0.0975, by = r.top + r.height * 0.1, s = r.width * 0.8 / 8;
+    const white = c.fen.split(' ')[1] === 'w';
+    const sq = q => { let f = q.charCodeAt(0) - 97, rk = +q[1] - 1; if (!white) { f = 7 - f; rk = 7 - rk; }
+      return [Math.round((bx + s * (f + 0.5)) * k), Math.round((by + s * (7 - rk + 0.5)) * k)]; };
+    const clicks = c.chessPuzzleInfo.correctMoves.map(m => {
+      const a = sq(m.slice(0, 2)), b = sq(m.slice(2, 4)), out = [a, b];
+      // promotion: picker centred under the square, clamped 2.3 squares inside the
+      // board's right edge; the queen is the leftmost icon, 1.45 squares left of centre
+      if (m[4]) { const cx = Math.min(b[0], Math.round((bx + 8 * s - 2.3 * s) * k)); out.push([Math.round(cx - 1.45 * s * k), Math.round(b[1] + 2.1 * s * k)]); }
+      return out;
+    });
+    return { white, moves: c.chessPuzzleInfo.correctMoves, clicks };
+  };
+  // CONTINUE through the result screen and return the next puzzle's plan, or a
+  // {noPuzzle} read of whatever else is on screen (choice question, /learn).
+  D.chessNext = async function () {
+    const n = document.querySelector('[data-test="player-next"]'); if (n) n.click();
+    for (let i = 0; i < 30; i++) {
+      await this.sleep(300);
+      const c = this.chal(), nb = document.querySelector('[data-test="player-next"]');
+      if (c && c.chessPuzzleInfo && !document.querySelector('[data-test^="blame"]')) return this.chessPlan();
+      if (nb && /CONTINUE/i.test(nb.innerText) && !c) nb.click();
+    }
+    const r = this.read();
+    return { noPuzzle: true, type: r.type, prompt: r.prompt, choices: r.choices, next: r.next, href: location.href,
+      txt: (document.querySelector('[data-test^="challenge "]') || document.body).innerText.slice(0, 200) };
+  };
+})();
+;'__duo ready';
+
+// ---- 2026-09-08: chess MATCH (bot game) ----
+// chal().match carries boardFen / playerColor / moveHistory / status. Load
+// js-chess-engine.js (served next to this file) and ask it for a move; clicks go
+// through the same geometry as puzzles. matchStep() is one call per turn.
+(function () {
+  const D = window.__duo;
+  D.chessSquares = function (white, shotW = 1568) {
+    const cv = this.chessBoard(); if (!cv) return null;
+    const r = cv.getBoundingClientRect(), k = shotW / innerWidth;
+    const bx = r.left + r.width * 0.0975, by = r.top + r.height * 0.1, s = r.width * 0.8 / 8;
+    const sq = q => { let f = q.charCodeAt(0) - 97, rk = +q[1] - 1; if (!white) { f = 7 - f; rk = 7 - rk; }
+      return [Math.round((bx + s * (f + 0.5)) * k), Math.round((by + s * (7 - rk + 0.5)) * k)]; };
+    const promo = b => { const cx = Math.min(b[0], Math.round((bx + 8 * s - 2.3 * s) * k)); return [Math.round(cx - 1.45 * s * k), Math.round(b[1] + 2.1 * s * k)]; };
+    return { sq, promo };
+  };
+  D.matchStep = function (level = 2) {
+    const c = this.chal(); if (!c || !c.match) return { noMatch: true, type: c && c.type };
+    const m = c.match, white = m.playerColor === 'white';
+    // match.boardFen is a snapshot from load time; the live move list is on the
+    // challengeState prop two fibers up from the challenge element. Replay it.
+    const cs = this.chessState(), hist = (cs && cs.guess && cs.guess.moveHistory) || m.moveHistory || [];
+    // the live FEN is a useRef 6 fibers above the canvas (bot moves never reach
+    // challengeState.moveHistory until later); fall back to replaying history.
+    let fen = this.liveFen();
+    if (!fen) { fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+      for (const mv of hist) { try { fen = jsChessEngine.getFen(jsChessEngine.move(fen, mv.slice(0, 2).toUpperCase(), mv.slice(2, 4).toUpperCase())); } catch (e) { return { err: 'replay:' + mv + ':' + e, hist }; } } }
+    const st = cs && cs.guess && cs.guess.matchState && cs.guess.matchState.status;
+    if (st && st !== 'playing') return { over: true, status: st, hist, next: (document.querySelector('[data-test="player-next"]') || {}).innerText };
+    if ((fen.split(' ')[1] === 'w') !== white) return { wait: true, fen, last: m.moveHistory.slice(-1)[0] };
+    // Lasker: "when you see a good move, look for a better one." Take the quick
+    // move, then ask one ply deeper; if the deeper search disagrees, it wins.
+    const mv = this.lasker(fen, level), from = Object.keys(mv)[0], to = mv[from];
+    const g = this.chessSquares(white), a = g.sq(from.toLowerCase()), b = g.sq(to.toLowerCase());
+    const clicks = [a, b];
+    // promotion: engine returns the plain square; pawn reaching last rank = pick queen
+    if (/[18]/.test(to[1]) && this.pawnAt(fen, from.toLowerCase())) clicks.push(g.promo(b));
+    return { move: from + to, clicks, fen, ply: hist.length };
+  };
+  D.lasker = function (fen, level = 2) {
+    const good = jsChessEngine.aiMove(fen, level);
+    // ponytail: one extra ply, capped at 4 (level 5 can take >10s in-page)
+    const better = level >= 4 ? good : jsChessEngine.aiMove(fen, level + 1);
+    const key = m => Object.entries(m)[0].join('');
+    return key(better) !== key(good) ? better : good;
+  };
+  D.liveFen = function () {
+    const cv = this.chessBoard(); if (!cv) return null;
+    let f = cv[Object.keys(cv).find(k => k.startsWith('__reactFiber$'))], d = 0;
+    const isFen = s => typeof s === 'string' && /^[rnbqkpRNBQKP1-8\/]+ [wb] /.test(s);
+    while (f && d++ < 12) { let h = f.memoizedState; while (h) { const m = h.memoizedState; if (m && typeof m === 'object' && isFen(m.current)) return m.current; h = h.next; } f = f.return; }
+    return null;
+  };
+  // One call per turn: wait until it is our move (bot thinking/animating), then plan.
+  D.matchTurn = async function (level = 2, maxMs = 15000) {
+    const t0 = Date.now(); let r;
+    do { r = this.matchStep(level); if (!r.wait) return r; await this.sleep(400); } while (Date.now() - t0 < maxMs);
+    return r;
+  };
+  D.chessState = function () {
+    const el = document.querySelector('[data-test^="challenge "]'); if (!el) return null;
+    let f = el[Object.keys(el).find(k => k.startsWith('__reactFiber$'))], d = 0;
+    while (f && d++ < 14) { if (f.memoizedProps && f.memoizedProps.challengeState) return f.memoizedProps.challengeState; f = f.return; }
+    return null;
+  };
+  D.pawnAt = function (fen, sq) {
+    const rows = fen.split(' ')[0].split('/'), row = rows[8 - +sq[1]]; let f = 0;
+    for (const ch of row) { if (/\d/.test(ch)) f += +ch; else { if (f === sq.charCodeAt(0) - 97) return /p/i.test(ch); f++; } }
+    return false;
+  };
+})();
+;'__duo ready';

@@ -288,26 +288,57 @@ version), trapezoid ((b₁+b₂)/2)·h. "Select the area of the whole rectangle"
 around a triangle wants the *rectangle*'s bh. Base-ten blocks: 10x10 flat = 100,
 rod = 10, cube = 1; when two options are ambiguous, take the third by elimination.
 
-**Chess.** A board, not a tile bank, so the layout table above mostly does not
-apply. Recalibrate every lesson: screenshot, find the board's corner pixels,
-derive square size as `(x_h1 - x_a1) / 7`. Board orientation flips when playing
-Black — confirm which side is at the bottom first.
+**Chess (Duolingo course, fixed 2026-09-08).** The puzzle key ships on the
+fiber: `__duo.chal().chessPuzzleInfo.correctMoves` (UCI, e.g. `h5h8`,
+`g7g8q`) and `.fen` (side to move = which colour is at the bottom). No engine,
+no piece recognition, no board reading. The board is a Rive **canvas**:
+synthetic pointer events do nothing and the Kotlin controller
+(`makeMoveOnRiveBoard`) wants opaque internal objects — do not dig, real clicks
+are cheap enough.
 
-- **Make the move** — click the piece, then the destination. Legal destinations
-  get dots after the first click; screenshot to confirm the highlight rather than
-  trusting coordinate math. An illegal click just deselects, costing nothing.
-- **Puzzles are forced lines** — a check, a capture, or a piece that hangs. Look
-  for checks first, then captures. If nothing is forcing you have misread the
-  board; re-read it rather than guessing.
-- **Multi-move puzzles** play the reply automatically; wait one screenshot for
-  the animation or the next click drops.
-- **Not every node is a puzzle.** Some are a full match against a bot ("Full
-  match with Oscar", +30 XP) — a whole game, not a forced line, and out of scope
-  for this skill. Skip to the next node.
-- Piece art is small; bishops and pawns confuse at low zoom. Resize the window
-  rather than assuming.
+Per puzzle, exactly one tool call:
+1. `await __duo.chessNext()` — clicks CONTINUE, waits for the next puzzle,
+   returns `{moves, clicks}` where `clicks` is `[[from,to(,promo)], ...]` in
+   **screenshot pixels** (the `computer` tool takes screenshot coordinates,
+   1568 wide, not CSS — `chessPlan()` scales by `1568/innerWidth`).
+2. One `browser_batch`: for each move `left_click from`, `wait 0.5`,
+   `left_click to`, `wait 2` (the bot's reply animates), and end the batch with
+   `chessNext()` again so the next plan arrives in the same round trip.
+   **The 0.5s between select and drop is required**; back-to-back clicks are
+   swallowed. Promotion pops a canvas picker under the square; `clicks` carries
+   a third point on the queen.
 
-**Languages** are the cheapest to automate — mostly text.
+Board geometry is the canvas rect inset 9.75% left / 10% top, 80% wide — the
+canvas has padding for arrows, so `getBoundingClientRect()` alone is wrong.
+`chessNext()` returning `{noPuzzle:true}` means a non-puzzle screen (a choice
+question → `run()`, or `/learn` → lesson over, open the next).
+
+**Match node (`chal().type === 'chessMatch'`, "beat me 7 times in a row") —
+solved 2026-09-08.** A real game against a bot, no `correctMoves`. The engine
+is `scripts/js-chess-engine.js` (js-chess-engine 2.4.6 bundled to one IIFE
+with esbuild, global `jsChessEngine`); load it after `duo.js` from `serve.py`.
+
+- Position: `__duo.liveFen()` — a `useRef` holding the current FEN, 6 fibers
+  above the board canvas. **`chal().match.boardFen` is a load-time snapshot and
+  `challengeState.guess.moveHistory` lags the bot's reply**; neither is live.
+- One call per turn: `await __duo.matchTurn(3)` waits until it is our move and
+  returns `{move, clicks}` in screenshot px (same geometry as puzzles, board
+  flips when `match.playerColor` is black). Then one `browser_batch`: click
+  from, wait 0.5, click to, wait 1, `matchTurn(3)` again. Level 3 answers in
+  under 10 ms; level 2 shuffles pieces aimlessly. `{over:true}` = game done;
+  CONTINUE through "Match complete" lands on `/learn`.
+- The first click after a bot move can be swallowed while its animation runs;
+  `matchTurn` re-plans from the live FEN, so a swallowed click just repeats.
+- Cost: ~20 of our moves per game, one round trip each. Game 1 was 19 moves,
+  bot hung its queen on move 8. One game finished the node (+10 XP), not 7.
+
+**Languages** are the cheapest to automate — mostly text. Since 2026-09-08
+`__duo.solveLang()` runs first inside `solve()`: the fiber's `challenge` object
+carries the key (`correctIndex`, `correctIndices`, `correctTokens`,
+`correctSolutions`, `pairs`), so it clicks/types straight from it and hands back
+(`null`) on any shape it does not recognise. Listen/speak take `player-skip`.
+`__duo.chal()` returns the object if you need to eyeball it. Untested live on
+2026-09-08 (extension was down); first run will tell.
 
 - **Translate (word bank)** — tiles fill left to right as in Math. Click a placed
   tile to remove it.

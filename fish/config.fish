@@ -43,10 +43,10 @@ function update
 end
 
 # === Aliases ===
-alias ls "eza --icons"
-alias ll "eza -la --icons"
-alias la "eza -a --icons"
-alias lt "eza --tree --icons"
+alias ls "eza --icons=always"
+alias ll "eza -la --icons=always"
+alias la "eza -a --icons=always"
+alias lt "eza --tree --icons=always"
 alias cat "bat"
 alias find "fd"
 alias c claude

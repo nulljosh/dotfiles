@@ -32,11 +32,11 @@ a:hover { text-decoration: underline; }
 .hero { position: relative; overflow: hidden; padding: 5rem 0 4rem; text-align: center; }
 /* ponytail: same radial-drift trick as wordroot's hero, just pwnlingo green instead of hue-per-word */
 .hero::before {
-  content: ''; position: absolute; inset: 0; z-index: 0; background: var(--accent-soft);
+  content: ''; position: absolute; inset: 0; z-index: 0;
+  background-color: var(--accent-soft);
   background-image:
     radial-gradient(55% 55% at 25% 20%, rgba(63,154,0,.30), transparent 60%),
-    radial-gradient(50% 60% at 80% 75%, rgba(139,224,74,.28), transparent 60%),
-    var(--accent-soft);
+    radial-gradient(50% 60% at 80% 75%, rgba(139,224,74,.28), transparent 60%);
   background-size: 200% 200%;
   animation: heroDrift 16s ease-in-out infinite alternate;
 }

@@ -60,8 +60,30 @@ p + p { margin-top: 1rem; }
 .row span { color: var(--text2); }
 .quote { border-left: 3px solid var(--accent); padding: .25rem 0 .25rem 1.25rem; color: var(--text2); font-size: 1.1rem; margin: 1.5rem 0; }
 .quote small { display: block; color: var(--text2); font-size: .85rem; margin-top: .4rem; }
-.shot { display: block; margin: 1.5rem auto 0; width: 260px; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 8px 30px rgba(0,0,0,.12); }
+.hero .device { margin: 2rem auto 0; }
+.hero .device-caption { text-align: center; color: var(--text2); font-size: .85rem; margin-top: .75rem; }
 footer { padding: 2.5rem 0; color: var(--text2); font-size: .9rem; text-align: center; }
+
+/* ponytail: a real recreation of the status app, not a screenshot — track buttons
+   actually switch, driven by JS below. Numbers are this project's real results
+   (see "Where it stands"), not live telemetry: nothing on this page reaches
+   Joshua's Mac, same "nothing leaves the page" promise as the script itself. */
+.app-demo { background: #16171b; color: #ececf0; border-radius: 0 0 10px 10px; padding: 1.1rem 1rem 1.4rem; text-align: center; }
+.app-demo h4 { font-size: 1.05rem; font-weight: 700; margin-bottom: .9rem; }
+.app-tracks { display: flex; justify-content: center; gap: .7rem; margin-bottom: 1rem; }
+.app-tracks button {
+  width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer;
+  background: rgba(255,255,255,.08); color: rgba(255,255,255,.65);
+  font: 600 11px var(--font-body); letter-spacing: -.02em;
+  transition: background .15s, color .15s, transform .15s;
+}
+.app-tracks button:hover { transform: scale(1.08); }
+.app-tracks button.active { background: #58cc02; color: #fff; }
+.app-xp { font-size: 2rem; font-weight: 700; color: #58cc02; font-variant-numeric: tabular-nums; margin-bottom: .75rem; }
+.app-stats { display: flex; justify-content: center; gap: 1.6rem; margin-bottom: .6rem; }
+.app-stats div b { display: block; font-size: 1.1rem; font-variant-numeric: tabular-nums; }
+.app-stats div span { font-size: .7rem; color: rgba(255,255,255,.55); }
+.app-last { font-size: .72rem; color: rgba(255,255,255,.5); height: 1em; }
 </style>
 </head>
 <body>
@@ -70,7 +92,51 @@ footer { padding: 2.5rem 0; color: var(--text2); font-size: .9rem; text-align: c
   <h1>Duolingo on autopilot.</h1>
   <p class="lede">One script in your own Chrome tab reads the live lesson, works out the answer, and clicks. No API. No password. Nothing leaves the page.</p>
   <a class="btn" href="https://github.com/nulljosh/pwnlingo">Read the source</a>
+  <div class="device device-mac has-chrome"><div class="device-screen">
+    <div class="app-demo">
+      <h4 id="appTrackName">Chess</h4>
+      <div class="app-tracks" id="appTracks"></div>
+      <div class="app-xp" id="appXp">+50 XP</div>
+      <div class="app-stats" id="appStats"></div>
+      <div class="app-last" id="appLast">Solved puzzle</div>
+    </div>
+  </div></div>
+  <p class="device-caption">The real status app UI. Tap a track — these are its actual results.</p>
 </div></div>
+<script>
+(function(){
+  var tracks = {
+    chess: { name: 'Chess', abbr: 'CH', xp: '+50 XP', stats: [['6','Puzzles'],['0','Misses'],['1','Matches']], last: 'Solved puzzle' },
+    math:  { name: 'Math',  abbr: 'MA', xp: '+20 XP', stats: [['411','Units'],['1','Lessons'],['0','Misses']], last: 'Course complete' },
+    es:    { name: 'Spanish', abbr: 'ES', xp: '+30 XP', stats: [['3','Lessons']], last: 'Lesson complete' },
+    el:    { name: 'Greek', abbr: 'EL', xp: '+30 XP', stats: [['2','Lessons']], last: 'Lesson complete' }
+  };
+  var order = ['chess','math','es','el'];
+  var tracksEl = document.getElementById('appTracks');
+  order.forEach(function(k){
+    var b = document.createElement('button');
+    b.textContent = tracks[k].abbr;
+    b.onclick = function(){ show(k); };
+    b.id = 'track-' + k;
+    tracksEl.appendChild(b);
+  });
+  function show(k){
+    var t = tracks[k];
+    document.getElementById('appTrackName').textContent = t.name;
+    document.getElementById('appXp').textContent = t.xp;
+    document.getElementById('appLast').textContent = t.last;
+    var statsEl = document.getElementById('appStats');
+    statsEl.innerHTML = '';
+    t.stats.forEach(function(s){
+      var d = document.createElement('div');
+      d.innerHTML = '<b>' + s[0] + '</b><span>' + s[1] + '</span>';
+      statsEl.appendChild(d);
+    });
+    order.forEach(function(o){ document.getElementById('track-' + o).classList.toggle('active', o === k); });
+  }
+  show('chess');
+})();
+</script>
 
 <section><div class="container">
   <h2>How it works</h2>
@@ -98,10 +164,6 @@ footer { padding: 2.5rem 0; color: var(--text2); font-size: .9rem; text-align: c
 <section><div class="container">
   <h2>Status app</h2>
   <p>A small iOS/macOS app polls the runner over the LAN: current track, XP gained, puzzles or lessons, and the latest log line. Tap an icon to switch track live, no terminal needed.</p>
-  <div class="device device-mac has-chrome" id="demoFrame"><div class="device-screen">
-    <img src="status-app.png" alt="Pwnlingo status app showing +50 XP, 6 puzzles solved, 0 misses">
-  </div></div>
-  <p style="text-align:center; color:var(--text2); font-size:.85rem; margin-top:.75rem;" id="demoCaption">On your Mac</p>
 </div></section>
 
 <section><div class="container">

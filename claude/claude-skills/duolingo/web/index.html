@@ -45,6 +45,16 @@ a:hover { text-decoration: underline; }
   100% { background-position: 100% 40%, 0% 60%; }
 }
 @media (prefers-reduced-motion: reduce) { .hero::before { animation: none; } }
+/* ponytail: nimble's drifting-icon field, simplified — a fixed hand-placed set
+   instead of its JS collision-avoidance layout engine (not worth it for six icons). */
+.hero-float { position: absolute; inset: -40px; z-index: 0; color: rgba(63,154,0,.28); pointer-events: none; }
+.hfloat { position: absolute; width: var(--size); height: var(--size); margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
+  animation: heroFloatDrift var(--dur, 16s) ease-in-out var(--delay, 0s) infinite alternate; }
+.hfloat svg { display: block; width: 100%; height: 100%; fill: currentColor;
+  animation: heroFloatBob var(--bdur, 12s) ease-in-out var(--bdelay, 0s) infinite alternate; }
+@keyframes heroFloatDrift { to { transform: translate(var(--dx, 0px), var(--dy, 0px)); } }
+@keyframes heroFloatBob { from { transform: rotate(calc(var(--rot, 0deg) * -1)); } to { transform: rotate(var(--rot, 0deg)); } }
+@media (prefers-reduced-motion: reduce) { .hfloat, .hfloat svg { animation: none; } }
 .hero .container { position: relative; z-index: 1; }
 .hero img { width: 72px; height: 72px; border-radius: 18px; margin-bottom: 1.25rem; }
 h1 { font-size: clamp(2rem, 6vw, 3rem); line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 1rem; }
@@ -73,10 +83,11 @@ footer { padding: 2.5rem 0; color: var(--text2); font-size: .9rem; text-align: c
 .app-tracks { display: flex; justify-content: center; gap: .7rem; margin-bottom: 1rem; }
 .app-tracks button {
   width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
   background: rgba(255,255,255,.08); color: rgba(255,255,255,.65);
-  font: 600 11px var(--font-body); letter-spacing: -.02em;
   transition: background .15s, color .15s, transform .15s;
 }
+.app-tracks button svg { width: 16px; height: 16px; fill: currentColor; }
 .app-tracks button:hover { transform: scale(1.08); }
 .app-tracks button.active { background: #58cc02; color: #fff; }
 .app-xp { font-size: 2rem; font-weight: 700; color: #58cc02; font-variant-numeric: tabular-nums; margin-bottom: .75rem; }
@@ -87,7 +98,16 @@ footer { padding: 2.5rem 0; color: var(--text2); font-size: .9rem; text-align: c
 </style>
 </head>
 <body>
-<div class="hero"><div class="container">
+<div class="hero">
+  <div class="hero-float" aria-hidden="true">
+    <div class="hfloat" style="top:18%;left:12%;--size:40px;--dx:24px;--dy:-14px;--rot:10deg;--dur:15s;--bdur:11s;--delay:0s"><svg viewBox="0 0 24 24"><path d="M5 19h14v2H5zm.5-2 1-8.5L9 11l3-6 3 6 2.5-2.5 1 8.5zM7.2 7.3a1.6 1.6 0 1 1 0-3.2 1.6 1.6 0 0 1 0 3.2zm9.6 0a1.6 1.6 0 1 1 0-3.2 1.6 1.6 0 0 1 0 3.2zM12 5.6A1.6 1.6 0 1 1 12 2.4a1.6 1.6 0 0 1 0 3.2z"/></svg></div>
+    <div class="hfloat" style="top:70%;left:8%;--size:30px;--dx:-16px;--dy:18px;--rot:-14deg;--dur:13s;--bdur:9s;--delay:-3s"><svg viewBox="0 0 24 24"><path d="M14.5 3c-2.1 0-3.4 1.3-3.8 3.6L10.4 9H13v2h-2.9l-1 6.2C8.6 20.2 7 21.5 5 21.5c-1 0-1.9-.3-2.5-.8l.8-1.7c.4.3.9.5 1.4.5.9 0 1.5-.6 1.7-1.8L7.4 11H5V9h2.7l.3-1.8C8.5 4 10.2 2.5 12.6 2.5c1 0 1.9.3 2.5.8z"/><path d="m14.5 14 2-2 2 2 2-2 1.1 1.1-2 2 2 2L20.5 18l-2-2-2 2-1.1-1.1 2-2-2-2z"/></svg></div>
+    <div class="hfloat" style="top:14%;left:85%;--size:34px;--dx:-20px;--dy:16px;--rot:12deg;--dur:17s;--bdur:12s;--delay:-6s"><svg viewBox="0 0 24 24"><path d="M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H9l-4.4 3.3A.6.6 0 0 1 3.6 20V17H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/></svg></div>
+    <div class="hfloat" style="top:78%;left:90%;--size:28px;--dx:18px;--dy:-20px;--rot:-10deg;--dur:14s;--bdur:10s;--delay:-9s"><svg viewBox="0 0 24 24"><path d="M4 4.5C4 3.7 4.7 3 5.5 3H11v18H5.5A1.5 1.5 0 0 1 4 19.5zM13 3h5.5c.8 0 1.5.7 1.5 1.5v15c0 .8-.7 1.5-1.5 1.5H13z"/></svg></div>
+    <div class="hfloat" style="top:42%;left:4%;--size:22px;--dx:12px;--dy:22px;--rot:16deg;--dur:12s;--bdur:8s;--delay:-1s"><svg viewBox="0 0 24 24"><path d="M5 19h14v2H5zm.5-2 1-8.5L9 11l3-6 3 6 2.5-2.5 1 8.5zM7.2 7.3a1.6 1.6 0 1 1 0-3.2 1.6 1.6 0 0 1 0 3.2zm9.6 0a1.6 1.6 0 1 1 0-3.2 1.6 1.6 0 0 1 0 3.2zM12 5.6A1.6 1.6 0 1 1 12 2.4a1.6 1.6 0 0 1 0 3.2z"/></svg></div>
+    <div class="hfloat" style="top:38%;left:95%;--size:24px;--dx:-14px;--dy:-18px;--rot:-16deg;--dur:16s;--bdur:11s;--delay:-4s"><svg viewBox="0 0 24 24"><path d="M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H9l-4.4 3.3A.6.6 0 0 1 3.6 20V17H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/></svg></div>
+  </div>
+  <div class="container">
   <img src="icon.svg" alt="pwnlingo icon">
   <h1>Duolingo on autopilot.</h1>
   <p class="lede">One script in your own Chrome tab reads the live lesson, works out the answer, and clicks. No API. No password. Nothing leaves the page.</p>
@@ -105,17 +125,27 @@ footer { padding: 2.5rem 0; color: var(--text2); font-size: .9rem; text-align: c
 </div></div>
 <script>
 (function(){
+  // ponytail: same icon language as the real app (SF Symbols: crown.fill, function,
+  // quote.bubble.fill, character.book.closed.fill) — hand-drawn as inline SVG since
+  // the web has no SF Symbols, and this repo never ships emoji in UI.
+  var icons = {
+    chess: '<svg viewBox="0 0 24 24"><path d="M5 19h14v2H5zm.5-2 1-8.5L9 11l3-6 3 6 2.5-2.5 1 8.5zM7.2 7.3a1.6 1.6 0 1 1 0-3.2 1.6 1.6 0 0 1 0 3.2zm9.6 0a1.6 1.6 0 1 1 0-3.2 1.6 1.6 0 0 1 0 3.2zM12 5.6A1.6 1.6 0 1 1 12 2.4a1.6 1.6 0 0 1 0 3.2z"/></svg>',
+    math: '<svg viewBox="0 0 24 24"><path d="M14.5 3c-2.1 0-3.4 1.3-3.8 3.6L10.4 9H13v2h-2.9l-1 6.2C8.6 20.2 7 21.5 5 21.5c-1 0-1.9-.3-2.5-.8l.8-1.7c.4.3.9.5 1.4.5.9 0 1.5-.6 1.7-1.8L7.4 11H5V9h2.7l.3-1.8C8.5 4 10.2 2.5 12.6 2.5c1 0 1.9.3 2.5.8z"/><path d="m14.5 14 2-2 2 2 2-2 1.1 1.1-2 2 2 2L20.5 18l-2-2-2 2-1.1-1.1 2-2-2-2z"/></svg>',
+    es: '<svg viewBox="0 0 24 24"><path d="M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H9l-4.4 3.3A.6.6 0 0 1 3.6 20V17H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/></svg>',
+    el: '<svg viewBox="0 0 24 24"><path d="M4 4.5C4 3.7 4.7 3 5.5 3H11v18H5.5A1.5 1.5 0 0 1 4 19.5zM13 3h5.5c.8 0 1.5.7 1.5 1.5v15c0 .8-.7 1.5-1.5 1.5H13z"/></svg>'
+  };
   var tracks = {
-    chess: { name: 'Chess', abbr: 'CH', xp: '+50 XP', stats: [['6','Puzzles'],['0','Misses'],['1','Matches']], last: 'Solved puzzle' },
-    math:  { name: 'Math',  abbr: 'MA', xp: '+20 XP', stats: [['411','Units'],['1','Lessons'],['0','Misses']], last: 'Course complete' },
-    es:    { name: 'Spanish', abbr: 'ES', xp: '+30 XP', stats: [['3','Lessons']], last: 'Lesson complete' },
-    el:    { name: 'Greek', abbr: 'EL', xp: '+30 XP', stats: [['2','Lessons']], last: 'Lesson complete' }
+    chess: { name: 'Chess', xp: '+50 XP', stats: [['6','Puzzles'],['0','Misses'],['1','Matches']], last: 'Solved puzzle' },
+    math:  { name: 'Math',  xp: '+20 XP', stats: [['411','Units'],['1','Lessons'],['0','Misses']], last: 'Course complete' },
+    es:    { name: 'Spanish', xp: '+30 XP', stats: [['3','Lessons']], last: 'Lesson complete' },
+    el:    { name: 'Greek', xp: '+30 XP', stats: [['2','Lessons']], last: 'Lesson complete' }
   };
   var order = ['chess','math','es','el'];
   var tracksEl = document.getElementById('appTracks');
   order.forEach(function(k){
     var b = document.createElement('button');
-    b.textContent = tracks[k].abbr;
+    b.innerHTML = icons[k];
+    b.title = tracks[k].name;
     b.onclick = function(){ show(k); };
     b.id = 'track-' + k;
     tracksEl.appendChild(b);
@@ -171,6 +201,6 @@ footer { padding: 2.5rem 0; color: var(--text2); font-size: .9rem; text-align: c
   <p>It started as a way to keep a streak alive during a busy week and turned into a study of how much of a gamified app is actually the client grading itself. Automated play is against Duolingo's terms, and the XP still ranks you against real people, so this is a curiosity to read, not a product to run.</p>
 </div></section>
 
-<footer><div class="container"><a href="https://heyitsmejosh.com">heyitsmejosh.com</a></div></footer>
+<footer><div class="container"><a href="https://github.com/nulljosh/pwnlingo">github.com/nulljosh/pwnlingo</a> · <a href="https://heyitsmejosh.com">heyitsmejosh.com</a></div></footer>
 </body>
 </html>

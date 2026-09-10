@@ -1,0 +1,14 @@
+{
+  "name": "scripts",
+  "version": "2.0.0",
+  "description": "pwnlingo: one Playwright runner for every Duolingo track",
+  "main": "run.mjs",
+  "scripts": {
+    "test": "node --test solver.test.mjs"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "dependencies": {
+    "playwright": "^1.63.0"
+  }
+}

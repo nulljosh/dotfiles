@@ -1,0 +1,39 @@
+name: PwnlingoStatus
+options:
+  bundleIdPrefix: com.nulljosh
+targets:
+  PwnlingoStatus-macOS:
+    type: application
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources: [App]
+    info:
+      path: App/Info-macOS.plist
+      properties:
+        LSUIElement: false
+        NSLocalNetworkUsageDescription: Reads live puzzle progress from the pwnlingo autopilot running on your Mac.
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
+    settings:
+      base:
+        PRODUCT_NAME: Pwnlingo
+        PRODUCT_BUNDLE_IDENTIFIER: com.nulljosh.pwnlingo-status
+        MARKETING_VERSION: "1.0"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+  PwnlingoStatus-iOS:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources: [App]
+    info:
+      path: App/Info-iOS.plist
+      properties:
+        NSLocalNetworkUsageDescription: Reads live puzzle progress from the pwnlingo autopilot running on your Mac.
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
+    settings:
+      base:
+        PRODUCT_NAME: Pwnlingo
+        PRODUCT_BUNDLE_IDENTIFIER: com.nulljosh.pwnlingo-status
+        MARKETING_VERSION: "1.0"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon

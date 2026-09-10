@@ -2,67 +2,39 @@
 
 # pwnlingo
 
-Autopilot for Duolingo Math and Chess, driven through an already-signed-in Chrome tab. Language courses are wired but not yet proven live.
+Plays Duolingo for you. Languages, math, chess, music.
 
-The Claude session never answers questions itself. It injects `scripts/duo.js`
-into the page, and that script reads the live widget state, works out the
-answer, and clicks. Claude only steps in when a question type appears that the
-solver has never seen, writes a new solver for it, and restarts the loop.
+It runs its own Chrome, signed in with your session cookie, and reads each question's answer out of the page's React state. Where there is no answer on the page (math), it solves the question itself. Nothing is guessed. A wrong answer means a bug, and the log says which question.
 
-## Layout
-
-| Path | What it is |
-|------|------------|
-| `SKILL.md` | The `/duolingo` skill: how to boot the loop and what to check |
-| `scripts/duo.js` | The solver. One file, ~20k lines, families appended over time |
-| `scripts/serve.py` | Serves `duo.js` on :8777 so the page can fetch it |
-| `scripts/js-chess-engine.js` | Bundled engine for the chess match node |
-| `duo.py` | Course/path helpers against the Duolingo API |
-| `web/` | Landing page, pwnlingo.heyitsmejosh.com |
-
-## Running it
+## Run
 
 ```sh
-python3 scripts/serve.py &     # needs Access-Control-Allow-Private-Network
+cd scripts
+echo "<your jwt_token cookie>" > jwt.txt
+node run.mjs es       # any language code
+node run.mjs math
+node run.mjs chess
+node run.mjs music
 ```
 
-Then, in the lesson tab, evaluate the boot snippet stored in
-`localStorage.duoBoot`. It fetches the solver, runs `autoLesson()` in a loop,
-and navigates on to the next level when one completes.
+One track at a time; Duolingo keeps one active course per account. Progress lands in `state.json`, every event in `log.jsonl`, and every language question and answer in `lessons.jsonl` so you can review what you practised.
 
-## Solver families
+`run.mjs` also serves `state.json`/`log.jsonl` over the LAN on port 8737, and switches track live on `POST /switch?track=<x>` — no restart needed. The status app (below) drives this.
 
-Exponentials, transformations, statistics, geometry, trigonometry, probability,
-counting, circles and parabolas, and 3D solids (prisms, cylinders, cones,
-spheres).
+## Status app
 
-Two widget types ignore synthetic events entirely and need real OS mouse input:
-dot plots and spinner wedges. The solver computes the drags and clicks; a human
-or the Chrome `computer` tool performs them.
+A SwiftUI status app (`app/`, iOS + macOS) polls the runner over the LAN: current track, XP gained, puzzles/misses/matches or lesson count, and the latest log line. Tap an icon to switch track without touching the terminal.
 
-## Chess
+## Files
 
-Puzzles: the answer ships on the React fiber (`chessPuzzleInfo.correctMoves`, UCI).
-The board is a Rive canvas, so only real OS clicks land; `chessNext()` turns the
-moves into screenshot coordinates and one `computer` batch plays them.
+- `scripts/run.mjs` drives the browser, opens lessons, clicks through, rotates languages, serves LAN status + track switching.
+- `scripts/solver.js` answers language, chess, and story questions.
+- `scripts/math.js` answers math. It is large because math has no answer key on the page.
+- `scripts/js-chess-engine.js` plays the chess bot.
+- `app/` is the iOS/macOS status app (xcodegen, no checked-in `.xcodeproj`).
+- `SKILL.md` and `CLAUDE.md` hold the gotchas that cost time. Read them before touching the solver.
+- `web/` is the landing page at pwnlingo.heyitsmejosh.com.
 
-Matches against the bot: `liveFen()` reads the position off a ref six fibers
-above the canvas, js-chess-engine picks a move, `matchTurn()` waits for our turn.
-Move choice follows Lasker's rule, "when you see a good move, look for a better
-one": the engine answers at the base depth, then again one ply deeper, and the
-deeper answer wins when they disagree. First game won in 19 moves.
+## Honest notes
 
-## Language
-
-`solveLang()` reads `correctIndex`, `correctTokens`, `correctSolutions` and
-`pairs` off the challenge fiber and clicks or types the answer. Listen and speak
-exercises take the skip Duolingo offers. Written 2026-09-08, not yet run against
-a live lesson; expect selector fixes on first contact.
-
-## Gaps
-
-- Language solver unverified live.
-- Dot plots and spinner wedges still need a human or the `computer` tool.
-- No recovery after a wrong move in a chess match beyond counting it.
-- Everything still routes through Chrome, the extension and a Claude session;
-  a Playwright runner with CDP clicks would remove all three.
+Automated play is against Duolingo's terms. XP earned this way ranks you against real people in your league. Speak and listen questions are skipped, DuoRadio is skipped, and chess bot matches are mostly lost; puzzles are what earn.

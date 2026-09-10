@@ -1,0 +1,8 @@
+.pw-profile/
+jwt.txt
+log.jsonl
+lessons.jsonl
+state.json
+open-fail.png
+node_modules/
+package-lock.json

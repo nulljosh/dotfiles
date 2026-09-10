@@ -22,7 +22,7 @@ window.__duo = {
       prompt: (document.querySelector('[data-test="challenge-header"]') || {}).innerText,
       choices: [...document.querySelectorAll('[data-test="challenge-choice"]')]
         .map((e, i) => [i, e.innerText.replace(/\n/g, ''), e.getAttribute('aria-checked')]),
-      pairs: [...document.querySelectorAll('[data-test$="challenge-tap-token"]')]
+      pairs: [...document.querySelectorAll('[data-test*="challenge-tap-token"]:not([data-test="challenge-tap-token-text"])')]
         .map((e, i) => [i, e.innerText.replace(/\n/g, ' ')]),
       tokens: [...d.querySelectorAll('.token-bank .token')].map((e, i) => [i, e.textContent.trim()]),
       slots: [...d.querySelectorAll('.token-slot')].map(e => e.textContent.trim()),
@@ -40,7 +40,7 @@ window.__duo = {
   },
 
   async pair(...idx) {  // match-the-pairs: click left, then its right partner
-    const t = [...document.querySelectorAll('[data-test$="challenge-tap-token"]')];
+    const t = [...document.querySelectorAll('[data-test*="challenge-tap-token"]:not([data-test="challenge-tap-token-text"])')];
     for (const i of idx) { t[i].click(); await this.sleep(250); }
   },
 
@@ -1503,17 +1503,7 @@ Object.assign(window.__duo, {
 });
 
 // typed variants: triangle x, and the unknown angle
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    const L = this.tex();
-    if (/value of/i.test(L)) { const v = this.triangleX();
-      if (v !== null && Number.isFinite(v)) { this.type(String(v)); return String(v); } }
-    if (/unknown angle|missing angle/i.test(L)) { const nums = this.angleNums();
-      if (nums.length >= 2) { const v = String(180 - nums.reduce((a, b) => a + b, 0)); this.type(v); return v; } }
-    return prev.call(this);
-  };
-})();
+
 
 window.__duo.RULES.splice(2, 0,
   ['solveTriangleSum', null],
@@ -1541,25 +1531,7 @@ window.__duo.solveTriangleEq = function () {
 };
 
 // typed hypotenuse / missing leg, straight from Pythagoras
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    const L = this.tex();
-    if (/length of the (hypotenuse|leg)/i.test(L)) {
-      const f = document.querySelector('iframe');
-      const nums = f && f.contentDocument ? [...f.contentDocument.querySelectorAll('text,tspan')]
-        .map(e => parseFloat(this.ascii(e.textContent.trim()))).filter(n => !isNaN(n)) : [];
-      if (nums.length >= 2) {
-        const v = /hypotenuse/i.test(L)
-          ? Math.sqrt(nums[0] ** 2 + nums[1] ** 2)
-          : (() => { const h = Math.max(...nums), g = nums.filter(n => n !== h)[0];
-                     return Math.sqrt(h ** 2 - g ** 2); })();
-        if (Number.isFinite(v)) { const t = String(Number.isInteger(v) ? v : +v.toFixed(2)); this.type(t); return t; }
-      }
-    }
-    return prev.call(this);
-  };
-})();
+
 
 window.__duo.RULES.splice(2, 0, ['solveTriangleEq', null]);
 
@@ -1654,16 +1626,7 @@ Object.assign(window.__duo, {
 });
 
 // the guided chain's own equation beats every heuristic
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    const g = this.guidedX();
-    if (g !== null && Number.isFinite(g)) {
-      const v = String(Number.isInteger(g) ? g : +g.toFixed(2)); this.type(v); return v;
-    }
-    return prev.call(this);
-  };
-})();
+
 
 // \duoblank / \phantom literally carry the answer — try them before anything
 // that reasons about the question
@@ -1746,32 +1709,7 @@ window.__duo.RULES.splice(2, 0,
 })();
 
 // typed side lengths: read the label when it is given, compute it when it is x
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    const L = this.tex();
-    if (/(horizontal|vertical|longer|shorter) leg|hypotenuse/i.test(L)) {
-      const f = document.querySelector('iframe');
-      const labs = f && f.contentDocument ? [...f.contentDocument.querySelectorAll('text,tspan')]
-        .map(e => this.ascii(e.textContent.trim()).replace(/\s/g, '')).filter(Boolean) : [];
-      const nums = labs.filter(t => /^\d+$/.test(t)).map(Number);
-      if (labs.some(t => /^x$/i.test(t)) && nums.length === 2) {
-        const h = Math.max(...nums), g = nums.filter(n => n !== h)[0];
-        const v = /hypotenuse/i.test(L) ? Math.sqrt(nums[0] ** 2 + nums[1] ** 2) : Math.sqrt(h * h - g * g);
-        if (Number.isFinite(v)) { const s = String(Number.isInteger(v) ? v : +v.toFixed(2)); this.type(s); return s; }
-      }
-      const s = this.sideLabels();
-      if (s) { let v = null;
-        if (/horizontal/i.test(L)) v = s.horiz; else if (/vertical/i.test(L)) v = s.vert;
-        else if (/longer/i.test(L)) v = Math.max(s.horiz, s.vert);
-        else if (/shorter/i.test(L)) v = Math.min(s.horiz, s.vert);
-        if (v != null) { this.type(String(v)); return String(v); } }
-    }
-    return prev.call(this);
-  };
-})();
 
-;'__duo ready';
 
 // ---- solids: cylinders, cones, volume (unit 132) ----
 Object.assign(window.__duo, {
@@ -1918,28 +1856,7 @@ window.__duo.RULES.splice(2, 0,
 ;'__duo ready';
 
 // typed radius / diameter / height / base area / volume
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    const L = this.tex();
-    if (/(radius|diameter|height|base area|area of the base|volume)/i.test(L)) {
-      const s = this.solidDims();
-      if (s) {
-        let v = null;
-        if (/radius/i.test(L) && s.radius != null) v = s.radius;
-        else if (/diameter/i.test(L) && s.radius != null) v = s.radius * 2;
-        else if (/height/i.test(L) && s.height != null) v = s.height;
-        else if (/base area|area of the base/i.test(L) && s.radius != null) v = s.radius * s.radius;
-        else if (/volume/i.test(L) && s.radius != null && s.height != null)
-          v = /cone/i.test(L) ? (s.radius ** 2 * s.height / 3) : (s.radius ** 2 * s.height);
-        if (v != null && Number.isFinite(v)) {
-          const t = String(Number.isInteger(v) ? v : +v.toFixed(2)); this.type(t); return t;
-        }
-      }
-    }
-    return prev.call(this);
-  };
-})();
+
 
 window.__duo.RULES.splice(2, 0, ['solveVolume', /volume/i]);
 
@@ -2233,23 +2150,7 @@ window.__duo.solveOrderedPair = function () {
 };
 
 // typed variants for the data unit
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    const L = this.tex(), f = document.querySelector('iframe'), d = f && f.contentDocument;
-    if (/number of data points|how many points/i.test(L) && d) {
-      const n = d.querySelectorAll('.point').length;
-      if (n) { this.type(String(n)); return String(n); }
-    }
-    if (/value of the (independent|dependent)/i.test(L)) {
-      const m = L.replace(/\s/g, '').match(/\((-?\d+),(-?\d+)\)/);
-      if (m) { const v = /independent/i.test(L) ? m[1] : m[2]; this.type(v); return v; }
-    }
-    return prev.call(this);
-  };
-})();
 
-;'__duo ready';
 
 // ---- scatter-plot statistics ----
 // These plots often have NO numeric axis labels, so scale() cannot calibrate.
@@ -2377,16 +2278,7 @@ Object.assign(window.__duo, {
   },
 });
 
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    const L = this.tex();
-    if (/intercept|slope/i.test(L)) { const bf = this.bestFit();
-      if (bf) { const v = /slope/i.test(L) ? bf.m : bf.b;
-        if (Number.isFinite(v)) { const t = String(Number.isInteger(v) ? v : +v.toFixed(2)); this.type(t); return t; } } }
-    return prev.call(this);
-  };
-})();
+
 
 window.__duo.RULES.splice(2, 0,
   ['solveRiseRun', /\b(rise|run)\b/i],
@@ -2759,23 +2651,7 @@ window.__duo.solveTableMissing = function () {
 };
 
 // typed table questions: with no choices the solver reports its value in `miss`
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    const L = this.tex();
-    if (/enter the total$|^total$/i.test(L.trim())) {
-      const r = this.solveTableMissing();
-      const v = r && (r.ok ? r.want[0] : (r.want !== undefined ? r.want : r.miss));
-      if (v !== undefined && v !== null) { this.type(String(v)); return String(v); }
-    }
-    if (/total frequency for|total for|frequency for|how many/i.test(L)) {
-      const r = /total/i.test(L) ? this.solveTableTotal() : this.solveTableCell();
-      const v = r && (r.want !== undefined ? r.want : r.miss);
-      if (v !== undefined && v !== null) { this.type(String(v)); return String(v); }
-    }
-    return prev.call(this);
-  };
-})();
+
 
 window.__duo.RULES.splice(2, 0, ['solveTableTotal', /total frequency for|total for/i]);
 
@@ -2875,20 +2751,7 @@ Object.assign(window.__duo, {
 });
 
 // guided steps: read the table cell, the grand total, or a plain lookup
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    const P = this.prompt();
-    if (/total number of/i.test(P)) { const v = this.grandTotal();
-      if (v) { this.type(String(v)); return String(v); } }
-    if (/number of|frequency for|how many/i.test(P)) {
-      const r = this.solveTableCell();
-      const v = r && (r.want !== undefined ? r.want : r.miss);
-      if (v !== undefined && v !== null) { this.type(String(v)); return String(v); }
-    }
-    return prev.call(this);
-  };
-})();
+
 
 window.__duo.RULES.splice(2, 0, ['solveRelFreq', /relative frequency/i]);
 
@@ -2994,17 +2857,7 @@ Object.assign(window.__duo, {
   },
 });
 
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    const P = this.prompt();
-    if (/grand total/i.test(P)) { const v = this.grandTotal(); if (v) { this.type(String(v)); return String(v); } }
-    if (/marginal total/i.test(P)) { const r = this.solveTableTotal();
-      const v = r && (r.want !== undefined ? r.want : r.miss);
-      if (v !== undefined && v !== null) { this.type(String(v)); return String(v); } }
-    return prev.call(this);
-  };
-})();
+
 
 window.__duo.RULES.splice(2, 0,
   ['solveGrandTotal', /grand total|total number of/i],
@@ -3125,7 +2978,7 @@ Object.assign(window.__duo, {
   },
 
   async solvePairs() {
-    const tok = [...document.querySelectorAll('[data-test$="challenge-tap-token"]')];
+    const tok = [...document.querySelectorAll('[data-test*="challenge-tap-token"]:not([data-test="challenge-tap-token-text"])')];
     if (tok.length < 4) return null;
     const vals = tok.map(e => this.tokenExp(e));
     const used = new Set(); let n = 0;
@@ -3170,7 +3023,7 @@ Object.assign(window.__duo, {
   },
 
   async solvePairs() {
-    const tok = [...document.querySelectorAll('[data-test$="challenge-tap-token"]')];
+    const tok = [...document.querySelectorAll('[data-test*="challenge-tap-token"]:not([data-test="challenge-tap-token-text"])')];
     if (tok.length < 4) return null;
     const vals = tok.map(e => this.tokenExp(e));
     const used = new Set(); let n = 0;
@@ -3188,7 +3041,7 @@ Object.assign(window.__duo, {
   async runPairs(n) {
     this.S = { running: true, log: [], done: 0 };
     for (let i = 0; i < n && this.S.running; i++) {
-      const tok = [...document.querySelectorAll('[data-test$="challenge-tap-token"]')];
+      const tok = [...document.querySelectorAll('[data-test*="challenge-tap-token"]:not([data-test="challenge-tap-token-text"])')];
       if (tok.length >= 4) { const p = await this.solvePairs();
         this.S.log.push('p' + (p ? p.pairs : 0)); this.S.done++; await this.sleep(650); continue; }
       const r = this.read();
@@ -3358,18 +3211,7 @@ Object.assign(window.__duo, {
 });
 
 // pairs can also match an EQUATION to its coefficient (-9x+18=0 -> -9)
-(function () {
-  const prev = window.__duo.tokenExp;
-  window.__duo.tokenExp = function (el) {
-    const v = prev.call(this, el); if (v !== null) return v;
-    let s = null;
-    if (el && el.querySelector) { const a = el.querySelector('annotation'); if (a) s = a.textContent; }
-    if (s === null) s = (typeof el === 'string') ? el : (el.innerText || '');
-    const t = this.ascii(s).replace(/\s|[{}\\]|mathbf|textbf/g, '');
-    const m = t.match(/^(-?\d*)[a-z](?=[+-=])/i);
-    return m ? ((m[1] === '' || m[1] === '+') ? 1 : (m[1] === '-' ? -1 : +m[1])) : null;
-  };
-})();
+
 
 window.__duo.RULES.splice(2, 0,
   ['solveTermPart', /variable term|constant|coefficient/i],
@@ -3406,7 +3248,7 @@ window.__duo.run2 = async function (n) {
     if (!r.choices.length && !r.input) { await this.sleep(900); r = this.read(); }
 
     let acted = false;
-    if (document.querySelectorAll('[data-test$="challenge-tap-token"]').length >= 4 && !r.choices.length) {
+    if (document.querySelectorAll('[data-test*="challenge-tap-token"]:not([data-test="challenge-tap-token-text"])').length >= 4 && !r.choices.length) {
       const p = await this.solvePairs();
       if (p && p.pairs) {
         this.S.log.push('p' + p.pairs); this.S.done++; await this.sleep(1200);
@@ -3439,22 +3281,7 @@ window.__duo.run2 = async function (n) {
 };
 
 // typed coefficient / constant / phrase answers
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    const P = this.prompt();
-    if (/coefficient|constant|variable term/i.test(P)) {
-      const r = this.solveTermPart();
-      const v = r && (r.want !== undefined ? r.want : r.miss);
-      if (v !== undefined && v !== null) { this.type(String(v)); return String(v); }
-    }
-    const ph = this.phraseEq(this.phraseSource()) || this.phraseExpr(this.phraseSource());
-    if (ph && /write|translate|equation/i.test(P)) { this.type(ph.replace(/\*/g, '')); return ph; }
-    return prev.call(this);
-  };
-})();
 
-;'__duo ready';
 
 // ---- combining like terms and solving linear equations (unit 137) ----
 Object.assign(window.__duo, {
@@ -3854,16 +3681,7 @@ Object.assign(window.__duo, {
 });
 
 // typed answers never consult RULES — they go through typeAnswer
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (/solution to the inequality|enter a solution/i.test(this.prompt())) {
-      const v = this.__ineqType();
-      if (v !== null && v !== undefined) { this.type(String(v)); return String(v); }
-    }
-    return prev.call(this);
-  };
-})();
+
 
 // run2 used to log 'needdrag' and stop dead; now it drags, verifies, and submits itself
 (function () {
@@ -3987,7 +3805,7 @@ Object.assign(window.__duo, {
   // pairs of "ax OP b" against their solved forms — the stock pairs solver matches
   // identical text and never fires on these
   async ineqPairs() {
-    const tk = [...document.querySelectorAll('[data-test$="challenge-tap-token"]')];
+    const tk = [...document.querySelectorAll('[data-test*="challenge-tap-token"]:not([data-test="challenge-tap-token-text"])')];
     if (tk.length < 4) return null;
     const txt = tk.map(e => { const a = e.querySelector('annotation'); return a ? a.textContent : this.ascii(e.innerText); });
     const norm = txt.map(s => this.ineqNorm(s)), sol = txt.map(s => this.solveOne(s));
@@ -4302,14 +4120,7 @@ Object.assign(window.__duo, {
   },
 });
 
-(function () {
-  const base = window.__duo.autoDrag;
-  window.__duo.autoDrag = async function () {
-    if (this.thumbs().length === 2 && this.compoundTargets()) return await this.compoundDrag();
-    return await base.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // chained form "5 <= x <= 9" is a third notation: neither an "and" nor an "or" join
 (function () {
@@ -4403,16 +4214,7 @@ window.__duo.lastBlank = function () {
   if (!all) return null;
   return this.ascii(all[all.length - 1].match(/duoblank\{([^}]*)\}/)[1]).replace(/\s+/g, '');
 };
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')) {
-      const b = this.lastBlank();
-      if (b !== null && b !== '') { this.type(b); return b; }
-    }
-    return prev.call(this);
-  };
-})();
+
 
 // "First, substitute 4 for x" wants the substituted expression, not the final value
 window.__duo.substStep = function () {
@@ -4508,7 +4310,7 @@ window.__duo.RULES.splice(2, 0, ['solveFnPattern', /complete the pattern/i]);
 // token it evaluates to. Try the output first, then the input, since either can be
 // the intended half.
 window.__duo.fnPairs = async function () {
-  const tk = [...document.querySelectorAll('[data-test$="challenge-tap-token"]')];
+  const tk = [...document.querySelectorAll('[data-test*="challenge-tap-token"]:not([data-test="challenge-tap-token-text"])')];
   if (tk.length < 4) return null;
   const txt = tk.map(e => { const a = e.querySelector('annotation'); return a ? a.textContent : this.ascii(e.innerText); });
   const norm = txt.map(s => this.ascii(s).replace(/mathbf|textbf|text|\\|\{|\}/g, '').replace(/\s+/g, ''));
@@ -4529,13 +4331,7 @@ window.__duo.fnPairs = async function () {
 };
 
 // chain it behind the inequality pairs solver that run2 already calls
-(function () {
-  const base = window.__duo.ineqPairs;
-  window.__duo.ineqPairs = async function () {
-    return (await base.call(this)) || (await this.fnPairs());
-  };
-})();
-;'__duo ready';
+
 
 // "Select the input" / "Select the output" for f(a) = b
 window.__duo.solveInputOutput = function () {
@@ -4613,37 +4409,12 @@ window.__duo.RULES.splice(2, 0, ['solveTableInverse', /value of .*when/i]);
 ;'__duo ready';
 
 // typed table lookups: "Enter the value when x = 1"
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]') && /enter the value/i.test(this.prompt())) {
-      const A = this.ascii(this.promptLatex().join(' '))
-        .replace(/mathbf|textbf|text|\\|\{|\}/g, '').replace(/[~\s]+/g, '');
-      const T = this.fnTable();
-      if (T) {
-        // no boundary guard: the header runs into the formula ("whenx=1")
-        let m = A.match(/x&?=(-?\d+)/);
-        if (m) { const h = T.find(r => r[0] === +m[1]); if (h) { this.type(String(h[1])); return String(h[1]); } }
-        m = A.match(/f\(x\)&?=(-?\d+)/);
-        if (m) { const h = T.find(r => r[1] === +m[1]); if (h) { this.type(String(h[0])); return String(h[0]); } }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // typeAnswer is now ~18 wrappers deep and the innermost one reads .value off the
 // input element unguarded. When the screen has no text input that throws, and the
 // exception escapes run2 and kills the whole lesson silently. Guard once, outermost.
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (!document.querySelector('[data-test="challenge-text-input"]')) return null;
-    try { return prev.call(this); } catch (e) { return null; }
-  };
-})();
-;'__duo ready';
+
 
 // Table cells are not one element per value: a negative number arrives as a
 // separate "−" glyph followed by its digits, so parsing element-by-element yields
@@ -4820,15 +4591,7 @@ Object.assign(window.__duo, {
 
 // let autoDrag reach it: this widget has no .slider1d-thumb, so the number-line
 // path never fires
-(function () {
-  const base = window.__duo.autoDrag;
-  window.__duo.autoDrag = async function () {
-    const f = [...document.querySelectorAll('iframe')].filter(x => x.contentDocument)
-      .find(x => x.contentDocument.querySelector('.slider2d-thumb'));
-    if (f && this.duoGoal()) return await this.solveDuoSlider();
-    return await base.call(this);
-  };
-})();
+
 
 // and let run2 see it as a drag-shaped screen
 (function () {
@@ -5200,15 +4963,7 @@ Object.assign(window.__duo, {
   },
 });
 
-(function () {
-  const base = window.__duo.autoDrag;
-  window.__duo.autoDrag = async function () {
-    const f = [...document.querySelectorAll('iframe')].filter(x => x.contentDocument)
-      .find(x => x.contentDocument.querySelector('g.point.draggable-point,g.draggable-point'));
-    if (f && this.targetSlope() !== null) return await this.solveMakeLine();
-    return await base.call(this);
-  };
-})();
+
 (function () {
   const base = window.__duo.plan;
   window.__duo.plan = function () {
@@ -5251,43 +5006,10 @@ window.__duo.RULES.splice(2, 0, ['solveSlopePattern', /complete the pattern/i]);
 ;'__duo ready';
 
 // "Match the pairs": formula <-> its slope, where a slope can be a fraction token
-(function () {
-  const base = window.__duo.ineqPairs;
-  window.__duo.ineqPairs = async function () {
-    return (await base.call(this)) || (await this.slopePairs());
-  };
-})();
-;'__duo ready';
+
 
 // the rate of change can be asked from a formula with no graph present at all
-(function () {
-  const base = window.__duo.solveRateValue;
-  window.__duo.solveRateValue = function () {
-    const r = base.call(this);
-    if (r && r.i !== undefined) return r;
-    let want = null;
-    for (const s of this.promptLatex()) {
-      if (!/\(x\)\s*=/.test(this.ascii(s))) continue;
-      const v = this.slopeOfFormula(s);
-      if (v !== null) { want = v; break; }
-    }
-    if (want === null) return r;
-    const ann = [...document.querySelectorAll('[data-test="challenge-choice"] annotation')].map(a => a.textContent);
-    const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-    if (!ch.length) return r;
-    const S = ann.length === ch.length ? ann : ch.map(e => this.ascii(e.innerText));
-    const val = s => {
-      const t = this.ascii(s).replace(/mathbf|textbf|text|\s/g, '');
-      const m = t.match(/(-?)\\?frac\{(-?\d+)\}\{(-?\d+)\}/);
-      if (m) return (m[1] === '-' ? -1 : 1) * (+m[2] / +m[3]);
-      const v = parseFloat(t.replace(/[^-\d.]/g, ''));
-      return isNaN(v) ? null : v;
-    };
-    const i = S.findIndex(s => { const v = val(s); return v !== null && Math.abs(v - want) < 1e-9; });
-    return i < 0 ? { miss: want } : { i, want };
-  };
-})();
-;'__duo ready';
+
 
 // pts() was part of the bootstrap that never lived in this file (like ascii/tap).
 // Older solvers call it as [[label, [x, y]], ...].
@@ -5329,7 +5051,7 @@ window.__duo.numTok = function (s) {
   return isNaN(v) ? null : v;
 };
 window.__duo.slopePairs = async function () {
-  const tk = [...document.querySelectorAll('[data-test$="challenge-tap-token"]')];
+  const tk = [...document.querySelectorAll('[data-test*="challenge-tap-token"]:not([data-test="challenge-tap-token-text"])')];
   if (tk.length < 4) return null;
   const txt = tk.map(e => { const a = e.querySelector('annotation'); return a ? a.textContent : this.ascii(e.innerText); });
   const slope = txt.map(s => /\(x\)\s*=/.test(this.ascii(s)) ? this.slopeOfFormula(s) : null);
@@ -5347,26 +5069,7 @@ window.__duo.slopePairs = async function () {
 ;'__duo ready';
 
 // typed variants of the delta / rate questions ("Enter the change in y ...")
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    const inp = document.querySelector('[data-test="challenge-text-input"]');
-    if (inp) {
-      const A = this.ascii(this.promptLatex().join(' ')).replace(/mathbf|textbf|text|\\|\{|\}|~/g, ' ');
-      const p = this.gridPoints();
-      if (p && p.length >= 2) {
-        const a = p[0], b = p[p.length - 1];
-        if (/change in\s*y/i.test(A)) { const v = String(b[1] - a[1]); this.type(v); return v; }
-        if (/change in\s*x/i.test(A)) { const v = String(b[0] - a[0]); this.type(v); return v; }
-        if (/rate of change/i.test(A) && (b[0] - a[0])) {
-          const v = String((b[1] - a[1]) / (b[0] - a[0])); this.type(v); return v;
-        }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // ---- average rate of change / secant lines (unit 141 L4) ----
 // "Identify the points on the secant line": each choice lists two ordered pairs;
@@ -5524,64 +5227,10 @@ window.__duo.lineInGrid = function () {
 };
 
 // "Select the y-intercept / x-intercept" from a graph, as an ordered pair or value
-(function () {
-  const base = window.__duo.solveInterceptValue;
-  window.__duo.solveInterceptValue = function () {
-    const r = base.call(this);
-    if (r && r.i !== undefined) return r;
-    const ax = this.interceptAxis(); if (!ax) return r;
-    const L = this.lineInGrid(); if (!L) return r;
-    const b = Math.round(L.at0 * 2) / 2;
-    const want = ax === 'y' ? [0, b] : [L.slope ? Math.round((-b / L.slope) * 2) / 2 : null, 0];
-    if (want[0] === null) return r;
-    const ann = [...document.querySelectorAll('[data-test="challenge-choice"] annotation')].map(x => x.textContent);
-    const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-    if (!ch.length) return r;
-    const S = ann.length === ch.length ? ann : ch.map(e => this.ascii(e.innerText));
-    const pair = s => {
-      const m = this.ascii(s).replace(/mathbf|textbf|text|\\|\{|\}|~|\s/g, '')
-        .match(/\((-?[\d.]+),(-?[\d.]+)\)/);
-      return m ? [parseFloat(m[1]), parseFloat(m[2])] : null;
-    };
-    let i = S.findIndex(s => { const q = pair(s); return q && q[0] === want[0] && q[1] === want[1]; });
-    if (i < 0) {
-      const v = ax === 'y' ? want[1] : want[0];
-      i = S.findIndex(s => { const q = this.numTok(s); return q !== null && Math.abs(q - v) < 1e-9; });
-    }
-    return i < 0 ? { miss: want.join(',') } : { i, want: want.join(',') };
-  };
-})();
-;'__duo ready';
+
 
 // intercepts can also come from a table of values
-(function () {
-  const base = window.__duo.solveInterceptValue;
-  window.__duo.solveInterceptValue = function () {
-    const r = base.call(this);
-    if (r && r.i !== undefined) return r;
-    const ax = this.interceptAxis(); if (!ax) return r;
-    const T = this.fnTable(); if (!T) return r;
-    const hit = ax === 'y' ? T.find(row => row[0] === 0) : T.find(row => row[1] === 0);
-    if (!hit) return r;
-    const want = ax === 'y' ? [0, hit[1]] : [hit[0], 0];
-    const ann = [...document.querySelectorAll('[data-test="challenge-choice"] annotation')].map(x => x.textContent);
-    const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-    if (!ch.length) return r;
-    const S = ann.length === ch.length ? ann : ch.map(e => this.ascii(e.innerText));
-    const pair = s => {
-      const m = this.ascii(s).replace(/mathbf|textbf|text|\\|\{|\}|~|\s/g, '')
-        .match(/\((-?[\d.]+),(-?[\d.]+)\)/);
-      return m ? [parseFloat(m[1]), parseFloat(m[2])] : null;
-    };
-    let i = S.findIndex(s => { const q = pair(s); return q && q[0] === want[0] && q[1] === want[1]; });
-    if (i < 0) {
-      const v = ax === 'y' ? want[1] : want[0];
-      i = S.findIndex(s => { const q = this.numTok(s); return q !== null && Math.abs(q - v) < 1e-9; });
-    }
-    return i < 0 ? { miss: want.join(',') } : { i, want: want.join(',') };
-  };
-})();
-;'__duo ready';
+
 
 // "Select the equation for the x/y-intercept": the setup equation, not its value.
 // x-intercept substitutes 0 for f(x) and keeps x ("0 = x - 5");
@@ -5703,13 +5352,7 @@ Object.assign(window.__duo, {
     return !!cur && cur.x === want[0] && cur.y === want[1];
   },
 });
-(function () {
-  const base = window.__duo.autoDrag;
-  window.__duo.autoDrag = async function () {
-    if (/plot the/i.test(this.prompt()) && this.plotTarget()) return await this.solvePlotPoint();
-    return await base.call(this);
-  };
-})();
+
 (function () {
   const base = window.__duo.plan;
   window.__duo.plan = function () {
@@ -5764,37 +5407,7 @@ window.__duo.solvePlotPoint = async function () {
 ;'__duo ready';
 
 // typed intercepts ("Enter the y-intercept value")
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')) {
-      const ax = this.interceptAxis();
-      if (ax) {
-        // formula first, then a table of values, then the drawn line
-        const L = this.promptLatex();
-        let ab = null;
-        for (let i = L.length - 1; i >= 0; i--) {
-          if (!/\(x\)\s*=|y\s*=/.test(this.ascii(L[i]))) continue;
-          ab = this.formulaAB(L[i]); if (ab) break;
-        }
-        let v = null;
-        if (ab) v = ax === 'y' ? ab.b : (ab.m ? -ab.b / ab.m : null);
-        if (v === null) {
-          const T = this.fnTable();
-          if (T) { const h = ax === 'y' ? T.find(r => r[0] === 0) : T.find(r => r[1] === 0); if (h) v = ax === 'y' ? h[1] : h[0]; }
-        }
-        if (v === null) {
-          const g = this.lineInGrid();
-          if (g) v = ax === 'y' ? g.at0 : (g.slope ? -g.at0 / g.slope : null);
-          if (v !== null) v = Math.round(v * 2) / 2;
-        }
-        if (v !== null && isFinite(v)) { this.type(String(v)); return String(v); }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // ---- inverses (unit 143) ----
 // The inverse of a point swaps its coordinates. The source point may be plotted on
@@ -5897,84 +5510,11 @@ window.__duo.solveDomainRange = function () {
 // y non-monotonic  -> a U: domain all reals, range bounded at the vertex
 // both monotonic   -> a half-curve (sqrt): both bounded at the endpoint that lies
 //                     inside the plot
-(function () {
-  const base = window.__duo.solveDomainRange;
-  window.__duo.solveDomainRange = function () {
-    const r = base.call(this);
-    if (r && r.i !== undefined) return r;
-    const A = this.ascii(this.promptLatex().join(' ')).replace(/mathbf|textbf|text|\\|\{|\}|~/g, ' ').toLowerCase();
-    const wantDomain = /domain/.test(A), wantRange = /range/.test(A);
-    if (!wantDomain && !wantRange) return r;
-    const c = this.curvePath(); if (!c) return r;
 
-    const N = 21, P = [];
-    for (let i = 0; i <= N; i++) P.push(c.at(i / N));
-    const mono = k => {
-      let up = 0, dn = 0;
-      for (let i = 1; i < P.length; i++) { const d = P[i][k] - P[i - 1][k]; if (d > 0.01) up++; else if (d < -0.01) dn++; }
-      return !(up && dn);
-    };
-    const xs = P.map(p => p[0]), ys = P.map(p => p[1]);
-    const xMono = mono(0), yMono = mono(1);
-
-    const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-    if (!ch.length) return r;
-    const ann = [...document.querySelectorAll('[data-test="challenge-choice"] annotation')].map(a => a.textContent);
-    // strip the braces too: the choice is wrapped \mathbf{\mathbf{...}}, so an
-    // anchored ^...$ match fails on the leftover "{{[1,infty)}}"
-    const S = (ann.length === ch.length ? ann : ch.map(e => this.ascii(e.innerText)))
-      .map(s => this.ascii(s).replace(/mathbf|textbf|text|\\|left|right|[{}]|\s/g, ''));
-    const allReals = () => S.findIndex(s => /\(-?infty,infty\)/.test(s) || (s.match(/infty/g) || []).length >= 2 && /^\(-infty/.test(s));
-    const bounded = (v, opensUp) => S.findIndex(s => {
-      const m = s.match(/^([\[(])(-?[\d.]+),infty\)$/);
-      if (m && opensUp) return Math.abs(+m[2] - v) < 0.3;
-      const m2 = s.match(/^\(-infty,(-?[\d.]+)([\])])$/);
-      if (m2 && !opensUp) return Math.abs(+m2[1] - v) < 0.3;
-      return false;
-    });
-
-    if (!xMono) {                                   // sideways
-      if (wantRange) { const i = allReals(); return i < 0 ? { miss: 'allreals' } : { i, want: 'allreals' }; }
-      const opensRight = xs[Math.floor(N / 2)] < xs[0];
-      const v = Math.round((opensRight ? Math.min(...xs) : Math.max(...xs)) * 2) / 2;
-      const i = bounded(v, opensRight);
-      return i < 0 ? { miss: v } : { i, want: v };
-    }
-    if (!yMono) {                                   // U shape
-      if (wantDomain) { const i = allReals(); return i < 0 ? { miss: 'allreals' } : { i, want: 'allreals' }; }
-      const opensUp = ys[Math.floor(N / 2)] < ys[0];
-      const v = Math.round((opensUp ? Math.min(...ys) : Math.max(...ys)) * 2) / 2;
-      const i = bounded(v, opensUp);
-      return i < 0 ? { miss: v } : { i, want: v };
-    }
-    return r;
-  };
-})();
-;'__duo ready';
 
 // "domain of the INVERSE" is the range of the original, and vice versa: answer by
 // flipping which axis the existing solver is asked about.
-(function () {
-  const base = window.__duo.solveDomainRange;
-  window.__duo.solveDomainRange = function () {
-    const A = this.ascii(this.promptLatex().join(' ')).replace(/mathbf|textbf|text|\\|\{|\}|~/g, ' ').toLowerCase();
-    if (!/inverse/.test(A)) return base.call(this);
-    const swapped = /domain/.test(A) ? 'range' : 'domain';
-    const real = this.promptLatex;
-    // temporarily present the prompt as asking about the other axis
-    this.promptLatex = function () { return real.call(this).concat(['\\text{' + swapped + '}']); };
-    try {
-      const orig = real.call(this).map(s => s);
-      const patched = () => orig.map(s => this.ascii(s)
-        .replace(/domain/gi, '__D__').replace(/range/gi, 'domain').replace(/__D__/g, 'range'));
-      this.promptLatex = patched;
-      return base.call(this);
-    } finally {
-      this.promptLatex = real;
-    }
-  };
-})();
-;'__duo ready';
+
 
 // Distinguishing a real endpoint from a CLIPPED one needs the plot's own bounds,
 // which are not the label extremes — the drawing area runs past the last label.
@@ -6020,21 +5560,7 @@ window.__duo.plotBounds = function () {
 // nothing selected, gets no verdict ("noblame") and spins until the info-loop guard
 // trips — the lesson never advances. Guessing is strictly better: a wrong answer is
 // graded, the question is replaced, and run2's 2-wrong halt still bounds the damage.
-(function () {
-  const base = window.__duo.solveChoices;
-  window.__duo.solveChoices = function () {
-    const r = base.call(this);
-    // ok:true with an EMPTY idx is the real deadlock: run2 treats it as handled,
-    // clicks nothing, and CHECK returns no verdict forever
-    if (r && r.ok && r.idx && r.idx.length) return r;
-    const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-    if (!ch.length) return r;
-    this.S.guesses = (this.S.guesses || 0) + 1;
-    if (this.S.guesses > 3) return r;             // don't guess a whole lesson away
-    return { ok: true, idx: [0], guess: true };
-  };
-})();
-;'__duo ready';
+
 
 // ---- guided inverse derivation (unit 143 L3) ----
 // Steps: "swap the x and y variables" -> pick x = f(y); then solve for y.
@@ -6125,7 +5651,7 @@ window.__duo.RULES.splice(2, 0, ['solveInverseResult', /divide every term|multip
 
 // pairs of an equation and its variable-swapped inverse: y = -2x  <->  x = -2y
 window.__duo.swapPairs = async function () {
-  const tk = [...document.querySelectorAll('[data-test$="challenge-tap-token"]')];
+  const tk = [...document.querySelectorAll('[data-test*="challenge-tap-token"]:not([data-test="challenge-tap-token-text"])')];
   if (tk.length < 4) return null;
   const norm = tk.map(e => {
     const a = e.querySelector('annotation');
@@ -6148,18 +5674,7 @@ window.__duo.swapPairs = async function () {
 // Guard every pairs solver: taps that do not actually match bounce back, the solver
 // still reports a count, and run2 replays the same screen forever ("p3,p3,p3...").
 // Count solved tokens before and after; report null when nothing changed.
-(function () {
-  const chain = window.__duo.ineqPairs;
-  window.__duo.ineqPairs = async function () {
-    const solved = () => [...document.querySelectorAll('[data-test$="challenge-tap-token"]')]
-      .filter(e => /_2wryV/.test(String(e.className))).length;
-    const before = solved();
-    const r = (await chain.call(this)) || (await this.swapPairs());
-    await this.sleep(350);
-    return solved() > before ? r : null;
-  };
-})();
-;'__duo ready';
+
 
 // "Complete the pattern" where the rule is a variable swap: y=4x^2 -> x=4y^2
 window.__duo.solveSwapPattern = function () {
@@ -6191,7 +5706,11 @@ window.__duo.RULES.splice(2, 0, ['solveSwapPattern', /complete the pattern/i]);
 // Rather than model how each inverse is written (fraction, root, nested), verify
 // numerically: a choice g is the inverse of f when f(g(t)) == t on sample points.
 Object.assign(window.__duo, {
-  // LaTeX expression -> a JS function of x
+  // LaTeX expression -> a JS function of x. The normaliser only strips LaTeX
+  // syntax down to a plain algebraic string; mathjs (loaded by run.mjs as a
+  // local bundle, scripts/mathjs.min.js — no network dependency) does the
+  // actual parsing/evaluation, including implicit multiplication, sqrt, abs,
+  // and pi, so none of that needs hand-rolling here any more.
   compile(src) {
     let t = this.ascii(src)
       // strip the COMMAND WITH ITS BACKSLASH: dropping just the word leaves "\{...}",
@@ -6209,21 +5728,19 @@ Object.assign(window.__duo, {
       t = m[1];
     }
     t = t.replace(/^[a-z]\(x\)=|^[a-z]\^\{?-1\}?\(x\)=|^y=/, '');
+    t = t.replace(/\\cdot|\\times/g, '*').replace(/\\div/g, '/').replace(/\\pi/g, 'pi');
     // \frac{a}{b} and \sqrt{a}, innermost first
     for (let i = 0; i < 6; i++) {
       t = t.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, '(($1)/($2))')
-           .replace(/\\sqrt\{([^{}]*)\}/g, 'Math.sqrt($1)')
-           .replace(/\\sqrt(\d+)/g, 'Math.sqrt($1)');
+           .replace(/\\sqrt\{([^{}]*)\}/g, 'sqrt($1)')
+           .replace(/\\sqrt(\d+)/g, 'sqrt($1)');
     }
     if (/\\/.test(t)) return null;                 // an unhandled command
-    t = t.replace(/\^\{([^{}]*)\}/g, '**($1)').replace(/\^(-?\d+)/g, '**($1)');
-    // also ')x' — a \frac coefficient expands to '((5)/(2))x'
-    t = t.replace(/(\d|\))(\()/g, '$1*$2').replace(/(\d|\))(x)/g, '$1*$2').replace(/(x)(\()/g, '$1*$2');
-    // whitelist by TOKEN, not by letter soup: the old character class happened to
-    // allow every letter in "Math.sqrt" but not the b of "Math.abs"
-    if (!/^(?:Math\.(?:sqrt|abs)|[-+*/().0-9x]|\*\*)+$/.test(t)) return null;
+    t = t.replace(/\^\{([^{}]*)\}/g, '^($1)');
+    if (typeof math === 'undefined') return null;   // mathjs not loaded
     try {
-      const f = Function('x', '"use strict";return (' + t + ')');
+      const node = math.parse(t), code = node.compile();
+      const f = x => code.evaluate({ x });
       f(2); return f;
     } catch (e) { return null; }
   },
@@ -6291,46 +5808,10 @@ Object.assign(window.__duo, {
 });
 
 // typed: "At what x-value does the function change?"
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')
-        && /x-value does the function change|where does the function change/i.test(this.prompt())) {
-      const b = this.breakpoint();
-      if (b !== null) { this.type(String(b)); return String(b); }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // more piecewise steps: the y-value of the horizontal piece, and each piece's slope
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    const inp = document.querySelector('[data-test="challenge-text-input"]');
-    if (inp) {
-      const P = this.prompt();
-      const pieces = this.pieces();
-      if (pieces) {
-        if (/y-value of the horizontal piece|horizontal piece/i.test(P)) {
-          const h = pieces.find(p => p.slope !== null && Math.abs(p.slope) < 0.05);
-          if (h) { const v = String(Math.round(h.lo[1] * 2) / 2); this.type(v); return v; }
-        }
-        if (/slope of the (other|slanted|non-horizontal)/i.test(P)) {
-          const s = pieces.find(p => p.slope !== null && Math.abs(p.slope) >= 0.05);
-          if (s) { const v = String(Math.round(s.slope * 100) / 100); this.type(v); return v; }
-        }
-        if (/y-intercept of the (other|slanted)/i.test(P)) {
-          const s = pieces.find(p => p.slope !== null && Math.abs(p.slope) >= 0.05);
-          if (s) { const v = String(Math.round((s.lo[1] - s.slope * s.lo[0]) * 2) / 2); this.type(v); return v; }
-        }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // evaluate the drawn piecewise function at an x, by picking the piece whose
 // x-interval contains it
@@ -6368,55 +5849,11 @@ window.__duo.RULES.splice(2, 0, ['solvePiecewiseEval', null]);
 ;'__duo ready';
 
 // typed evaluation of a drawn piecewise function ("Enter the value when x = -1")
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')) {
-      const A = this.ascii(this.promptLatex().join(' ')).replace(/mathbf|textbf|text|\\|\{|\}|~|\s/g, '');
-      const m = A.match(/x&?=(-?[\d.]+)/);
-      if (m && this.pieces()) {
-        const y = this.pieceAt(parseFloat(m[1]));
-        if (y !== null) { const v = String(Math.round(y * 2) / 2); this.type(v); return v; }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // reverse piecewise lookup: "Enter the input for f(x) = 2" — search each piece for
 // the x that produces the target y
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')) {
-      const A = this.ascii(this.promptLatex().join(' ')).replace(/mathbf|textbf|text|\\|\{|\}|~|\s/g, '');
-      const m = A.match(/f\(x\)&?=(-?[\d.]+)/);
-      const P = this.pieces();
-      if (m && P) {
-        const want = parseFloat(m[1]);
-        for (const p of P) {
-          if (p.slope === null) continue;
-          if (Math.abs(p.slope) < 1e-6) {
-            // horizontal piece: any x in it works; prefer a whole number
-            if (Math.abs(p.lo[1] - want) < 0.05) {
-              const x = Math.round((p.lo[0] + p.hi[0]) / 2);
-              this.type(String(x)); return String(x);
-            }
-            continue;
-          }
-          const x = p.lo[0] + (want - p.lo[1]) / p.slope;
-          if (x >= p.lo[0] - 0.05 && x <= p.hi[0] + 0.05) {
-            const v = String(Math.round(x * 2) / 2);
-            this.type(v); return v;
-          }
-        }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // ---- written piecewise: \begin{cases} expr & cond \\ expr & cond \end{cases} ----
 Object.assign(window.__duo, {
@@ -6476,7 +5913,7 @@ window.__duo.RULES.splice(2, 0, ['solveCasesEval', null]);
       .replace(/\|([^|]*)\|/g, '\\abs{$1}');
     if (/\\abs\{/.test(t)) {
       for (let i = 0; i < 4; i++) t = t.replace(/\\abs\{([^{}]*)\}/g, 'ABS($1)');
-      const f = base.call(this, t.replace(/ABS\(/g, 'Math.abs('));
+      const f = base.call(this, t.replace(/ABS\(/g, 'abs('));
       if (f) return f;
     }
     return base.call(this, src);
@@ -6486,32 +5923,7 @@ window.__duo.RULES.splice(2, 0, ['solveCasesEval', null]);
 
 // "Complete the table" for a written piecewise: the blank is a typed f(x) for a
 // given x, which comes from the table row rather than the prompt text
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')) {
-      let rows = null;
-      for (const s of this.promptLatex()) { rows = this.casesOf(s); if (rows && rows.length) break; }
-      if (rows && rows.length) {
-        const A = this.ascii(this.promptLatex().join(' ')).replace(/[~\s]/g, '');
-        let x = null;
-        let m = A.match(/f\((-?[\d.]+)\)/) || A.match(/x&?=(-?[\d.]+)/);
-        if (m) x = parseFloat(m[1]);
-        if (x === null) {
-          // the missing x sits in the table: the row whose f(x) cell is blank
-          const T = this.fnTable();
-          if (T) { const r = T.find(row => isNaN(row[1])); if (r) x = r[0]; }
-        }
-        if (x !== null) {
-          const row = rows.find(r => r.test(x));
-          if (row) { const v = row.f(x); if (isFinite(v)) { const s = String(Math.round(v * 100) / 100); this.type(s); return s; } }
-        }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // fnTable drops any row without two numbers — but in "complete the table" the row
 // we need is exactly the one with a blank cell. Expose the raw rows too.
@@ -6545,45 +5957,12 @@ window.__duo.fnTableRows = function () {
   }
   return null;
 };
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')) {
-      let rows = null;
-      for (const s of this.promptLatex()) { rows = this.casesOf(s); if (rows && rows.length) break; }
-      const T = this.fnTableRows();
-      if (rows && rows.length && T) {
-        // the blank row has one number where the others have two
-        const solo = T.filter(r => r.length === 1);
-        if (solo.length === 1) {
-          const x = solo[0][0];
-          const row = rows.find(r => r.test(x));
-          if (row) { const v = row.f(x); if (isFinite(v)) { const s = String(Math.round(v * 100) / 100); this.type(s); return s; } }
-        }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // The choice-screen deadlock has a typed twin: when no rule produces an answer the
 // loop presses CHECK with an empty box, gets no verdict, and spins. Type something
 // so the answer is graded and the question is replaced. Capped, like the guess.
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    const r = prev.call(this);
-    if (r !== null && r !== undefined && r !== '') return r;
-    const inp = document.querySelector('[data-test="challenge-text-input"]');
-    if (!inp) return r;
-    this.S.typeGuesses = (this.S.typeGuesses || 0) + 1;
-    if (this.S.typeGuesses > 3) return r;
-    this.type('0');
-    return '0';
-  };
-})();
-;'__duo ready';
+
 
 // ---- "Complete the table" cell widget ----
 // No text input and no choices: the frame holds table cells (.empty-cell) and the
@@ -6633,14 +6012,7 @@ Object.assign(window.__duo, {
     return did > 0;
   },
 });
-(function () {
-  const base = window.__duo.autoDrag;
-  window.__duo.autoDrag = async function () {
-    const T = this.tableCells();
-    if (T && T.cells.some(c => c.empty)) { if (await this.solveTableFill()) return true; }
-    return await base.call(this);
-  };
-})();
+
 (function () {
   const base = window.__duo.plan;
   window.__duo.plan = function () {
@@ -6746,49 +6118,10 @@ window.__duo.tapIn = function (el, f) {
 ;'__duo ready';
 
 // same typed lookup under more phrasings: "Enter the output when x = 2"
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')) {
-      const A = this.ascii(this.promptLatex().join(' ')).replace(/mathbf|textbf|text|\\|\{|\}|~|\s/g, '');
-      const m = A.match(/x&?=(-?[\d.]+)/);
-      if (m && /enter the (output|value)|what is the (output|value)/i.test(this.prompt())) {
-        const x = parseFloat(m[1]);
-        // the drawn function first, then a table, then a written piecewise
-        let y = this.pieces() ? this.pieceAt(x) : null;
-        if (y === null) { const T = this.fnTable(); const h = T && T.find(r => r[0] === x); if (h) y = h[1]; }
-        if (y === null) {
-          let rows = null;
-          for (const s of this.promptLatex()) { rows = this.casesOf(s); if (rows && rows.length) break; }
-          const row = rows && rows.find(r => r.test(x));
-          if (row) y = row.f(x);
-        }
-        if (y !== null && isFinite(y)) { const v = String(Math.round(y * 100) / 100); this.type(v); return v; }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "Enter the slope when x = 5": the slope of the piece containing that x
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]') && /slope/i.test(this.prompt())) {
-      const A = this.ascii(this.promptLatex().join(' ')).replace(/mathbf|textbf|text|\\|\{|\}|~|\s/g, '');
-      const m = A.match(/x&?=(-?[\d.]+)/);
-      const P = this.pieces();
-      if (m && P) {
-        const x = parseFloat(m[1]);
-        const p = P.find(q => x >= q.lo[0] - 0.01 && x <= q.hi[0] + 0.01);
-        if (p && p.slope !== null) { const v = String(Math.round(p.slope * 100) / 100); this.type(v); return v; }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // At a step boundary two pieces contain x. Steps are drawn left-closed, so the
 // value belongs to the piece that STARTS at x, not the one that ends there —
@@ -6861,16 +6194,7 @@ Object.assign(window.__duo, {
     return Math.abs((this.evalCurrentX() ?? NaN) - want) < 1e-9;
   },
 });
-(function () {
-  const base = window.__duo.autoDrag;
-  window.__duo.autoDrag = async function () {
-    if (this.evalTargetX() !== null && this.evalCurrentX() !== null) {
-      if (await this.solveEvalSlider()) return true;
-    }
-    return await base.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // ---- table-fill via the diagram's own API (unit 144/145) ----
 // This challenge is a mathChallengeBlob whose table is filled by DRAGGING tokens,
@@ -7232,43 +6556,7 @@ window.__duo.diagram = function () {
 // "Fill in the blank" over a diagram table: the blank cell renders as "?" (so
 // M.rows shows it as text, not null), and the answer is TYPED, not dragged.
 // Infer the rule from the complete rows and type the missing value.
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (!document.querySelector('[data-test="challenge-text-input"]')) return prev.call(this);
-    const T = this.tableCells(); if (!T) return prev.call(this);
-    const blank = T.cells.find(c => c.empty || String(c.el.textContent).trim() === '?');
-    if (!blank) return prev.call(this);
-    const row = +blank.el.getAttribute('data-row'), col = +blank.el.getAttribute('data-col');
-    if (isNaN(row) || isNaN(col)) return prev.call(this);
 
-    const num = s => parseFloat(this.ascii(String(s)));
-    const pairs = T.cells.reduce((acc, c) => {
-      const r = +c.el.getAttribute('data-row'), k = +c.el.getAttribute('data-col');
-      (acc[r] = acc[r] || [])[k] = String(c.el.textContent).trim();
-      return acc;
-    }, []);
-    const known = pairs.filter((p, i) => i !== row && p && !isNaN(num(p[0])) && !isNaN(num(p[1])))
-      .map(p => [num(p[0]), num(p[1])]);
-    if (known.length < 2) return prev.call(this);
-
-    const cands = [x => Math.abs(x), x => x, x => -x, x => x * x];
-    const [a, b] = known;
-    if (a[0] !== b[0]) { const m = (b[1] - a[1]) / (b[0] - a[0]), c0 = a[1] - m * a[0]; cands.push(x => m * x + c0); }
-    const fn = cands.find(f => known.every(([x, y]) => Math.abs(f(x) - y) < 1e-6));
-    if (!fn) return prev.call(this);
-
-    const other = num(pairs[row][1 - col]);
-    if (isNaN(other)) return prev.call(this);
-    // col 1 is y = f(x); col 0 would be the inverse, which is ambiguous — skip it
-    if (col !== 1) return prev.call(this);
-    const v = fn(other);
-    if (!isFinite(v)) return prev.call(this);
-    const s = String(Math.round(v * 100) / 100);
-    this.type(s); return s;
-  };
-})();
-;'__duo ready';
 
 // A blank cell does NOT always mean a drag: "Fill in the blank" shows a "?" cell but
 // wants a typed answer. If there is a text input, never claim this as a drag plan —
@@ -7286,23 +6574,7 @@ window.__duo.diagram = function () {
 
 // A constant equation (y = 7) has no variable, so linear() returns null and every
 // slope/intercept solver gave up. Its slope is 0 and its intercept is the constant.
-(function () {
-  const base = window.__duo.formulaAB;
-  window.__duo.formulaAB = function (s) {
-    const r = base.call(this, s);
-    if (r) return r;
-    const t = this.ascii(s).replace(/mathbf|textbf|text|\\|\{|\}|~|\s/g, '');
-    const m = t.match(/^(?:[a-z]\(x\)|y)=(-?\d+(?:\.\d+)?)$/);
-    return m ? { m: 0, b: parseFloat(m[1]) } : null;
-  };
-  const baseSlope = window.__duo.slopeOfFormula;
-  window.__duo.slopeOfFormula = function (s) {
-    const v = baseSlope.call(this, s);
-    if (v !== null && v !== undefined) return v;
-    const ab = this.formulaAB(s);
-    return ab ? ab.m : null;
-  };
-})();
+
 window.__duo.RULES = window.__duo.RULES.filter(r => r[0] !== 'solveRateValue');
 window.__duo.RULES.splice(2, 0,
   ['solveRateValue', /select the rate of change|what is the rate of change|select the slope|what is the slope/i]);
@@ -7352,7 +6624,7 @@ Object.assign(window.__duo, {
   },
 
   async linePairs() {
-    const tk = [...document.querySelectorAll('[data-test$="challenge-tap-token"]')];
+    const tk = [...document.querySelectorAll('[data-test*="challenge-tap-token"]:not([data-test="challenge-tap-token-text"])')];
     if (tk.length < 4) return null;
     const mb = tk.map(e => { const a = e.querySelector('annotation'); return this.lineMB(a ? a.textContent : e.innerText); });
     const done = e => /_2wryV/.test(String(e.className));
@@ -7368,18 +6640,7 @@ Object.assign(window.__duo, {
     return n ? { pairs: n } : null;
   },
 });
-(function () {
-  const base = window.__duo.ineqPairs;
-  window.__duo.ineqPairs = async function () {
-    const solved = () => [...document.querySelectorAll('[data-test$="challenge-tap-token"]')]
-      .filter(e => /_2wryV/.test(String(e.className))).length;
-    const before = solved();
-    const r = (await base.call(this)) || (await this.linePairs());
-    await this.sleep(350);
-    return solved() > before ? r : null;
-  };
-})();
-;'__duo ready';
+
 
 // Tap tokens are real <button>s and respond to the NATIVE el.click(), while the
 // synthetic pointer+mouse sequence is ignored on some screens. Worse, when both
@@ -7438,26 +6699,7 @@ window.__duo.RULES.splice(2, 0,
 ;'__duo ready';
 
 // typed slope / y-intercept from any line form, standard included
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')) {
-      const P = this.prompt();
-      const wantSlope = /slope/i.test(P), wantB = /y-intercept|intercept/i.test(P);
-      if (wantSlope || wantB) {
-        for (const s of this.promptLatex().slice().reverse()) {
-          if (!/=/.test(this.ascii(s))) continue;
-          const mb = this.lineMB(s);
-          if (!mb) continue;
-          const v = wantSlope ? mb[0] : mb[1];
-          if (isFinite(v)) { const t = String(Math.round(v * 1000) / 1000); this.type(t); return t; }
-        }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "Create a slope of 1" is the same task as "create a line with rate of change m"
 (function () {
@@ -7750,24 +6992,7 @@ window.__duo.RULES.splice(2, 0, ['solveSystemSetup', /equation to find the inter
 ;'__duo ready';
 
 // typed system answers: "Enter the x-value / y-value of the intersection"
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')) {
-      const P = this.prompt();
-      const want = this.intersection();
-      if (want) {
-        const A = this.ascii(this.promptLatex().join(' ')).replace(/mathbf|textbf|text|\\|\{|\}|~/g, ' ');
-        const wantsX = /x\s*-?\s*value|value of\s*x|solve for\s*x/i.test(A) || /x/.test(P) && !/y/.test(P);
-        const wantsY = /y\s*-?\s*value|value of\s*y|solve for\s*y/i.test(A);
-        if (wantsY) { const v = String(want[1]); this.type(v); return v; }
-        if (wantsX) { const v = String(want[0]); this.type(v); return v; }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // ---- "Create a system with N intersections" (unit 147) ----
 // Two lines built from four draggable points, and the prompt echoes the live count
@@ -7877,20 +7102,7 @@ window.__duo.systemCount = function () {
   if (Math.abs(a.m - b.m) > 1e-9) return 1;
   return Math.abs(a.b - b.b) < 1e-9 ? Infinity : 0;
 };
-(function () {
-  const base = window.__duo.solveIntersectionCountChoice;
-  window.__duo.solveIntersectionCountChoice = function () {
-    const r = base.call(this);
-    if (r && r.i !== undefined) return r;
-    const n = this.systemCount(); if (n === null) return r;
-    const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-    if (!ch.length) return r;
-    const S = ch.map(e => this.ascii(e.innerText).replace(/\s/g, '').toLowerCase());
-    const i = S.findIndex(s => n === Infinity ? /infinite|infty|∞/.test(s) : parseFloat(s) === n);
-    return i < 0 ? { miss: String(n) } : { i, want: String(n) };
-  };
-})();
-;'__duo ready';
+
 
 // choice innerText is DOUBLED ("1" comes back as "11"), so parseFloat reads 11
 (function () {
@@ -7921,41 +7133,11 @@ window.__duo.RULES.splice(2, 0,
 ;'__duo ready';
 
 // "Enter the x-/y-COORDINATE of the intersection point" — another phrasing
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')) {
-      const A = this.ascii(this.promptLatex().join(' ')).replace(/mathbf|textbf|text|\\|\{|\}|~/g, ' ');
-      if (/intersection|solution/i.test(A)) {
-        const want = this.intersection();
-        if (want) {
-          if (/y\s*-?\s*(coordinate|value)/i.test(A)) { const v = String(want[1]); this.type(v); return v; }
-          if (/x\s*-?\s*(coordinate|value)/i.test(A)) { const v = String(want[0]); this.type(v); return v; }
-        }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "Enter the number of intersections" — typed count. Must sit ABOVE the generic
 // typed handlers, which otherwise answer with a coordinate.
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')) {
-      const A = this.ascii(this.promptLatex().join(' ')).replace(/mathbf|textbf|text|\\|\{|\}|~/g, ' ');
-      if (/number of (intersections|solutions)/i.test(A)) {
-        let n = this.countNow();
-        if (n === null || n === undefined) n = this.systemCount();
-        if (n !== null && n !== undefined && isFinite(n)) { const v = String(n); this.type(v); return v; }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // ---- two-variable inequalities (unit 148) ----
 // "Select a solution to the inequality y >= -x": test each ordered-pair choice.
@@ -7996,50 +7178,7 @@ window.__duo.RULES.splice(2, 0, ['solveIneq2Point', /solution to the inequality|
 
 // "Graph the inequality" in two variables: place the two points on the BOUNDARY
 // line (y = mx + b from the inequality), same as graphing the line.
-(function () {
-  const base = window.__duo.solveGraphLine;
-  window.__duo.solveGraphLine = async function () {
-    const ok = await base.call(this);
-    if (ok) return true;
-    const comps = this.dragComponents();
-    if (comps.length !== 2) return false;
-    let mb = null;
-    for (const s of this.promptLatex().slice().reverse()) {
-      const t = this.ineqNorm(s);
-      const m = t.match(/^y(?:<=|>=|<|>)(.+)$/);
-      if (!m) continue;
-      const v = this.lineMB('y=' + m[1]);
-      if (v) { mb = v; break; }
-    }
-    if (!mb) return false;
-    const R = this.gridRange() || { lo: -5, hi: 5 };
-    const pts = [];
-    for (let x = R.lo; x <= R.hi && pts.length < 2; x++) {
-      const y = mb[0] * x + mb[1];
-      if (Number.isInteger(y) && y >= R.lo && y <= R.hi) pts.push([x, y]);
-    }
-    if (pts.length < 2) return false;
-    comps.sort((a, b) => a.P.x - b.P.x);
-    const a = await this.moveComponent(comps[0], pts[0]);
-    const b = await this.moveComponent(comps[1], pts[1]);
-    return a && b;
-  };
-  const baseDrag = window.__duo.autoDrag;
-  window.__duo.autoDrag = async function () {
-    if (this.dragComponents().length === 2 && /inequality/i.test(this.tex())) {
-      if (await this.solveGraphLine()) return true;
-    }
-    return await baseDrag.call(this);
-  };
-  const basePlan = window.__duo.plan;
-  window.__duo.plan = function () {
-    const p = basePlan.call(this); if (p) return p;
-    if (this.dragComponents().length === 2 && /inequality/i.test(this.tex()))
-      return { kind: 'graphineq', from: [0, 0], to: [0, 0] };
-    return null;
-  };
-})();
-;'__duo ready';
+
 
 // "Select the solution" given an inequality and a value for x: substitute and
 // compare against the choices, which are themselves inequalities in y.
@@ -8181,7 +7320,7 @@ Object.assign(window.__duo, {
   },
 
   async powPairs() {
-    const tk = [...document.querySelectorAll('[data-test$="challenge-tap-token"]')];
+    const tk = [...document.querySelectorAll('[data-test*="challenge-tap-token"]:not([data-test="challenge-tap-token-text"])')];
     if (tk.length < 4) return null;
     const val = tk.map(e => { const a = e.querySelector('annotation'); return this.powVal(a ? a.textContent : e.innerText); });
     const done = e => /_2wryV/.test(String(e.className));
@@ -8196,18 +7335,7 @@ Object.assign(window.__duo, {
     return n ? { pairs: n } : null;
   },
 });
-(function () {
-  const base = window.__duo.ineqPairs;
-  window.__duo.ineqPairs = async function () {
-    const solved = () => [...document.querySelectorAll('[data-test$="challenge-tap-token"]')]
-      .filter(e => /_2wryV/.test(String(e.className))).length;
-    const before = solved();
-    const r = (await base.call(this)) || (await this.powPairs());
-    await this.sleep(350);
-    return solved() > before ? r : null;
-  };
-})();
-;'__duo ready';
+
 
 // ---- brute-force pairs fallback ----
 // Every new unit brings a new pairing rule, and each one used to stall the loop
@@ -8215,7 +7343,7 @@ Object.assign(window.__duo, {
 // the tokens simply do not stick — so just try combinations until they all latch.
 // This removes the whole class of pairs stalls.
 window.__duo.bruteForcePairs = async function () {
-  const all = () => [...document.querySelectorAll('[data-test$="challenge-tap-token"]')];
+  const all = () => [...document.querySelectorAll('[data-test*="challenge-tap-token"]:not([data-test="challenge-tap-token-text"])')];
   const done = e => /_2wryV/.test(String(e.className));
   if (all().length < 4) return null;
   let matched = 0;
@@ -8246,7 +7374,7 @@ window.__duo.bruteForcePairs = async function () {
 (function () {
   const base = window.__duo.ineqPairs;
   window.__duo.ineqPairs = async function () {
-    const solved = () => [...document.querySelectorAll('[data-test$="challenge-tap-token"]')]
+    const solved = () => [...document.querySelectorAll('[data-test*="challenge-tap-token"]:not([data-test="challenge-tap-token-text"])')]
       .filter(e => /_2wryV/.test(String(e.className))).length;
     const before = solved();
     let r = await base.call(this);
@@ -8438,28 +7566,7 @@ window.__duo.RULES.splice(2, 0, ['solveRadicalMatch', null]);
 
 // typed answers where \duoblank{} holds the value — including a fraction, which is
 // typed as "3/10" rather than as LaTeX
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')) {
-      const raw = this.blankRaw();
-      if (raw) {
-        let t = this.ascii(raw)
-          .replace(/\\(mathbf|textbf|text)\s*/g, '')
-          .replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, '$1/$2')
-          .replace(/[{}~\s]/g, '');
-        if (/^[-+*/().0-9]+$/.test(t)) {
-          // a bare arithmetic blank ("1/10+7/10") should be entered as its value
-          const v = this.evalExpr(t);
-          const out = (v !== null && !/\//.test(t)) ? String(v) : t;
-          this.type(out); return out;
-        }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // ---- simplify radicals (unit 150 L4) ----
 // Guided steps: largest perfect-square factor, then the split, then the result.
@@ -8883,18 +7990,7 @@ window.__duo.solveFactorPairs = function () {
   });
   return idx.length ? { ok: true, idx } : null;
 };
-(function () {
-  const base = window.__duo.solveChoices;
-  window.__duo.solveChoices = function () {
-    const A = this.ascii(this.promptLatex().join(' '));
-    if (/factor pairs?/i.test(A)) {
-      const r = this.solveFactorPairs();
-      if (r) return r;
-    }
-    return base.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // choice innerText is doubled ("(x+3)(x+5)" comes back twice), which broke the
 // \duoblank string match whenever the choices had no LaTeX annotations
@@ -8922,37 +8018,12 @@ window.__duo.solveFactorPairs = function () {
 // The guided text accumulates, so "Find the factor pairs of 15" was still present
 // when the question had moved on to writing the factored form — and the factor-pair
 // branch hijacked it. Gate on the CHOICES looking like "a and b".
-(function () {
-  const base = window.__duo.solveChoices;
-  window.__duo.solveChoices = function () {
-    const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-    const looksLikePairs = ch.length && ch.every(e => /\d+\s*and\s*\d+/i.test(this.ascii(e.innerText)));
-    if (looksLikePairs) {
-      const r = this.solveFactorPairs();
-      if (r) return r;
-    }
-    return base.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // \duoblank{} carries the answer verbatim, so when it resolves to exactly one choice
 // it must WIN over everything else. An older multi-select path was returning
 // idx:[0,1] here — selecting both, which toggles down to the wrong one.
-(function () {
-  const base = window.__duo.solveChoices;
-  window.__duo.solveChoices = function () {
-    if (document.querySelectorAll('[data-test="challenge-choice"]').length) {
-      for (const fn of ['solveBlankChoice', 'solveDuoblank']) {
-        if (typeof this[fn] !== 'function') continue;
-        let r; try { r = this[fn](); } catch (e) { continue; }
-        if (r && r.i !== undefined) return { ok: true, idx: [r.i], via: fn };
-      }
-    }
-    return base.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // ---- algebraic equivalence (unit 155: expand / factor) ----
 // Any "which of these equals this expression" question — factored vs expanded,
@@ -9188,25 +8259,7 @@ window.__duo.solveLinearQuadratic = function () {
 window.__duo.RULES.splice(2, 0, ['solveLinearQuadratic', null]);
 
 // 2. typed differences ("Enter the constant first/second difference")
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')) {
-      const A = this.ascii(this.promptLatex().join(' ')).toLowerCase();
-      if (/difference/.test(A)) {
-        const T = this.fnTable();
-        if (T && T.length >= 3) {
-          const ys = T.map(r => r[1]);
-          const d1 = ys.slice(1).map((v, i) => v - ys[i]);
-          const v = /second difference/.test(A) ? d1.slice(1).map((x, i) => x - d1[i])[0] : d1[0];
-          if (v !== undefined && isFinite(v)) { const s = String(v); this.type(s); return s; }
-        }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "Create f(2) = 6" where the slider IS a coefficient inside the expression:
 // f(2) = \duodisplay{..}{cur} \cdot 2^2 + 2. Solve for the value that makes the
@@ -9375,24 +8428,7 @@ window.__duo.vertexOf = function () {
 
 // typed parabola answers: minimum / maximum value (the vertex's y), and the axis or
 // vertex x when asked for
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')) {
-      const A = this.ascii(this.promptLatex().join(' ')).toLowerCase();
-      if (/minimum value|maximum value|axis of symmetry|vertex/.test(A)) {
-        const v = this.vertexOf();
-        if (v) {
-          const wantY = /minimum value|maximum value|y\s*-?\s*value/.test(A);
-          const out = String(wantY ? v[1] : v[0]);
-          this.type(out); return out;
-        }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // Range of a parabola given by FORMULA: y = a(x-h)^2 + k has range [k, inf) when
 // a > 0 and (-inf, k] when a < 0. Closed bracket, since the vertex is attained.
@@ -9499,39 +8535,7 @@ window.__duo.RULES.splice(2, 0, ['solveFormulaForConstraint', null]);
 ;'__duo ready';
 
 // "Enter the leading / linear / constant coefficient" of a quadratic
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')) {
-      const A = this.ascii(this.promptLatex().join(' ')).toLowerCase();
-      const which = /leading coefficient/.test(A) ? 2
-        : (/linear coefficient/.test(A) ? 1
-        : (/constant (coefficient|term)/.test(A) ? 0 : null));
-      if (which !== null) {
-        for (const line of this.promptLatex().slice().reverse()) {
-          const t = this.ascii(line).replace(/mathbf|textbf|text|\\|\{|\}|~|\s/g, '');
-          const rhs = (t.split('=')[1] || ''); if (!rhs) continue;
-          const v = (rhs.match(/[a-z]/) || ['x'])[0];
-          const coef = {};
-          for (const raw of (rhs.match(/[+-]?[^+-]+/g) || [])) {
-            const m = raw.match(new RegExp('^([+-]?)(\\d*)(?:' + v + '(?:\\^(\\d+))?)?$'));
-            if (!m) { continue; }
-            const sign = m[1] === '-' ? -1 : 1;
-            const c = m[2] === '' ? 1 : +m[2];
-            const deg = new RegExp(v).test(raw) ? (m[3] ? +m[3] : 1) : 0;
-            coef[deg] = (coef[deg] || 0) + sign * c;
-          }
-          if (Object.keys(coef).length) {
-            const out = String(coef[which] || 0);
-            this.type(out); return out;
-          }
-        }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "Graph a function with zeros at -2, 2" where the slider fills a factor:
 // y = (x+2)(x - \duodisplay{..}{cur}). Pick the slider value that makes the stated
@@ -9750,66 +8754,11 @@ window.__duo.solveZeros = function () {
 window.__duo.RULES.splice(2, 0, ['solveZeros', /zeros?|roots?/i]);
 
 // typed: "Enter a zero of the function"
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')) {
-      const A = this.ascii(this.promptLatex().join(' '))
-        .replace(/mathbf|textbf|text|\\|\{|\}|~/g, ' ').toLowerCase();
-      if (/zeros?\b|roots?\b/.test(A)) {
-        const r = this.zerosOf();
-        if (r && r.length) { const s = String(r[0]); this.type(s); return s; }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // zeros read off a DRAWN curve (no formula in the prompt): use the parabola fit's
 // discriminant, else the x-values where the sampled curve crosses y = 0
-(function () {
-  const base = window.__duo.zerosOf;
-  window.__duo.zerosOf = function () {
-    const r = base.call(this);
-    if (r && r.length) return r;
-    const F = this.parabolaFit();
-    if (F && Math.abs(F.a) > 1e-6) {
-      const disc = F.b * F.b - 4 * F.a * F.c;
-      if (disc >= -0.05) {
-        const d = Math.sqrt(Math.max(disc, 0));
-        return [(-F.b - d) / (2 * F.a), (-F.b + d) / (2 * F.a)]
-          .map(v => Math.round(v * 2) / 2).sort((a, b) => a - b);
-      }
-    }
-    // straight or piecewise: find sign changes in the sampled points
-    const g = this.grid2D(); if (!g) return null;
-    const d = g.f.contentDocument, fr = g.f.getBoundingClientRect();
-    const pts = [];
-    for (const p of d.querySelectorAll('path,line,polyline')) {
-      if (!String(p.getAttribute('class') || '').split(/\s+/).includes('line')) continue;
-      if (typeof p.getPointAtLength !== 'function') continue;
-      let L = 0; try { L = p.getTotalLength(); } catch (e) { continue; }
-      const m = p.getScreenCTM(); if (!L || !m) continue;
-      for (let i = 0; i <= 60; i++) {
-        const q = p.getPointAtLength((i / 60) * L);
-        pts.push(g.toXY(fr.left + m.a * q.x + m.c * q.y + m.e, fr.top + m.b * q.x + m.d * q.y + m.f));
-      }
-    }
-    if (pts.length < 8) return null;
-    pts.sort((a, b) => a[0] - b[0]);
-    const out = [];
-    for (let i = 1; i < pts.length; i++) {
-      const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
-      if (y0 === 0) out.push(x0);
-      else if (y0 * y1 < 0) out.push(x0 + (x1 - x0) * (0 - y0) / (y1 - y0));
-    }
-    if (!out.length) return null;
-    const rounded = out.map(v => Math.round(v * 2) / 2);
-    return [...new Set(rounded)].sort((a, b) => a - b);
-  };
-})();
-;'__duo ready';
+
 
 // ---- factoring helpers (unit 158) ----
 // "Find the factors of 12" with single-number choices — multi-select every divisor.
@@ -9827,16 +8776,7 @@ window.__duo.solveFactorsOf = function () {
   vals.forEach((v, i) => { if (v && n % v === 0) idx.push(i); });
   return idx.length ? { ok: true, idx } : null;
 };
-(function () {
-  const base = window.__duo.solveChoices;
-  window.__duo.solveChoices = function () {
-    const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-    const allNumbers = ch.length > 2 && ch.every(e => /^\s*-?\d+\s*$/.test(
-      this.ascii(e.innerText).replace(/\s/g, '').replace(/^(.+)\1$/, '$1')));
-    if (allNumbers) { const r = this.solveFactorsOf(); if (r) return r; }
-    return base.call(this);
-  };
-})();
+
 
 // "Identify the sign of the 7x term" in x^2 - 7x + 12 = 0
 window.__duo.solveSignOfTerm = function () {
@@ -10218,28 +9158,7 @@ window.__duo.RULES.unshift(['solveZeros', /zeros?|roots?|solutions?/i]);
 
 // "Find y when x is -2" — the phrasing uses "is", not "=", so the x= matchers all
 // missed it and an earlier handler typed the x value itself.
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')) {
-      const A = this.ascii(this.promptLatex().join(' '))
-        .replace(/mathbf|textbf|text|\\|\{|\}|~/g, ' ').replace(/\s+/g, ' ');
-      const m = A.match(/find\s*y\s*when\s*x\s*(?:is|=)\s*(-?[\d.]+)/i)
-        || A.match(/when\s*x\s*is\s*(-?[\d.]+)/i);
-      if (m) {
-        const x = parseFloat(m[1]);
-        for (const line of this.promptLatex().slice().reverse()) {
-          const t = this.ascii(line);
-          if (!/=/.test(t) || /find|when/i.test(t)) continue;
-          const f = this.compile(t); if (!f) continue;
-          try { const v = f(x); if (isFinite(v)) { const s = String(Math.round(v * 1000) / 1000); this.type(s); return s; } } catch (e) {}
-        }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // ---- nonlinear intersections (unit 160) ----
 // "Plot the intersection points" of y = x^2 and y = 4: solve f(x) = g(x)
@@ -10337,24 +9256,7 @@ window.__duo.intersectionsNL = function () {
 
 // "Select the intersection point" for a NONLINEAR system — the old chooser only
 // solved two straight lines. Route through intersectionsNL and match the pair.
-(function () {
-  const base = window.__duo.solveIntersectionChoice;
-  window.__duo.solveIntersectionChoice = function () {
-    const r = base.call(this);
-    if (r && r.i !== undefined) return r;
-    const pts = this.intersectionsNL(); if (!pts || !pts.length) return r;
-    const half = s => { const t = s.replace(/\s/g, ''); return (t.length % 2 === 0 && t.slice(0, t.length / 2) === t.slice(t.length / 2)) ? t.slice(0, t.length / 2) : t; };
-    const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-    if (!ch.length) return r;
-    const i = ch.findIndex(e => {
-      const m = half(this.ascii(e.innerText)).match(/\((-?[\d.]+),(-?[\d.]+)\)/);
-      if (!m) return false;
-      const x = parseFloat(m[1]), y = parseFloat(m[2]);
-      return pts.some(p => Math.abs(p[0] - x) < 0.05 && p[1] !== null && Math.abs(p[1] - y) < 0.05);
-    });
-    return i < 0 ? r : { i, want: pts.map(p => p.join(',')).join(' ') };
-  };
-})();
+
 window.__duo.RULES = window.__duo.RULES.filter(r => r[0] !== 'solveIntersectionChoice');
 window.__duo.RULES.unshift(['solveIntersectionChoice', /intersection|solution to the system/i]);
 ;'__duo ready';
@@ -10414,15 +9316,7 @@ window.__duo.drawnIntersections = function () {
   }
   return uniq.length ? uniq.sort((a, b) => a[0] - b[0]) : null;
 };
-(function () {
-  const base = window.__duo.intersectionsNL;
-  window.__duo.intersectionsNL = function () {
-    const r = base.call(this);
-    if (r && r.length) return r;
-    return this.drawnIntersections();
-  };
-})();
-;'__duo ready';
+
 
 // Points read off a drawing land a little off (interpolation + line thickness), so
 // match a choice within ~0.6 of a unit rather than demanding equality.
@@ -10494,29 +9388,7 @@ window.__duo.drawnIntersections = function () {
 })();
 
 // 2. typed "Enter the value when x = -5" for a formula
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')) {
-      const A = this.ascii(this.promptLatex().join(' '))
-        .replace(/mathbf|textbf|text|\\|\{|\}|~/g, ' ').replace(/\s+/g, ' ');
-      if (/enter the (value|output)/i.test(A)) {
-        const m = A.replace(/\s/g, '').match(/x=(-?[\d.]+)/);
-        if (m) {
-          const x = parseFloat(m[1]);
-          for (const line of this.promptLatex().slice().reverse()) {
-            const t = this.ascii(line);
-            if (!/=/.test(t) || /enter|value|when/i.test(t)) continue;
-            const f = this.compile(t); if (!f) continue;
-            try { const v = f(x); if (isFinite(v)) { const s = String(Math.round(v * 1000) / 1000); this.type(s); return s; } } catch (e) {}
-          }
-        }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // ---- sequences (unit 161) ----
 // "Select the next term" for 3, 6, 12: detect arithmetic (constant difference) or
@@ -10552,45 +9424,12 @@ window.__duo.solveNextTerm = function () {
   return i < 0 ? { miss: v } : { i, want: v };
 };
 window.__duo.RULES.unshift(['solveNextTerm', /next term|next number|pattern|sequence/i]);
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')) {
-      const A = this.ascii(this.promptLatex().join(' ')).toLowerCase();
-      if (/next term|next number/.test(A)) {
-        const v = this.nextTerm();
-        if (v !== null) { const s = String(v); this.type(s); return s; }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // \duoblank{} carries the answer verbatim, so for TYPED questions it must outrank
 // every heuristic — the sequence handler was reading 15, 3, 45 out of
 // "15 \cdot 3 = \duoblank{45}" and typing a made-up next term.
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')) {
-      const raw = this.blankRaw();
-      if (raw) {
-        let t = this.ascii(raw)
-          .replace(/\\(mathbf|textbf|text)\s*/g, '')
-          .replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, '$1/$2')
-          .replace(/[{}~\s]/g, '');
-        if (/^[-+*/().0-9]+$/.test(t)) {
-          const v = this.evalExpr(t);
-          const out = (v !== null && !/\//.test(t)) ? String(v) : t;
-          this.type(out); return out;
-        }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "Select the common difference" / "common ratio" of a sequence
 window.__duo.solveCommonDiff = function () {
@@ -10619,21 +9458,7 @@ window.__duo.solveCommonDiff = function () {
   return i < 0 ? { miss: want } : { i, want };
 };
 window.__duo.RULES.unshift(['solveCommonDiff', /common (difference|ratio)/i]);
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]')) {
-      const A = this.ascii(this.promptLatex().join(' ')).toLowerCase();
-      if (/common (difference|ratio)/.test(A)) {
-        const r = this.solveCommonDiff();
-        const v = r && (r.want !== undefined ? r.want : r.miss);
-        if (v !== undefined && v !== null) { const s = String(v); this.type(s); return s; }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "Create the common ratio" for 54, 36, 24, 16 — three token slots make a fraction
 // term2 / term1 (e.g. 36 / 54).
@@ -10691,25 +9516,7 @@ window.__duo.exactFrac = function (ns, i) {
 // Guided lessons accumulate prompt lines, so /common ratio/ over the whole prompt
 // hijacked later steps ("write a recursive formula") and typed a ratio at them.
 // Gate on the CURRENT instruction only: the last \textbf line.
-(function () {
-  const prev = window.__duo.typeAnswer;
-  window.__duo.typeAnswer = function () {
-    if (document.querySelector('[data-test="challenge-text-input"]') &&
-        /common ratio/.test(this.curInstruction())) {
-      // numbers come from the sequence line, which is the last \mathbf line
-      for (const line of this.promptLatex().slice().reverse()) {
-        if (!/mathbf/.test(line)) continue;
-        const v = (this.ascii(line).replace(/mathbf|textbf|text|\\|\{|\}|~/g, ' ')
-                   .match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
-        if (v.length >= 3 && !v.some(x => x === 0)) {
-          const s = this.exactFrac(v, 0); this.type(s); return s;
-        }
-      }
-    }
-    return prev.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "First, substitute <v> for <x>" — the choices are literal substitutions
 // (f(2) = 3^2 vs f(2) = 2^3). Pick the one whose RHS is the formula's RHS with
@@ -10929,7 +9736,7 @@ window.__duo.RULES.unshift(['solveCurveKind', /select the (match|function type|v
   const base = window.__duo.compile;
   window.__duo.compile = function (src) {
     if (typeof src === 'string' && /\^\s*[a-z{]/.test(src)) {
-      const t = src.replace(/\^\{([^{}]*)\}/g, '**($1)').replace(/\^([a-z])/g, '**($1)');
+      const t = src.replace(/\^\{([^{}]*)\}/g, '^($1)').replace(/\^([a-z])/g, '^($1)');
       const g = base.call(this, t);
       if (g) return g;
     }
@@ -10962,15 +9769,7 @@ window.__duo.RULES.unshift(['solveTableStep', /constant factor|common (ratio|dif
 // When no formula is printed, the value table is the function. Look the answer
 // up directly, or extrapolate: constant ratio => exponential, constant
 // difference => linear.
-(function () {
-  const base = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const v = base.call(this); if (v !== null) return v;
-    const m = this.curInstruction().match(/(?:output|value)\s+when\s+[a-z]\s*=\s*(-?[\d.]+)/);
-    return m ? this.tableValueAt(parseFloat(m[1])) : null;
-  };
-})();
-;'__duo ready';
+
 
 // The table uses a Unicode minus and marks the asked-for cell with "?", so a
 // plain \d scan mis-paired the columns. Tokenize numbers and holes together.
@@ -11155,16 +9954,7 @@ window.__duo.solveGraphPoint = async function () {
 // A plain graph's axis tick labels ("-5 -4 -3 ... 1 2 3") parse as number pairs,
 // so tableXY happily invented a table out of a picture. Require the x / f(x)
 // header row that a real value table always has.
-(function () {
-  const base = window.__duo.tableXY;
-  window.__duo.tableXY = function () {
-    const d = this.diagram(); if (!d) return null;
-    const head = d.f.contentDocument.body.innerText.replace(/\s+/g, ' ').slice(0, 24)
-      .normalize('NFKC').toLowerCase();
-    if (!/^x\s*(f\(x\)|y)\b/.test(head)) return null;
-    return base.call(this);
-  };
-})();
+
 
 // "Select the match": choices are candidate functions; keep the one that agrees
 // with the drawn curve at several sample x values.
@@ -11200,17 +9990,7 @@ window.__duo.RULES.unshift(['solveMatchCurve', /select the match/i]);
 })();
 
 // "First, find the initial value when x = 0" — same lookup, different wording.
-(function () {
-  const base = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const v = base.call(this); if (v !== null && v !== undefined) return v;
-    const m = this.curInstruction().match(/(?:initial value|value|output)\s*(?:when|at)?\s*[a-z]?\s*=?\s*(-?[\d.]+)/);
-    if (m) { const t = this.valueAtX(parseFloat(m[1])); if (t !== null && t !== undefined) return t; }
-    if (/initial value/.test(this.curInstruction())) return this.valueAtX(0);
-    return null;
-  };
-})();
-;'__duo ready';
+
 
 // standalone (the earlier guard wrappers stacked and the innermost one still
 // rejected every table) — define tableXY outright, no wrapping
@@ -11243,17 +10023,7 @@ window.__duo.fitTable = function () {
   for (const [x, y] of P) if (Math.abs(a * Math.pow(r, x) - y) > 1e-6 * Math.max(1, Math.abs(y))) return null;
   return { a, r };
 };
-(function () {
-  const base = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const v = base.call(this); if (v !== null && v !== undefined) return v;
-    const ins = this.curInstruction();
-    const F = this.fitTable();
-    if (F && /common ratio|multiplier|constant factor|growth factor/.test(ins)) return F.r;
-    if (F && /initial|starting/.test(ins)) return F.a;
-    return null;
-  };
-})();
+
 // "Write the exponential equation" — score each candidate against the table.
 window.__duo.solveEquationChoice = function () {
   const P = (this.tableXY() || []).filter(p => p[1] !== null);
@@ -11413,24 +10183,7 @@ window.__duo.fitCurveExp = function () {
   for (const [x, y] of P) if (Math.abs(a * Math.pow(r, x) - y) > 0.35 + 0.1 * Math.abs(y)) return null;
   return { a: Math.round(a * 100) / 100, r: Math.round(r * 100) / 100 };
 };
-(function () {
-  const base = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const ins = this.curInstruction();
-    if (/initial|starting/.test(ins)) {
-      const T = this.fitTable(); if (T) return T.a;
-      const F = this.formulaIn('x'); if (F && F.f) { try { const v = F.f(0); if (isFinite(v)) return v; } catch (e) {} }
-      const C = this.fitCurveExp(); if (C) return C.a;
-    }
-    return base.call(this);
-  };
-  const bg = window.__duo.growthFactor;
-  window.__duo.growthFactor = function () {
-    const v = bg.call(this); if (v !== null) return v;
-    const C = this.fitCurveExp(); return C ? C.r : null;
-  };
-})();
-;'__duo ready';
+
 
 // \frac{1}{2} survives only in the raw LaTeX — flatLine strips the braces and
 // turns it into "frac12". Compile the raw text first.
@@ -11653,34 +10406,7 @@ window.__duo.statedShift = function () {
   }
   return null;
 };
-(function () {
-  const base = window.__duo.solveShiftSlider;
-  window.__duo.solveShiftSlider = async function () {
-    if (base && await base.call(this)) return true;
-    const k = this.statedShift();
-    return k === null ? false : await this.setSlider2d(k);
-  };
-  const bv = window.__duo.solveTransformedValue;
-  window.__duo.solveTransformedValue = function () {
-    const r = bv.call(this); if (r) return r;
-    if (!/shift/.test(this.curInstruction())) return null;
-    const k = this.statedShift() !== null ? this.statedShift() : this.curveGap();
-    if (k === null) return null;
-    const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-    const i = ch.findIndex(e => { const v = this.choiceValue(e); return v !== null && Math.abs(v - k) < 1e-9; });
-    return i < 0 ? null : { i };
-  };
-  const bt = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const v = bt.call(this); if (v !== null && v !== undefined) return v;
-    if (/shift/.test(this.curInstruction())) {
-      const k = this.statedShift() !== null ? this.statedShift() : this.curveGap();
-      if (k !== null) return k;
-    }
-    return null;
-  };
-})();
-;'__duo ready';
+
 
 // "Create the transformation of f(x) to g(x)" with token slots: assemble
 // g(x) = f(x) + 12 from the bank (which also holds decoys like h(x)).
@@ -11877,24 +10603,7 @@ window.__duo.solveBuildExpression = async function () {
 
 // typed variants: "enter the vertical shift from f to g",
 // "enter the output of g when x = 6"
-(function () {
-  const base = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const ins = this.curInstruction();
-    const T = this.transformed();
-    if (T) {
-      const m = ins.replace(/\s/g, '').match(/outputof([a-z])when[a-z]=(-?[\d.]+)/i) ||
-                ins.replace(/\s/g, '').match(/([a-z])\((-?[\d.]+)\)/);
-      if (m) {
-        const fn = m[1] === T.gname ? T.g : T.f;
-        try { const v = fn(parseFloat(m[2])); if (isFinite(v)) return v; } catch (e) {}
-      }
-      if (/shift/.test(ins) && T.k.out !== undefined) return T.k.out;
-    }
-    return base.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "Translate the graph right by 2" against a template g(x) = f(x - <slider>).
 // The template already carries the sign, so right maps to +2 there; when the
@@ -11977,91 +10686,19 @@ window.__duo.curveShiftX = function () {
   }
   return bestErr < 0.25 ? Math.round(best) : null;
 };
-(function () {
-  const base = window.__duo.solveTransformedValue;
-  window.__duo.solveTransformedValue = function () {
-    const r = base.call(this); if (r) return r;
-    const ins = this.curInstruction();
-    if (!/horizontal shift/.test(ins)) return null;
-    const h = this.curveShiftX(); if (h === null) return null;
-    const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-    let i = ch.findIndex(e => { const v = this.choiceValue(e); return v !== null && Math.abs(v - h) < 1e-9; });
-    if (i < 0) i = ch.findIndex(e => { const v = this.choiceValue(e); return v !== null && Math.abs(v + h) < 1e-9; });
-    return i < 0 ? null : { i };
-  };
-  window.__duo.RULES.unshift(['solveTransformedValue', /horizontal shift/i]);
-})();
-;'__duo ready';
+
 
 // g(x) = f(x - 9) is a shift of +9: the shift is the negation of the constant
 // inside the argument.
-(function () {
-  const base = window.__duo.solveTransformedValue;
-  window.__duo.solveTransformedValue = function () {
-    const ins = this.curInstruction();
-    if (/horizontal shift/.test(ins)) {
-      const T = this.transformed();
-      const h = T && T.k.in !== undefined ? -T.k.in : this.curveShiftX();
-      if (h !== null && h !== undefined) {
-        const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-        const i = ch.findIndex(e => { const v = this.choiceValue(e); return v !== null && Math.abs(v - h) < 1e-9; });
-        if (i >= 0) return { i };
-      }
-    }
-    return base.call(this);
-  };
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    if (/horizontal shift/.test(this.curInstruction())) {
-      const T = this.transformed();
-      if (T && T.k.in !== undefined) return -T.k.in;
-      const h = this.curveShiftX(); if (h !== null) return h;
-    }
-    return bo.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "Select the output of g when x = 3" — same computation as the typed form,
 // just matched against the choices.
-(function () {
-  const base = window.__duo.solveTransformedValue;
-  window.__duo.solveTransformedValue = function () {
-    const r = base.call(this); if (r) return r;
-    const o = this.solveOutputAt();
-    if (o === null || o === undefined) return null;
-    const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-    const i = ch.findIndex(e => { const v = this.choiceValue(e); return v !== null && Math.abs(v - o) < 1e-9; });
-    return i < 0 ? null : { i };
-  };
-  window.__duo.RULES.unshift(['solveTransformedValue', /output of|value of|shift|equation for/i]);
-})();
-;'__duo ready';
+
 
 // g(x) = f(x + 2) against a template f(x - <slider>) needs the slider at -2:
 // the template's own sign decides, exactly as in solveTranslate.
-(function () {
-  const base = window.__duo.solveShiftSlider;
-  window.__duo.solveShiftSlider = async function () {
-    const S = this.slider2d(); if (!S) return false;
-    const tpl = this.mathParts().find(t => /duodisplay/.test(t)) || '';
-    for (const t of this.mathParts()) {
-      if (/duodisplay/.test(t)) continue;
-      const h = t.match(/^([a-z])\(x\)=([a-z])\(x([+-])(\d+(?:\.\d+)?)\)$/);
-      if (h && h[1] !== h[2]) {
-        const n = (h[3] === '-' ? -1 : 1) * parseFloat(h[4]);
-        return await this.setSlider2d(/x-duodisplay/.test(tpl) ? -n : n);
-      }
-      const m = t.match(/^([a-z])\(x\)=([a-z])\(x\)([+-])(\d+(?:\.\d+)?)$/);
-      if (m && m[1] !== m[2]) {
-        const n = (m[3] === '-' ? -1 : 1) * parseFloat(m[4]);
-        return await this.setSlider2d(/\)-duodisplay/.test(tpl) ? -n : n);
-      }
-    }
-    return await base.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // Without a \duodisplay template the slider carries no sign convention, so
 // guessing is a coin flip. Set a value, then check the drawn curve against the
@@ -12144,18 +10781,7 @@ window.__duo.solveTransform = function () {
   }
   return null;
 };
-(function () {
-  const base = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    if (/horizontal shift/.test(this.curInstruction())) {
-      const T = this.transformed();
-      if (T && T.k.in !== undefined) return -T.k.in;
-      const h = this.curveShiftX(); if (h !== null) return h;
-    }
-    return base.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // Unit 166: dilations. "Create a vertical stretch of 2" sets the slider that
 // multiplies the function; a compression of n means a factor of 1/n.
@@ -12953,24 +11579,7 @@ window.__duo.trailingExpression = function () {
   }
   return null;
 };
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const v = this.trailingExpression(); if (v !== null) return v;
-    return bo.call(this);
-  };
-  const bt = window.__duo.solveTransformedValue;
-  window.__duo.solveTransformedValue = function () {
-    const v = this.trailingExpression();
-    if (v !== null) {
-      const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-      const i = ch.findIndex(e => { const q = this.choiceValue(e); return q !== null && Math.abs(q - v) < 1e-6; });
-      if (i >= 0) return { i };
-    }
-    return bt.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "Select the expression for the residual": the answer is the subtraction
 // written actual - predicted, so match the operand ORDER, not just the value
@@ -13465,59 +12074,11 @@ window.__duo.dotPlotAnswer = function () {
   if (m) { const v = parseFloat(m[1]); return v in C ? C[v] : null; }
   return null;
 };
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const v = this.dotPlotAnswer(); if (v !== null && v !== undefined) return v;
-    return bo.call(this);
-  };
-  const bt = window.__duo.solveTransformedValue;
-  window.__duo.solveTransformedValue = function () {
-    const v = this.dotPlotAnswer();
-    if (v !== null && v !== undefined) {
-      const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-      const i = ch.findIndex(e => { const q = this.choiceValue(e); return q !== null && Math.abs(q - v) < 1e-6; });
-      if (i >= 0) return { i };
-    }
-    return bt.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // each dot renders as several stacked <path> layers, so collapse marks that sit
 // on the same spot before counting
-(function () {
-  const base = window.__duo.dotPlot;
-  window.__duo.dotPlot = function () {
-    const f = [...document.querySelectorAll('iframe')]
-      .find(fr => { try { return /dot-plot/.test(fr.contentDocument.body.innerHTML.slice(0, 4000)); } catch (e) { return false; } });
-    if (!f) return base.call(this);
-    const doc = f.contentDocument;
-    let marks = [...doc.querySelectorAll('circle,ellipse,image,path')]
-      .filter(e => /dot|point|marker/i.test(e.getAttribute('class') || ''))
-      .map(e => { const r = e.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })
-      .filter(m => m.x || m.y);
-    const uniq = [];
-    for (const m of marks) if (!uniq.some(u => Math.abs(u.x - m.x) < 6 && Math.abs(u.y - m.y) < 6)) uniq.push(m);
-    marks = uniq;
-    const labels = [...doc.querySelectorAll('div,span,text,tspan')]
-      .filter(e => e.children.length === 0 && /^-?\d+(\.\d+)?$/.test(e.textContent.trim()))
-      .map(e => { const r = e.getBoundingClientRect(); return { v: parseFloat(e.textContent.trim()), x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
-    if (!marks.length || !labels.length) return null;
-    const axisY = Math.max(...labels.map(l => l.y));
-    const axis = labels.filter(l => Math.abs(l.y - axisY) < 20);
-    if (!axis.length) return null;
-    const counts = {};
-    for (const l of axis) counts[l.v] = 0;
-    for (const m of marks) {
-      let best = null, bd = Infinity;
-      for (const l of axis) { const d = Math.abs(l.x - m.x); if (d < bd) { bd = d; best = l; } }
-      if (best && bd < 30) counts[best.v]++;
-    }
-    return counts;
-  };
-})();
-;'__duo ready';
+
 
 // Dot plot "Plot the data 8, 9, 10, 10, 11, 12": one draggable dot per axis
 // value, dragged UP to that value's frequency.
@@ -14343,29 +12904,7 @@ window.__duo.solveTrigEquation = function () {
   }
   return null;
 };
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    if (/solve for x|find x|value of x/i.test(this.curInstruction())) {
-      const v = this.solveTrigEquation(); if (v !== null) return v;
-    }
-    return bo.call(this);
-  };
-  const bt = window.__duo.solveTransformedValue;
-  window.__duo.solveTransformedValue = function () {
-    if (/solve for x|find x|value of x/i.test(this.curInstruction())) {
-      const v = this.solveTrigEquation();
-      if (v !== null) {
-        const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-        const i = ch.findIndex(e => { const q = this.choiceValue(e); return q !== null && Math.abs(q - v) < 0.06; });
-        if (i >= 0) return { i };
-      }
-    }
-    return bt.call(this);
-  };
-  window.__duo.RULES.unshift(['solveTransformedValue', /solve for x|find x|value of x/i]);
-})();
-;'__duo ready';
+
 
 // Same geometry, but keep the label TEXT so an unknown side ("x") is usable.
 window.__duo.triangleLabels = function () {
@@ -14422,25 +12961,7 @@ window.__duo.missingAngle = function () {
   if (labs.length === 2) return 180 - labs[0] - labs[1];
   return null;
 };
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const v = this.missingAngle(); if (v !== null && isFinite(v)) return v;
-    return bo.call(this);
-  };
-  const bt = window.__duo.solveTransformedValue;
-  window.__duo.solveTransformedValue = function () {
-    const v = this.missingAngle();
-    if (v !== null && isFinite(v)) {
-      const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-      const i = ch.findIndex(e => { const q = this.choiceValue(e); return q !== null && Math.abs(q - v) < 1e-6; });
-      if (i >= 0) return { i };
-    }
-    return bt.call(this);
-  };
-  window.__duo.RULES.unshift(['solveTransformedValue', /measure of.*angle|acute angle/i]);
-})();
-;'__duo ready';
+
 
 // The prompt often names the OTHER acute angle (30°) while the diagram labels
 // only its complement (60°). Compute each vertex's actual angle, find the right
@@ -14974,40 +13495,7 @@ window.__duo.RULES.unshift(['solveLawOfSines', /select the match|law of sines|wh
 
 // Law of Sines also appears inverted: sin(A)/a = sin(B)/b, and the unknown may
 // be the ANGLE (sin(x)) rather than a side.
-(function () {
-  const base = window.__duo.solveLawOfSines;
-  window.__duo.solveLawOfSines = function () {
-    const r = base.call(this); if (r) return r;
-    const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-    if (ch.length < 2) return null;
-    const P = this.sideAnglePairs(); if (!P) return null;
-    const norm = s => String(s).trim();
-    const ok = (ang, side) => P.some(p => norm(p.side) === norm(side) &&
-      (norm(p.angle) === norm(ang) || Math.abs(parseFloat(p.angle) - parseFloat(ang)) < 0.5));
-    const hits = [];
-    ch.forEach((e, i) => {
-      const t = this.plainMath(this.choiceLatex(e)).replace(/degree[s]?|°/gi, '');
-      const m = t.match(/^fracsin\(([a-z0-9.]+)\)([a-z0-9.]+)=fracsin\(([a-z0-9.]+)\)([a-z0-9.]+)$/i);
-      if (!m) return;
-      // an unknown angle x pairs with whichever side has no numeric angle
-      const pairOk = (ang, side) => /^[a-z]$/i.test(ang)
-        ? P.some(p => norm(p.side) === norm(side) && !P.some(q => q.side === side && /^\d/.test(q.angle) === false))
-          || P.some(p => norm(p.side) === norm(side))
-        : ok(ang, side);
-      if (pairOk(m[1], m[2]) && pairOk(m[3], m[4])) hits.push(i);
-    });
-    if (hits.length === 1) return { i: hits[0] };
-    // fall back to the strict numeric pairing only
-    const strict = [];
-    ch.forEach((e, i) => {
-      const t = this.plainMath(this.choiceLatex(e)).replace(/degree[s]?|°/gi, '');
-      const m = t.match(/^fracsin\((\d+(?:\.\d+)?)\)([a-z0-9.]+)=fracsin\((\d+(?:\.\d+)?)\)([a-z0-9.]+)$/i);
-      if (m && ok(m[1], m[2]) && ok(m[3], m[4])) strict.push(i);
-    });
-    return strict.length === 1 ? { i: strict[0] } : null;
-  };
-})();
-;'__duo ready';
+
 
 // A bare letter can label either a side or an unknown ANGLE. Decide by
 // position: near a vertex means angle, near an edge midpoint means side.
@@ -15190,18 +13678,7 @@ window.__duo.lawOfCosines = function () {
   const c2 = a * a + b * b - 2 * a * b * Math.cos(C * D);
   return isFinite(c2) ? { c2, c: Math.sqrt(c2) } : null;
 };
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const ins = this.curInstruction();
-    if (/x\^?2/i.test(ins) && this.diagramFresh()) {
-      const L = this.lawOfCosines();
-      if (L) { const dp = /hundredth/i.test(ins) ? 2 : 1; return Number(L.c2.toFixed(dp)); }
-    }
-    return bo.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "Take the square root to find x" — the guided step wants sqrt of the x^2 the
 // lesson just established, which is printed on the page as the accepted answer
@@ -15213,22 +13690,7 @@ window.__duo.prevStepValue = function () {
         || t.match(/x\s*\^?2\s*=\s*(-?\d+(?:\.\d+)?)/i);
   return m ? parseFloat(m[1]) : null;
 };
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const ins = this.curInstruction();
-    if (/square root/i.test(ins)) {
-      let sq = this.prevStepValue();
-      if (sq === null && this.diagramFresh()) { const L = this.lawOfCosines(); if (L) sq = L.c2; }
-      if (sq !== null && sq >= 0) {
-        const dp = /hundredth/i.test(ins) ? 2 : /whole|integer/i.test(ins) ? 0 : 1;
-        return Number(Math.sqrt(sq).toFixed(dp));
-      }
-    }
-    return bo.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "Select the point translated 1 unit left and 1 unit up" — apply the stated
 // vector to the plotted point and match the coordinate-pair choice.
@@ -15512,73 +13974,11 @@ window.__duo.transformRule = function () {
   }
   return null;
 };
-(function () {
-  const base = window.__duo.solveTransformTable;
-  window.__duo.solveTransformTable = async function () {
-    const T = this.tableCells(); if (!T) return await base.call(this);
-    const R = this.transformRule(); if (!R || !R.map) return await base.call(this);
-    const d = this.diagram(); if (!d) return false;
-    const cells = T.cells;
-    const empties = cells.map((c, i) => [c, i]).filter(([c]) => c.empty);
-    if (!empties.length) return false;
-    const num = s => { const v = parseFloat(String(s).replace(/[−–—]/g, '-')); return isFinite(v) ? v : null; };
-    const fr = d.f.getBoundingClientRect();
-    const centre = el => { const r = el.getBoundingClientRect();
-      return [Math.round(fr.left + r.left + r.width / 2), Math.round(fr.top + r.top + r.height / 2)]; };
-    const norm = s => String(s).replace(/[−–—]/g, '-').replace(/\s/g, '');
-    for (const [cell, idx] of empties) {
-      const x = num(cells[idx - 2] && cells[idx - 2].t), y = num(cells[idx - 1] && cells[idx - 1].t);
-      if (x === null || y === null) return false;
-      const p = R.map([x, y]); if (!p) return false;
-      const want = '(' + p[0] + ',' + p[1] + ')';
-      const tok = this.bankTokens().find(o => norm(o.t) === norm(want) && o.el.isConnected);
-      if (!tok || !cell.el) return false;
-      await this.dragXY(tok.el, d.f, centre(tok.el), centre(cell.el));
-      await this.sleep(320);
-    }
-    return true;
-  };
-})();
-;'__duo ready';
+
 
 // The blank can also be an INPUT cell (x or y) with the image given. Try each
 // numeric token in the blank and keep the one the rule maps to that image.
-(function () {
-  const base = window.__duo.solveTransformTable;
-  window.__duo.solveTransformTable = async function () {
-    const T = this.tableCells(); const R = this.transformRule();
-    if (!T || !R || !R.map) return await base.call(this);
-    const d = this.diagram(); if (!d) return false;
-    const cells = T.cells;
-    const empties = cells.map((c, i) => [c, i]).filter(([c]) => c.empty);
-    if (!empties.length) return false;
-    // only handle input blanks here; the image-column case is the base solver's
-    if (!empties.some(([, i]) => i % 3 !== 2)) return await base.call(this);
-    const num = s => { const v = parseFloat(String(s).replace(/[−–—]/g, '-')); return isFinite(v) ? v : null; };
-    const pair = s => { const m = String(s).replace(/[−–—]/g, '-').match(/\(\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*\)/);
-      return m ? [parseFloat(m[1]), parseFloat(m[2])] : null; };
-    const fr = d.f.getBoundingClientRect();
-    const centre = el => { const r = el.getBoundingClientRect();
-      return [Math.round(fr.left + r.left + r.width / 2), Math.round(fr.top + r.top + r.height / 2)]; };
-    for (const [cell, idx] of empties) {
-      const row = Math.floor(idx / 3) * 3;
-      const img = pair(cells[row + 2] && cells[row + 2].t);
-      if (!img) return false;
-      const known = idx % 3 === 0 ? num(cells[row + 1].t) : num(cells[row].t);
-      if (known === null) return false;
-      const tok = this.bankTokens().find(o => {
-        const v = num(o.t); if (v === null || !o.el.isConnected) return false;
-        const p = idx % 3 === 0 ? R.map([v, known]) : R.map([known, v]);
-        return p && Math.abs(p[0] - img[0]) < 1e-6 && Math.abs(p[1] - img[1]) < 1e-6;
-      });
-      if (!tok || !cell.el) return false;
-      await this.dragXY(tok.el, d.f, centre(tok.el), centre(cell.el));
-      await this.sleep(320);
-    }
-    return true;
-  };
-})();
-;'__duo ready';
+
 
 // A table can have blanks in BOTH the image column and the input columns at
 // once; the two earlier solvers each handled only one kind. Handle every blank
@@ -15794,24 +14194,7 @@ window.__duo.segmentGaps = function () {
   }
   return gaps.length ? { letters: letters.map(l => l.t.trim()), gaps } : null;
 };
-(function () {
-  const base = window.__duo.solveNamedDistance;
-  window.__duo.solveNamedDistance = function () {
-    const r = base.call(this); if (r) return r;
-    const m = this.curInstruction().replace(/\s/g, '').match(/lengthof([A-Za-z])([A-Za-z])/);
-    if (!m) return null;
-    const S = this.segmentGaps(); if (!S) return null;
-    const a = S.letters.indexOf(m[1].toUpperCase()), b = S.letters.indexOf(m[2].toUpperCase());
-    if (a < 0 || b < 0) return null;
-    const [lo, hi] = a < b ? [a, b] : [b, a];
-    let sum = 0;
-    for (let i = lo; i < hi; i++) sum += S.gaps[i].len;
-    const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-    const i = ch.findIndex(e => { const v = this.choiceValue(e); return v !== null && Math.abs(v - sum) < 1e-6; });
-    return i < 0 ? null : { i };
-  };
-})();
-;'__duo ready';
+
 
 // "Select the matching equation": AC = 2 + 6 — the SUM expression, not the
 // evaluated total (AC = 8 is not even offered; AC = 6 is a decoy).
@@ -15837,39 +14220,7 @@ window.__duo.RULES.unshift(['solveSegmentEquation', /matching equation|which equ
 ;'__duo ready';
 
 // typed forms: "enter the length of AC" / "enter the length of the segment"
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const ins = this.curInstruction();
-    if (/length of/i.test(ins)) {
-      const m = ins.replace(/\s/g, '').match(/lengthof([A-Za-z])([A-Za-z])/);
-      if (m) {
-        const S = this.segmentGaps();
-        if (S) {
-          const a = S.letters.indexOf(m[1].toUpperCase()), b = S.letters.indexOf(m[2].toUpperCase());
-          if (a >= 0 && b >= 0) {
-            const [lo, hi] = a < b ? [a, b] : [b, a];
-            let sum = 0; for (let i = lo; i < hi; i++) sum += S.gaps[i].len;
-            return sum;
-          }
-        }
-        const N = this.namedPoints();
-        if (N) { const p = N[m[1].toUpperCase()], q = N[m[2].toUpperCase()];
-          if (p && q) return Math.hypot(q[0] - p[0], q[1] - p[1]); }
-      }
-      if (/segment/i.test(ins)) {
-        const pts = this.gridPoints();
-        if (pts.length === 2) return Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
-        const P = this.plottedPoints();
-        if (P.length === 2) return Math.hypot(P[1][0] - P[0][0], P[1][1] - P[0][1]);
-        const S = this.segmentGaps();
-        if (S) return S.gaps.reduce((a, g) => a + g.len, 0);
-      }
-    }
-    return bo.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "midpoint = <2-D slider>": place the slider handle at the midpoint of the
 // segment's two endpoints.
@@ -16128,26 +14479,7 @@ window.__duo.solveTranslatePoint = async function () {
 // curInstruction returns the vector line ("3 units right 2 units down"), not the
 // "Translate the point" title, so the gate never matched. Gate on the whole
 // prompt instead.
-(function () {
-  const base = window.__duo.solveTranslatePoint;
-  window.__duo.solveTranslatePoint = async function () {
-    const all = this.mathParts().concat([this.curInstruction()]).join(' ');
-    if (!/translate the point|translate the figure|translate the segment/i.test(all)) return false;
-    const v = this.statedVector(); if (!v) return false;
-    const pts = this.gridPoints(); if (!pts.length) return false;
-    const isEnd = p => pts.some(q => q !== p &&
-      ((Math.abs(q.x - p.x - v[0]) < 1e-9 && Math.abs(q.y - p.y - v[1]) < 1e-9) ||
-       (Math.abs(p.x - q.x - v[0]) < 1e-9 && Math.abs(p.y - q.y - v[1]) < 1e-9)));
-    const movable = pts.filter(p => !isEnd(p));
-    if (!movable.length) return false;
-    for (const p of movable) {
-      const want = [p.x + v[0], p.y + v[1]];
-      await this.dragPointTo(p, want[0], want[1]);
-    }
-    return true;
-  };
-})();
-;'__duo ready';
+
 
 // mathParts strips spaces, so "Translate the point" arrives as
 // "Translatethepoint" — match the despaced form.
@@ -16201,27 +14533,7 @@ window.__duo.RULES.unshift(['solveSelectTranslation', /select the translation|wh
 ;'__duo ready';
 
 // typed magnitudes: "enter the vertical/horizontal magnitude of the translation"
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const ins = this.curInstruction();
-    if (/magnitude of the translation|horizontal magnitude|vertical magnitude/i.test(ins)) {
-      let v = this.translationVector();
-      if (!v) {
-        const P = this.plottedPoints();
-        if (P.length >= 2 && P.length % 2 === 0) {
-          const h = P.length / 2, A = P.slice(0, h), B = P.slice(h);
-          const d = [B[0][0] - A[0][0], B[0][1] - A[0][1]];
-          if (A.every((p, i) => Math.abs(B[i][0] - p[0] - d[0]) < 1e-6 && Math.abs(B[i][1] - p[1] - d[1]) < 1e-6)) v = d;
-        }
-      }
-      if (!v) v = this.statedVector();
-      if (v) return /vertical/i.test(ins) ? v[1] : v[0];
-    }
-    return bo.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // Pre-image and image drawn as POLYGONS (no plotted points): measure the shift
 // from the two shapes' centroids, in grid units.
@@ -16722,17 +15034,7 @@ window.__duo.namedPoints = function () {
 ;'__duo ready';
 
 // typed "enter the angle of rotation from A to A'"
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    if (/angle of rotation/i.test(this.curInstruction())) {
-      const R = this.rotationInfo();
-      if (R && R.deg) return R.ccw ? R.deg : -R.deg;
-    }
-    return bo.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "Rotate 90° counterclockwise": apply the stated rotation about the marked
 // centre (lowercase label, else the origin) to every draggable point.
@@ -16978,35 +15280,7 @@ window.__duo.RULES.unshift(['solveSymmetryCount', /lines of symmetry/i]);
 ;'__duo ready';
 
 // typed "enter the number of lines of symmetry" (and the rotational analogue)
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const ins = this.curInstruction();
-    if (/lines of symmetry/i.test(ins)) {
-      const n = this.countSymmetryLines(); if (n !== null) return n;
-    }
-    if (/order of (rotational )?symmetry/i.test(ins)) {
-      const P = this.shapeSamples();
-      if (P) {
-        const cx = P.reduce((a, p) => a + p[0], 0) / P.length;
-        const cy = P.reduce((a, p) => a + p[1], 0) / P.length;
-        const span = Math.max(...P.map(p => Math.hypot(p[0] - cx, p[1] - cy)));
-        const tol = span * 0.06;
-        const near = q => P.some(p => Math.hypot(p[0] - q[0], p[1] - q[1]) < tol);
-        let order = 1;
-        for (let k = 2; k <= 12; k++) {
-          const r = 2 * Math.PI / k, cs = Math.cos(r), sn = Math.sin(r);
-          const ok = P.every(p => { const dx = p[0] - cx, dy = p[1] - cy;
-            return near([cx + dx * cs - dy * sn, cy + dx * sn + dy * cs]); });
-          if (ok) { order = k; break; }
-        }
-        return order;
-      }
-    }
-    return bo.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "Count the number of sides" and the interior-angle facts that follow.
 // Corner detection: sample the outline and count sharp direction changes,
@@ -17027,40 +15301,7 @@ window.__duo.polygonSides = function () {
   for (let i = 0; i < N; i++) if (flags[i] && !flags[(i - 1 + N) % N]) runs++;
   return runs >= 3 ? runs : null;
 };
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const ins = this.curInstruction();
-    if (/number of sides|count the sides/i.test(ins)) {
-      const n = this.polygonSides(); if (n) return n;
-    }
-    if (/sum of the interior angles/i.test(ins)) {
-      const n = this.polygonSides(); if (n) return (n - 2) * 180;
-    }
-    if (/each interior angle|one interior angle/i.test(ins)) {
-      const n = this.polygonSides(); if (n) return (n - 2) * 180 / n;
-    }
-    if (/exterior angle/i.test(ins)) {
-      const n = this.polygonSides(); if (n) return 360 / n;
-    }
-    return bo.call(this);
-  };
-  const bt = window.__duo.solveTransformedValue;
-  window.__duo.solveTransformedValue = function () {
-    const ins = this.curInstruction();
-    if (/number of sides|sum of the interior angles|interior angle|exterior angle/i.test(ins)) {
-      const v = this.solveOutputAt();
-      if (typeof v === 'number' && isFinite(v)) {
-        const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-        const i = ch.findIndex(e => { const q = this.choiceValue(e); return q !== null && Math.abs(q - v) < 1e-6; });
-        if (i >= 0) return { i };
-      }
-    }
-    return bt.call(this);
-  };
-  window.__duo.RULES.unshift(['solveTransformedValue', /number of sides|interior angle|exterior angle/i]);
-})();
-;'__duo ready';
+
 
 // "Select ALL the angles of rotation": test each offered angle against the
 // shape and return every one that maps it onto itself (multi-select).
@@ -17084,17 +15325,7 @@ window.__duo.solveAllRotationAngles = function () {
   });
   return idx.length ? { idx, ok: true, multi: true } : null;
 };
-(function () {
-  const base = window.__duo.solveChoices;
-  window.__duo.solveChoices = function () {
-    if (/select all the angles|all the angles of rotation/i.test(this.curInstruction())) {
-      const r = this.solveAllRotationAngles();
-      if (r) return { want: r.idx.map(String), idx: r.idx, ok: true, via: 'solveAllRotationAngles' };
-    }
-    return base.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // Classify the drawn polygon by its own geometry: side lengths and angles give
 // regular/irregular and scalene/isosceles/equilateral/right.
@@ -17373,43 +15604,7 @@ window.__duo.polygonArea = function () {
   const r = Math.round(area);
   return Math.abs(area - r) < 0.25 ? r : Math.round(area * 100) / 100;
 };
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const ins = this.curInstruction();
-    if (/area of/i.test(ins)) { const a = this.polygonArea(); if (a !== null) return a; }
-    if (/perimeter of/i.test(ins)) {
-      const V = this.polygonVertices(), d = this.diagram();
-      if (V && d && d.M.grid) {
-        const g = d.M.grid, G = [];
-        let bad = false;
-        for (const p of V) { let q; try { q = g.pixelToGrid([p[0], p[1]]); } catch (e) { bad = true; break; } G.push(q); }
-        if (!bad) {
-          let per = 0;
-          for (let i = 0; i < G.length; i++) { const j = (i + 1) % G.length;
-            per += Math.hypot(G[j][0] - G[i][0], G[j][1] - G[i][1]); }
-          const r = Math.round(per);
-          return Math.abs(per - r) < 0.3 ? r : Math.round(per * 100) / 100;
-        }
-      }
-    }
-    return bo.call(this);
-  };
-  const bt = window.__duo.solveTransformedValue;
-  window.__duo.solveTransformedValue = function () {
-    if (/area of|perimeter of/i.test(this.curInstruction())) {
-      const v = this.solveOutputAt();
-      if (typeof v === 'number' && isFinite(v)) {
-        const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-        const i = ch.findIndex(e => { const q = this.choiceValue(e); return q !== null && Math.abs(q - v) < 0.2; });
-        if (i >= 0) return { i };
-      }
-    }
-    return bt.call(this);
-  };
-  window.__duo.RULES.unshift(['solveTransformedValue', /area of|perimeter of/i]);
-})();
-;'__duo ready';
+
 
 // wording varies: "Create a figure/triangle/shape that is congruent"
 (function () {
@@ -17514,28 +15709,7 @@ window.__duo.RULES.unshift(['solveDilationDistance', /scale factor|closer|farthe
 
 // the LaTeX thin space \, survives as a stray comma, so the captured expression
 // began with "," and never compiled
-(function () {
-  const base = window.__duo.scaleFactorFromPrompt;
-  window.__duo.scaleFactorFromPrompt = function () {
-    const v = base.call(this); if (v !== null) return v;
-    const lines = this.promptLatex().map(l => this.ascii(l)
-      .replace(/\\(mathbf|textbf|text|emphasis|left|right)\b/g, '')
-      .replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, '(($1)/($2))')
-      .replace(/[{}&~\s\\]/g, '').replace(/[−–—]/g, '-'));
-    for (const t of lines) {
-      const m = t.match(/scalefactor=[,\s]*(.+)$/i);
-      if (!m) continue;
-      const expr = m[1].replace(/^[,\s]+/, '');
-      const g = this.compile(expr);
-      if (g) { try { const q = g(0); if (isFinite(q)) return q; } catch (e) {} }
-      const f = expr.match(/\(*(-?[\d.]+)\)*\/\(*(-?[\d.]+)\)*/);
-      if (f) { const q = parseFloat(f[1]) / parseFloat(f[2]); if (isFinite(q)) return q; }
-      const n = parseFloat(expr); if (isFinite(n)) return n;
-    }
-    return null;
-  };
-})();
-;'__duo ready';
+
 
 // "Dilate the point with scale factor k": image = centre + k * (point - centre).
 window.__duo.solveDilatePoints = async function () {
@@ -17638,22 +15812,7 @@ window.__duo.solveScaleFactorChoice = function () {
   return i < 0 ? null : { i };
 };
 window.__duo.RULES.unshift(['solveScaleFactorChoice', /scale factor/i]);
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    if (/scale factor/i.test(this.curInstruction())) {
-      const k = this.measuredScaleFactor();
-      if (k !== null) {
-        if (Math.abs(k - Math.round(k)) < 1e-6) return Math.round(k);
-        for (let d = 2; d <= 10; d++) { const n = k * d;
-          if (Math.abs(n - Math.round(n)) < 1e-6) return Math.round(n) + '/' + d; }
-        return k;
-      }
-    }
-    return bo.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // Rounding k to 3 decimals (0.333) made the fraction search miss 1/3.
 // Keep the exact ratio and snap to a small fraction.
@@ -17673,24 +15832,7 @@ window.__duo.measuredScaleFactorRaw = function () {
   const d2 = Math.hypot(img[0] - c[0], img[1] - c[1]);
   return d1 < 1e-9 ? null : d2 / d1;
 };
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    if (/scale factor/i.test(this.curInstruction())) {
-      const k = this.measuredScaleFactorRaw();
-      if (k !== null && isFinite(k)) {
-        if (Math.abs(k - Math.round(k)) < 1e-4) return Math.round(k);
-        for (let d = 2; d <= 12; d++) {
-          const n = k * d;
-          if (Math.abs(n - Math.round(n)) < 1e-3) return Math.round(n) + '/' + d;
-        }
-        return Math.round(k * 100) / 100;
-      }
-    }
-    return bo.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "Select the length of the dilated segment with scale factor k": the answer is
 // the MULTIPLICATION expression (4 * 5), not the sum or the power.
@@ -17753,23 +15895,7 @@ window.__duo.dilatedLengthValue = function () {
   const v = len * k;
   return Math.abs(v - Math.round(v)) < 1e-4 ? Math.round(v) : Math.round(v * 100) / 100;
 };
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const v = this.dilatedLengthValue(); if (v !== null) return v;
-    return bo.call(this);
-  };
-  const bd = window.__duo.solveDilatedLength;
-  window.__duo.solveDilatedLength = function () {
-    const r = bd.call(this); if (r) return r;
-    const v = this.dilatedLengthValue(); if (v === null) return null;
-    const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-    const i = ch.findIndex(e => { const q = this.choiceValue(e); return q !== null && Math.abs(q - v) < 0.05; });
-    return i < 0 ? null : { i };
-  };
-  window.__duo.RULES.unshift(['solveDilatedLength', /dilated/i]);
-})();
-;'__duo ready';
+
 
 // "congruent" vs "not congruent": compare the two drawn shapes' sorted side
 // lengths — a rigid motion preserves them, a dilation does not.
@@ -18049,37 +16175,10 @@ window.__duo.RULES.unshift(['solveProportion', /proportion/i]);
 
 // evalTrigExpr did not understand \sqrt, so proportions with radicals never
 // evaluated. Expand \sqrt{...} (and implicit multiplication like 2\sqrt{5}).
-(function () {
-  const base = window.__duo.evalTrigExpr;
-  window.__duo.evalTrigExpr = function (text) {
-    let t = String(text);
-    if (/\\sqrt/.test(t)) {
-      t = t.replace(/\\sqrt\s*\{([^{}]*)\}/g, '(($1)**0.5)')
-           .replace(/\\sqrt\s*(\d+)/g, '(($1)**0.5)')
-           .replace(/(\d)\s*\(\(/g, '$1*((');
-    }
-    return base.call(this, t);
-  };
-})();
-;'__duo ready';
+
 
 // typed "enter the measure of angle A'"
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const ins = this.curInstruction().replace(/\s/g, '').replace(/[’]/g, "'");
-    const m = ins.match(/measureofangle([a-z])('?)/i);
-    if (m) {
-      const labs = (this.diagramLabels() || []).filter(l => /°/.test(l.t))
-        .map(l => parseFloat(l.t.replace(/[^\d.]/g, ''))).filter(isFinite);
-      if (labs.length === 1) return labs[0];
-      const meas = this.angleAtVertex((m[1] + m[2]).toUpperCase());
-      if (meas !== null) return Math.round(meas);
-    }
-    return bo.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // Choices are written with \cong ("∠C ≅ ∠C'"). Strip that too, and when the
 // figures are not fully labelled fall back to the invariant that a vertex
@@ -18140,27 +16239,7 @@ window.__duo.RULES.unshift(['solveRatioStatement', /select the match|proportion|
 
 // "Enter the length of segment DE": measure between the two labelled points, or
 // solve the similar-triangle proportion when DE is not directly measurable.
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const ins = this.curInstruction().replace(/\s/g, '').replace(/[’]/g, "'");
-    const m = ins.match(/lengthof(?:segment)?([A-Za-z])('?)([A-Za-z])('?)/i);
-    if (m) {
-      const N = this.namedPoints();
-      const a = (m[1] + m[2]).toUpperCase(), b = (m[3] + m[4]).toUpperCase();
-      if (N && N[a] && N[b]) {
-        const L = Math.hypot(N[b][0] - N[a][0], N[b][1] - N[a][1]);
-        // when the diagram carries numeric side labels, scale the grid length
-        // to those units using the ratio of a labelled side
-        const labs = (this.diagramLabels() || []).filter(l => /^-?\d+(\.\d+)?$/.test(l.t.trim()));
-        if (!labs.length) return Math.abs(L - Math.round(L)) < 1e-4 ? Math.round(L) : Math.round(L * 100) / 100;
-        return Math.abs(L - Math.round(L)) < 1e-4 ? Math.round(L) : Math.round(L * 100) / 100;
-      }
-    }
-    return bo.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // Unit 190: probability. The spinner's sections are the numbers drawn in the
 // diagram iframe ("1 4 2 3"), so counts and probabilities come straight from
@@ -18171,63 +16250,10 @@ window.__duo.spinnerSections = function () {
   const toks = txt.replace(/[−–—]/g, '-').match(/-?\d+(?:\.\d+)?|[A-Za-z]+/g);
   return toks && toks.length ? toks.map(t => t.trim()) : null;
 };
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const ins = this.curInstruction();
-    const S = this.spinnerSections();
-    if (S) {
-      if (/total number of sections|how many sections (are there|in total)/i.test(ins)) return S.length;
-      const m = ins.replace(/\s/g, '').match(/howmanysectionshavea?(.+?)\??$/i);
-      if (m) {
-        const want = m[1].replace(/[^A-Za-z0-9.-]/g, '');
-        const n = S.filter(s => s === want).length;
-        if (n || S.includes(want)) return n;
-      }
-      const p = ins.replace(/\s/g, '').match(/probabilityof(?:landingon)?a?(.+?)\??$/i);
-      if (p && /probability/i.test(ins)) {
-        const want = p[1].replace(/[^A-Za-z0-9.-]/g, '');
-        const n = S.filter(s => s === want).length;
-        if (n) {
-          const g = (x, y) => y ? g(y, x % y) : Math.abs(x);
-          const k = g(n, S.length);
-          return (S.length / k === 1) ? String(n / k) : (n / k) + '/' + (S.length / k);
-        }
-      }
-    }
-    return bo.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "how many sections have an 8." — handle "a"/"an" and the trailing period
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const S = this.spinnerSections();
-    if (S) {
-      const ins = this.curInstruction().replace(/\s/g, '').replace(/[.?]+$/, '');
-      if (/totalnumberofsections|howmanysections(arethere|intotal)/i.test(ins)) return S.length;
-      let m = ins.match(/howmanysectionshave(?:an|a)?(.+)$/i);
-      if (m) {
-        const want = m[1].replace(/[^A-Za-z0-9.-]/g, '');
-        if (want) return S.filter(s => s === want).length;
-      }
-      m = ins.match(/probabilityof(?:landingon)?(?:an|a)?(.+)$/i);
-      if (m && /probability/i.test(ins)) {
-        const want = m[1].replace(/[^A-Za-z0-9.-]/g, '');
-        const n = S.filter(s => s === want).length;
-        if (n) {
-          const g = (x, y) => y ? g(y, x % y) : Math.abs(x);
-          const k = g(n, S.length);
-          return (S.length / k === 1) ? String(n / k) : (n / k) + '/' + (S.length / k);
-        }
-      }
-    }
-    return bo.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "...probability of spinning an 8 as a fraction" — trailing phrases like
 // "as a fraction" were swallowed into the target. Take the last standalone
@@ -18244,30 +16270,7 @@ window.__duo.spinnerTarget = function () {
   }
   return null;
 };
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const S = this.spinnerSections();
-    if (S) {
-      const flat = this.curInstruction().replace(/\s/g, '');
-      if (/totalnumberofsections|howmanysections(arethere|intotal)/i.test(flat)) return S.length;
-      const want = this.spinnerTarget();
-      if (want !== null) {
-        const n = S.filter(s => s.toLowerCase() === want.toLowerCase()).length;
-        if (/howmanysections/i.test(flat)) return n;
-        if (/probability/i.test(flat)) {
-          const g = (x, y) => y ? g(y, x % y) : Math.abs(x);
-          const k = g(n, S.length) || 1;
-          if (/decimal/i.test(flat)) return Math.round((n / S.length) * 1000) / 1000;
-          if (/percent/i.test(flat)) return Math.round((n / S.length) * 1000) / 10;
-          return (S.length / k === 1) ? String(n / k) : (n / k) + '/' + (S.length / k);
-        }
-      }
-    }
-    return bo.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "Select the match" where the prompt states a probability in words and the
 // choices write it as P(event) = fraction: match the VALUE and the orientation.
@@ -18323,25 +16326,7 @@ window.__duo.spinnerClickPoints = function () {
 ;'__duo ready';
 
 // "Enter P(3)" — probability notation for the spinner/die outcome.
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const ins = this.curInstruction().replace(/\s/g, '');
-    const m = ins.match(/^(?:enter|find|select)?p\(([A-Za-z0-9.-]+)\)$/i);
-    if (m) {
-      const S = this.spinnerSections();
-      if (S && S.length) {
-        const want = m[1];
-        const n = S.filter(s => s.toLowerCase() === want.toLowerCase()).length;
-        const g = (x, y) => y ? g(y, x % y) : Math.abs(x);
-        const k = g(n, S.length) || 1;
-        return (S.length / k === 1) ? String(n / k) : (n / k) + '/' + (S.length / k);
-      }
-    }
-    return bo.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "frac1112" is ambiguous once braces are stripped — read \frac{a}{b} from the
 // RAW LaTeX so multi-digit numerators/denominators parse correctly.
@@ -18379,32 +16364,7 @@ window.__duo.spinnerClickPoints = function () {
 // The sector click radius was too small — the points landed on the spinner's
 // hub instead of the wedges. Use ~0.65 of the radius, and find the wheel by its
 // largest circular element.
-(function () {
-  const base = window.__duo.spinnerClickPoints;
-  window.__duo.spinnerClickPoints = function () {
-    const f = this.promptFraction(); if (!f) return null;
-    const [a, b] = f;
-    if (!b || a < 0 || a > b || b > 24) return null;
-    const d = this.diagram(); if (!d) return null;
-    const doc = d.f.contentDocument;
-    const circle = [...doc.querySelectorAll('circle,path,ellipse')]
-      .map(e => e.getBoundingClientRect())
-      .filter(r => r.width > 100 && Math.abs(r.width - r.height) < 30)
-      .sort((x, y) => y.width - x.width)[0];
-    if (!circle) return base.call(this);
-    const fr = d.f.getBoundingClientRect();
-    const cx = fr.left + circle.left + circle.width / 2;
-    const cy = fr.top + circle.top + circle.height / 2;
-    const R = (circle.width / 2) * 0.65;
-    const pts = [];
-    for (let k = 0; k < a; k++) {
-      const ang = (-90 + (360 / b) * (k + 0.5)) * Math.PI / 180;
-      pts.push(this.toShot([Math.round(cx + R * Math.cos(ang)), Math.round(cy + R * Math.sin(ang))]));
-    }
-    return { need: a, of: b, points: pts };
-  };
-})();
-;'__duo ready';
+
 
 // "favorable outcomes = 2, total outcomes = 6" — the probability is the ratio,
 // stated in the prompt rather than read off a spinner.
@@ -18414,25 +16374,7 @@ window.__duo.statedOutcomes = function () {
   const n = t.match(/totaloutcomes,?=,?(-?\d+(?:\.\d+)?)/);
   return (f && n) ? [parseFloat(f[1]), parseFloat(n[1])] : null;
 };
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const O = this.statedOutcomes();
-    if (O && /probability|outcomes/i.test(this.curInstruction())) {
-      const ins = this.curInstruction();
-      const [a, b] = O;
-      if (/total outcomes/i.test(ins) && !/favorable/i.test(ins)) return b;
-      if (/favorable/i.test(ins) && !/probability/i.test(ins)) return a;
-      const g = (x, y) => y ? g(y, x % y) : Math.abs(x);
-      const k = g(a, b) || 1;
-      if (/decimal/i.test(ins)) return Math.round((a / b) * 1000) / 1000;
-      if (/percent/i.test(ins)) return Math.round((a / b) * 1000) / 10;
-      return (b / k === 1) ? String(a / k) : (a / k) + '/' + (b / k);
-    }
-    return bo.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // The wheel's wedges are real elements (class "spinner-segment"), so click
 // their own centroids instead of guessing a circle. Sample each path and
@@ -18483,27 +16425,7 @@ window.__duo.spinnerSegments = function () {
 
 // curInstruction returns the aligned math block here, so the "probability"
 // wording in the title was missed and the raw favorable count got typed.
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const O = this.statedOutcomes();
-    if (O) {
-      const full = this.promptLatex().map(l => this.ascii(l)).join(' ').toLowerCase();
-      const ins = this.curInstruction().toLowerCase();
-      const [a, b] = O;
-      if (/total outcomes/.test(ins) && !/favorable/.test(ins)) return b;
-      if (/probability/.test(full) || /probability/.test(ins)) {
-        const g = (x, y) => y ? g(y, x % y) : Math.abs(x);
-        const k = g(a, b) || 1;
-        if (/decimal/.test(full)) return Math.round((a / b) * 1000) / 1000;
-        if (/percent/.test(full)) return Math.round((a / b) * 1000) / 10;
-        return (b / k === 1) ? String(a / k) : (a / k) + '/' + (b / k);
-      }
-    }
-    return bo.call(this);
-  };
-})();
-;'__duo ready';
+
 
 window.__duo.GLOSSARY.unshift(
   [/operation for independent events/i, ['multiply']],
@@ -18614,44 +16536,7 @@ window.__duo.statedProbabilities = function () {
   }
   return out.length ? out : null;
 };
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const P = this.statedProbabilities();
-    if (P && P.length >= 2) {
-      const flat = this.promptLatex().map(l => this.ascii(l)).join(' ')
-        .replace(/\\[a-z]+/g, ' ').toLowerCase();
-      const mul = /\band\b|both|then|followed by/.test(flat);
-      const add = /\bor\b|either/.test(flat);
-      if (mul !== add) {
-        const v = mul ? P[0].v * P[1].v : P[0].v + P[1].v;
-        for (let d = 1; d <= 400; d++) { const n = v * d;
-          if (Math.abs(n - Math.round(n)) < 1e-9)
-            return (d === 1) ? String(Math.round(n)) : Math.round(n) + '/' + d; }
-        return Math.round(v * 1000) / 1000;
-      }
-    }
-    return bo.call(this);
-  };
-  const bt = window.__duo.solveTransformedValue;
-  window.__duo.solveTransformedValue = function () {
-    const P = this.statedProbabilities();
-    if (P && P.length >= 2) {
-      const flat = this.promptLatex().map(l => this.ascii(l)).join(' ')
-        .replace(/\\[a-z]+/g, ' ').toLowerCase();
-      const mul = /\band\b|both|then|followed by/.test(flat);
-      const add = /\bor\b|either/.test(flat);
-      if (mul !== add) {
-        const v = mul ? P[0].v * P[1].v : P[0].v + P[1].v;
-        const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-        const i = ch.findIndex(e => { const q = this.choiceValue(e); return q !== null && Math.abs(q - v) < 1e-9; });
-        if (i >= 0) return { i };
-      }
-    }
-    return bt.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // products of two fractions can have a denominator up to b^2 (26*26 = 676), so
 // the fraction search needs a wider range than 400
@@ -18957,16 +16842,7 @@ window.__duo.solveCountingExpression = function () {
   return i < 0 ? null : { i };
 };
 window.__duo.RULES.unshift(['solveCountingExpression', /arrange|order|choose|select|ways|select the match/i]);
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    if (/how many (ways|arrangements|orders|combinations)/i.test(this.promptTitle() + ' ' + this.curInstruction())) {
-      const C = this.countingTarget(); if (C) return C.value;
-    }
-    return bo.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // Teach the evaluator factorials so "4!" and patterns built from them work.
 (function () {
@@ -19140,29 +17016,7 @@ window.__duo.slopeFromEquation = function () {
   }
   return null;
 };
-(function () {
-  const bt = window.__duo.solveTransformedValue;
-  window.__duo.solveTransformedValue = function () {
-    if (/select the slope|the slope/i.test(this.curInstruction())) {
-      const m = this.slopeFromEquation();
-      if (m !== null) {
-        const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-        const i = ch.findIndex(e => { const v = this.choiceValue(e); return v !== null && Math.abs(v - m) < 1e-9; });
-        if (i >= 0) return { i };
-      }
-    }
-    return bt.call(this);
-  };
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    if (/slope/i.test(this.curInstruction())) {
-      const m = this.slopeFromEquation(); if (m !== null) return m;
-    }
-    return bo.call(this);
-  };
-  window.__duo.RULES.unshift(['solveTransformedValue', /slope/i]);
-})();
-;'__duo ready';
+
 
 // "Select the match" where both prompt and choices are equations in x and y:
 // keep the choice that is equivalent to the prompt's equation, tested at
@@ -19278,19 +17132,7 @@ window.__duo.solveCircleCentre = function () {
   return null;
 };
 window.__duo.RULES.unshift(['solveCircleCentre', /cent(er|re)|radius|circle/i]);
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const C = this.circleFromEquation();
-    if (C) {
-      const ins = this.curInstruction();
-      if (/radius/i.test(ins)) return Math.abs(C.r - Math.round(C.r)) < 1e-9 ? Math.round(C.r) : Math.round(C.r * 100) / 100;
-      if (/cent(er|re)/i.test(ins)) return '(' + C.h + ', ' + C.k + ')';
-    }
-    return bo.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // No equation printed — measure the drawn circle instead: its bounding box
 // gives the centre and radius in grid units.
@@ -19312,37 +17154,7 @@ window.__duo.circleFromDrawing = function () {
   const r = Math.round(Math.abs(edge[0] - c[0]));
   return r > 0 ? { h, k, r, r2: r * r } : null;
 };
-(function () {
-  const base = window.__duo.solveCircleCentre;
-  window.__duo.solveCircleCentre = function () {
-    const r = base.call(this); if (r) return r;
-    const C = this.circleFromDrawing(); if (!C) return null;
-    const ins = this.curInstruction();
-    const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-    if (/cent(er|re)/i.test(ins)) {
-      const i = ch.findIndex(e => { const p = this.choicePair(e);
-        return p && Math.abs(p[0] - C.h) < 1e-9 && Math.abs(p[1] - C.k) < 1e-9; });
-      if (i >= 0) return { i };
-    }
-    if (/radius/i.test(ins)) {
-      const i = ch.findIndex(e => { const v = this.choiceValue(e); return v !== null && Math.abs(v - C.r) < 0.2; });
-      if (i >= 0) return { i };
-    }
-    return null;
-  };
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const v = bo.call(this); if (v !== null && v !== undefined) return v;
-    const C = this.circleFromDrawing();
-    if (C) {
-      const ins = this.curInstruction();
-      if (/radius/i.test(ins)) return C.r;
-      if (/cent(er|re)/i.test(ins)) return '(' + C.h + ', ' + C.k + ')';
-    }
-    return v;
-  };
-})();
-;'__duo ready';
+
 
 // The circle can be drawn as a "line" path (curvePath finds it). Fit a centre
 // and radius from sampled points on that closed curve.
@@ -19459,17 +17271,7 @@ window.__duo.RULES.unshift(['solveCircleEquation', /circle|radius|substitute/i])
 ;'__duo ready';
 
 // evalTrigExpr never translated "^" to exponentiation, so "3^2" failed.
-(function () {
-  const base = window.__duo.evalTrigExpr;
-  window.__duo.evalTrigExpr = function (text) {
-    let t = String(text);
-    if (/\^/.test(t)) {
-      t = t.replace(/\^\s*\{([^{}]*)\}/g, '**($1)').replace(/\^\s*(-?\d+(?:\.\d+)?)/g, '**($1)');
-    }
-    return base.call(this, t);
-  };
-})();
-;'__duo ready';
+
 
 // In "write the equation from its graph" lessons the printed equation belongs
 // to an EARLIER step, so reading it gave the previous circle's radius. When a
@@ -19477,58 +17279,7 @@ window.__duo.RULES.unshift(['solveCircleEquation', /circle|radius|substitute/i])
 window.__duo.currentCircle = function () {
   return this.circleFromCurve() || this.circleFromDrawing() || this.circleFromEquation();
 };
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const ins = this.curInstruction();
-    if (/radius|cent(er|re)/i.test(ins)) {
-      const C = this.currentCircle();
-      if (C) {
-        if (/radius/i.test(ins)) return C.r;
-        return '(' + C.h + ', ' + C.k + ')';
-      }
-    }
-    return bo.call(this);
-  };
-  const bc = window.__duo.solveCircleCentre;
-  window.__duo.solveCircleCentre = function () {
-    const C = this.currentCircle();
-    if (C) {
-      const ins = this.curInstruction();
-      const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-      if (/cent(er|re)/i.test(ins)) {
-        const i = ch.findIndex(e => { const p = this.choicePair(e);
-          return p && Math.abs(p[0] - C.h) < 1e-9 && Math.abs(p[1] - C.k) < 1e-9; });
-        if (i >= 0) return { i };
-      }
-      if (/radius/i.test(ins)) {
-        const i = ch.findIndex(e => { const v = this.choiceValue(e); return v !== null && Math.abs(v - C.r) < 0.2; });
-        if (i >= 0) return { i };
-      }
-    }
-    return bc.call(this);
-  };
-  const be = window.__duo.solveCircleEquation;
-  window.__duo.solveCircleEquation = function () {
-    const C = this.currentCircle();
-    if (!C) return be.call(this);
-    const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-    const hits = [];
-    ch.forEach((e, i) => {
-      const t = this.ascii(this.choiceLatex(e))
-        .replace(/\\(mathbf|textbf|text|left|right)\b/g, '')
-        .replace(/[{}~\\]/g, '').replace(/[−–—]/g, '-').replace(/\s/g, '');
-      const m = t.match(/^\(?x([+-][\d.]+)?\)?\^?2\+\(?y([+-][\d.]+)?\)?\^?2=(.+)$/);
-      if (!m) return;
-      const hh = m[1] ? -parseFloat(m[1]) : 0, kk = m[2] ? -parseFloat(m[2]) : 0;
-      if (Math.abs(hh - C.h) > 1e-9 || Math.abs(kk - C.k) > 1e-9) return;
-      const v = this.evalTrigExpr(m[3]);
-      if (v !== null && Math.abs(v - C.r * C.r) < 1e-9) hits.push(i);
-    });
-    return hits.length === 1 ? { i: hits[0] } : be.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "Create a circle with radius 3": one draggable point sets the radius from the
 // circle's centre — move it that many units away.
@@ -19648,23 +17399,7 @@ window.__duo.vertexFromEquation = function () {
   }
   return null;
 };
-(function () {
-  const bt = window.__duo.solveTransformedValue;
-  window.__duo.solveTransformedValue = function () {
-    if (/vertex of the parabola|the vertex/i.test(this.curInstruction())) {
-      const v = this.vertexFromEquation();
-      if (v) {
-        const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-        const i = ch.findIndex(e => { const p = this.choicePair(e);
-          return p && Math.abs(p[0] - v[0]) < 1e-9 && Math.abs(p[1] - v[1]) < 1e-9; });
-        if (i >= 0) return { i };
-      }
-    }
-    return bt.call(this);
-  };
-  window.__duo.RULES.unshift(['solveTransformedValue', /vertex/i]);
-})();
-;'__duo ready';
+
 
 // wording varies: "Create a segment of length 5" as well as "with 5 units"
 (function () {
@@ -19709,20 +17444,7 @@ window.__duo.solvePointDistance = function () {
   return i < 0 ? null : { i };
 };
 window.__duo.RULES.unshift(['solvePointDistance', /distance between/i]);
-(function () {
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    if (/distance between/i.test(this.curInstruction())) {
-      const P = this.plottedPoints();
-      const pp = this.promptPairs();
-      const a = P.length === 2 ? P[0] : pp[0], b = P.length === 2 ? P[1] : pp[1];
-      if (a && b) { const d = Math.hypot(b[0] - a[0], b[1] - a[1]);
-        return Math.abs(d - Math.round(d)) < 1e-6 ? Math.round(d) : Math.round(d * 100) / 100; }
-    }
-    return bo.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "Create a segment with this length" + a separate "length = 5" line
 (function () {
@@ -19937,46 +17659,7 @@ window.__duo.prismDimensions = function () {
   if (uniq.length === 1) return [uniq[0], uniq[0], uniq[0]];
   return null;
 };
-(function () {
-  const bt = window.__duo.solveTransformedValue;
-  window.__duo.solveTransformedValue = function () {
-    const ins = this.curInstruction();
-    if (/volume of/i.test(ins)) {
-      const D = this.prismDimensions();
-      if (D) {
-        const v = D.reduce((a, b) => a * b, 1);
-        const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-        const i = ch.findIndex(e => { const q = this.choiceValue(e); return q !== null && Math.abs(q - v) < 1e-9; });
-        if (i >= 0) return { i };
-      }
-    }
-    if (/surface area of/i.test(ins)) {
-      const D = this.prismDimensions();
-      if (D && D.length === 3) {
-        const [a, b, c] = D;
-        const v = 2 * (a * b + b * c + a * c);
-        const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-        const i = ch.findIndex(e => { const q = this.choiceValue(e); return q !== null && Math.abs(q - v) < 1e-9; });
-        if (i >= 0) return { i };
-      }
-    }
-    return bt.call(this);
-  };
-  const bo = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const ins = this.curInstruction();
-    const D = this.prismDimensions();
-    if (D) {
-      if (/volume/i.test(ins)) return D.reduce((a, b) => a * b, 1);
-      if (/surface area/i.test(ins) && D.length === 3) {
-        const [a, b, c] = D; return 2 * (a * b + b * c + a * c);
-      }
-    }
-    return bo.call(this);
-  };
-  window.__duo.RULES.unshift(['solveTransformedValue', /volume|surface area/i]);
-})();
-;'__duo ready';
+
 
 // Match each numeric diagram label to the edge it annotates, so "height" vs
 // "base" is read off the drawing instead of guessed from label order.
@@ -20023,30 +17706,7 @@ window.__duo.labeledEdges = function () {
 
 // Guided prism steps: "enter the area of the bottom base" / "the height" /
 // "the volume". The vertical edge is the height; the rest form the base.
-(function () {
-  const base = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const ins = String(this.curInstruction() || '');
-    if (/\b(base|height|volume)\b/i.test(ins)) {
-      const E = this.labeledEdges();
-      if (E && E.length >= 2) {
-        const h = E.filter(e => e.vertical).map(e => e.v);
-        const b = E.filter(e => !e.vertical).map(e => e.v);
-        const areaOf = a => a.length >= 2 ? a.slice(0, 2).reduce((x, y) => x * y, 1) : null;
-        if (/area of the .*base|base area/i.test(ins)) {
-          const A = areaOf(b); if (A !== null) return /triangular/i.test(ins) ? A / 2 : A;
-        }
-        if (/\bheight\b/i.test(ins) && h.length === 1) return h[0];
-        if (/\bvolume\b/i.test(ins) && h.length === 1) {
-          const A = areaOf(b);
-          if (A !== null) return (/triangular/i.test(ins) ? A / 2 : A) * h[0];
-        }
-      }
-    }
-    return base.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // Volume/area questions sometimes offer LaTeX EXPRESSIONS as choices
 // ("\frac{1}{2}\cdot4\cdot3\cdot2") rather than numbers.
@@ -20071,30 +17731,7 @@ window.__duo.labeledEdges = function () {
 
 // "Select the volume of the triangular prism" — the earlier prismDimensions()
 // path only handles rectangular solids and numeric choices.
-(function () {
-  const bt = window.__duo.solveTransformedValue;
-  window.__duo.solveTransformedValue = function () {
-    const ins = String(this.curInstruction() || '');
-    if (/volume of/i.test(ins)) {
-      const E = this.labeledEdges();
-      if (E && E.length >= 3) {
-        const labs = E.map(e => e.v);
-        const tri = /triangular/i.test(ins + ' ' + this.promptTitle());
-        const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-        const vals = ch.map(e => this.choiceValue(e));
-        for (let a = 0; a < labs.length; a++)
-          for (let b = a + 1; b < labs.length; b++)
-            for (let c = b + 1; c < labs.length; c++) {
-              const v = labs[a] * labs[b] * labs[c] / (tri ? 2 : 1);
-              const i = vals.findIndex(q => q !== null && q !== undefined && Math.abs(q - v) < 1e-9);
-              if (i >= 0) return { i };
-            }
-      }
-    }
-    return bt.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // Guided solid steps state the target volume; when they do, prefer arithmetic
 // over guessing which labelled edges form the base.
@@ -20469,28 +18106,7 @@ window.__duo.curveRoots = function () {
   return roots.filter((r, i) => i === 0 || Math.abs(r - roots[i - 1]) > 0.25);
 };
 
-(function () {
-  const bt = window.__duo.solveTransformedValue;
-  window.__duo.solveTransformedValue = function () {
-    const ins = String(this.curInstruction() || '');
-    if (/x\s*-?\s*intercepts?\b/i.test(ins)) {
-      const R = this.curveRoots();
-      if (R && R.length) {
-        const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-        const i = ch.findIndex(e => {
-          const nums = [...this.half(e.innerText).replace(/[−–—]/g, '-')
-            .matchAll(/\((-?[\d.]+),(-?[\d.]+)\)/g)];
-          if (nums.length !== R.length) return false;
-          return nums.every((mm, k) => Math.abs(parseFloat(mm[2])) < 1e-9 &&
-            Math.abs(parseFloat(mm[1]) - R[k]) < 0.35);
-        });
-        if (i >= 0) return { i };
-      }
-    }
-    return bt.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "Match the pairs": eight tap tokens, four expressions and their four values.
 // These are timed, so pair everything by value in one pass and click straight
@@ -20553,36 +18169,7 @@ window.__duo.solveMatchPairs = async function () {
 
 // "Select the input when f(x) = 2" — the inverse read: find x on the drawn
 // curve where y hits the stated output. (And the forward read, f(a) = ?)
-(function () {
-  const bt = window.__duo.solveTransformedValue;
-  window.__duo.solveTransformedValue = function () {
-    const ins = String(this.curInstruction() || '').replace(/[−–—]/g, '-');
-    const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-    const m = ins.match(/input.*f\s*\(\s*x\s*\)\s*=\s*(-?[\d.]+)/i);
-    if (m && ch.length) {
-      const want = parseFloat(m[1]);
-      const pts = this.curveXY();
-      if (pts && pts.length > 2) {
-        const hits = [];
-        for (let i = 1; i < pts.length; i++) {
-          const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
-          if (!isFinite(y0) || !isFinite(y1)) continue;
-          if ((y0 - want) * (y1 - want) <= 0 && y0 !== y1)
-            hits.push(x0 + (x1 - x0) * (want - y0) / (y1 - y0));
-        }
-        if (hits.length) {
-          const i = ch.findIndex(e => {
-            const v = parseFloat(this.half(e.innerText).replace(/[−–—]/g, '-'));
-            return isFinite(v) && hits.some(h => Math.abs(h - v) < 0.35);
-          });
-          if (i >= 0) return { i };
-        }
-      }
-    }
-    return bt.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "Select the match" against a polynomial: the choices name its degree, or its
 // family (linear / quadratic / cubic / rational).
@@ -20639,27 +18226,7 @@ window.__duo.staticPoints = function () {
 
 // "Find the run/rise from the left point to the right point": read both plotted
 // points and subtract, always left-to-right so the run stays positive.
-(function () {
-  const base = window.__duo.solveOutputAt;
-  window.__duo.solveOutputAt = function () {
-    const ins = String(this.curInstruction() || '');
-    if (/\b(run|rise|slope)\b/i.test(ins) && /point/i.test(ins)) {
-      const raw = (this.gridPoints() || []).length ? this.gridPoints() : (this.staticPoints() || []);
-      const pts = raw.map(p => Array.isArray(p) ? p : [p.x, p.y])
-        .filter(p => isFinite(p[0]) && isFinite(p[1]))
-        .sort((a, b) => a[0] - b[0]);
-      if (pts.length >= 2) {
-        const A = pts[0], B = pts[pts.length - 1];
-        const run = B[0] - A[0], rise = B[1] - A[1];
-        if (/\brun\b/i.test(ins)) return run;
-        if (/\brise\b/i.test(ins)) return rise;
-        if (run) return rise / run;
-      }
-    }
-    return base.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // "Select the equation using the slope and y-intercept": fit the line through
 // the two plotted points, then keep the choice that agrees at sample x values.
@@ -20742,29 +18309,7 @@ window.__duo.tableFamily = function () {
 
 // "Select the x-values of the x-intercepts" is MULTI-select, and on guided
 // table lessons the intercepts come from the table's zero rows, not a graph.
-(function () {
-  const base = window.__duo.solveChoices;
-  window.__duo.solveChoices = function () {
-    const ins = this.promptLatex().map(l => this.ascii(l)).join(' ') + ' ' + (this.curInstruction() || '');
-    if (/x\s*-?\s*values of the.*x\s*-?\s*intercepts/i.test(ins)) {
-      const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-      let xs = null;
-      const P = this.tablePairs();
-      if (P) xs = P.filter(p => Math.abs(p[1]) < 1e-9).map(p => p[0]);
-      if ((!xs || !xs.length)) { const R = this.curveRoots(); if (R && R.length) xs = R; }
-      if (xs && xs.length && ch.length) {
-        const idx = [];
-        ch.forEach((e, i) => {
-          const v = parseFloat(this.half(e.innerText).replace(/[−–—]/g, '-'));
-          if (isFinite(v) && xs.some(x => Math.abs(x - v) < 0.35)) idx.push(i);
-        });
-        if (idx.length) return { want: idx.map(i => this.half(ch[i].innerText)), idx, ok: true, via: 'xIntercepts' };
-      }
-    }
-    return base.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // \duoblank{n} carries the expected value as its argument. The equation solver
 // is preferred, but two-unknown steps ("4 = \duoblank{-4} a") can't be solved
@@ -20786,34 +18331,7 @@ window.__duo.tableFamily = function () {
 
 // "x-intercepts: 2 and 4" -> pick the factored form that vanishes at both.
 // Runs ahead of the generic expression solvers, which otherwise grab this.
-(function () {
-  const base = window.__duo.solveChoices;
-  window.__duo.solveChoices = function () {
-    const ins = String(this.curInstruction() || '').replace(/[−–—]/g, '-');
-    const m = ins.match(/intercepts?\s*:?\s*(-?[\d.]+)\s*(?:and|,)\s*(-?[\d.]+)/i);
-    const ch = [...document.querySelectorAll('[data-test="challenge-choice"]')];
-    if (m && ch.length) {
-      const roots = [parseFloat(m[1]), parseFloat(m[2])];
-      const prep = t => String(t)
-        .replace(/\\(mathbf|textbf|text|emphasis|displaystyle)\b/g, '')
-        .replace(/\\(cdot|times)/g, '*').replace(/\\left|\\right/g, '')
-        .replace(/[{}]/g, '').replace(/\s/g, '').replace(/[−–—]/g, '-')
-        .replace(/^[a-z]\(x\)=|^y=/i, '')
-        .replace(/\ba\b/g, '1')                       // the leading coefficient
-        .replace(/(\d|\))(\()/g, '$1*$2');
-      const i = ch.findIndex(e => {
-        const a = e.querySelector('annotation');
-        const g = this.compile(prep(a ? a.textContent : e.innerText));
-        if (!g) return false;
-        try { return roots.every(r => Math.abs(g(r)) < 1e-9) && Math.abs(g(roots[0] + 1)) > 1e-9; }
-        catch (x) { return false; }
-      });
-      if (i >= 0) return { want: [String(i)], idx: [i], ok: true, via: 'factoredFromRoots' };
-    }
-    return base.call(this);
-  };
-})();
-;'__duo ready';
+
 
 // Duolingo has lost completed progress before, so keep an independent local
 // record of every level this run finishes. Survives page reloads.
@@ -21286,7 +18804,10 @@ window.__duo.grader = function () {
   const txt = e => (e.innerText || e.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
   const tokText = e => { const s = e.querySelector('[data-test="challenge-tap-token-text"]'); return txt(s || e); };
   const choiceText = c => txt({ innerText: typeof c === 'string' ? c : (c.text || c.phrase || c.character || c.transliteration || '') });
-  const bank = () => [...document.querySelectorAll('[data-test$="challenge-tap-token"]')]
+  // ponytail: placed tokens live outside [data-test="word-bank"] and match the same
+  // selector; clicking one un-places it. Scope to the bank when there is one
+  // (translate/tapComplete); match-pairs has no bank, so fall back to the page.
+  const bank = () => [...((document.querySelector('[data-test="word-bank"]') || document).querySelectorAll('[data-test*="challenge-tap-token"]:not([data-test="challenge-tap-token-text"])'))]
     .filter(b => b.getAttribute('aria-disabled') !== 'true' && !b.disabled);
 
   D.solveLang = async function () {
@@ -21294,28 +18815,53 @@ window.__duo.grader = function () {
     const dom = [...document.querySelectorAll('[data-test="challenge-choice"]')];
     const skip = document.querySelector('[data-test="player-skip"]');
     // listen / speak: never guess audio, take the skip Duolingo offers
-    if (/^(listen|speak|selectPronunciation|listenComplete|listenSpeak)$/.test(c.type) && skip && !c.correctTokens && !c.correctIndex) { skip.click(); return 'skip:' + c.type; }
+    if (/^(listen|speak|selectPronunciation|listenComplete|listenSpeak)$/.test(c.type) && skip && !(c.correctTokens || []).length && typeof c.correctIndex !== 'number') { skip.click(); return 'skip:' + c.type; }  // ponytail: speak ships correctTokens:[] (truthy)
     if (Array.isArray(c.pairs) && c.pairs.length) {              // match the pairs
+      const live = () => bank().filter(b => b.getAttribute('aria-disabled') !== 'true');
       for (const p of c.pairs) {
-        const a = [p.learningToken, p.translation, p.fromToken, p.transliteration].filter(Boolean).map(s => s.toLowerCase());
-        const hit = bank().filter(b => a.includes(tokText(b))).slice(0, 2);
-        for (const b of hit) { b.click(); await this.sleep(120); }
+        const a = Object.values(p).filter(v => typeof v === 'string' && !/^https?:/.test(v)).map(s => s.toLowerCase());   // characterMatch uses character/transliteration
+        const hit = live().filter(b => a.includes(tokText(b))).slice(0, 2);
+        if (hit.length < 2) continue;                              // ponytail: never click a lone tile, it offsets every later pair
+        for (const b of hit) { b.click(); await this.sleep(350); }
       }
-      return 'pairs';
+      return live().length ? null : 'pairs';
+    }
+    const blank = Array.isArray(c.displayTokens) ? c.displayTokens.filter(t => t && t.isBlank).map(t => t.text).join('') : '';   // cloze: "Type the missing word"
+    const ce = document.querySelector('[data-test^="challenge "] [contenteditable="true"]');
+    if (ce && blank) {                                            // partialReverseTranslate: blank is a contenteditable span
+      ce.focus(); document.execCommand('selectAll', false, null); document.execCommand('insertText', false, blank);
+      await this.sleep(200); return 'type:ce';
     }
     const input = document.querySelector('[data-test="challenge-text-input"], textarea[data-test="challenge-translate-input"]');
-    const sol = (c.correctSolutions && c.correctSolutions[0]) || (c.correctTokens && c.correctTokens.join(' '));
+    const sol = (c.correctSolutions && c.correctSolutions[0]) || (c.correctTokens && c.correctTokens.join(' ')) || blank || null;
     if (input && sol) {
       Object.getOwnPropertyDescriptor(input.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype, 'value').set.call(input, sol);
       input.dispatchEvent(new Event('input', { bubbles: true })); return 'type';
     }
     if (Array.isArray(c.correctTokens) && bank().length) {        // word bank, in order
-      for (const t of c.correctTokens) {
-        const b = bank().find(b => tokText(b) === t.toLowerCase().trim());
+      const words = c.correctTokens.map(t => t.trim()).filter(t => /[\p{L}\p{N}]/u.test(t));   // ponytail: "¿" "," "?" are tokens but never tiles
+      const have = words.every(t => bank().some(b => tokText(b) === t.toLowerCase()));
+      const kb = document.querySelector('[data-test="player-toggle-keyboard"]') || [...document.querySelectorAll('button')].find(b => /USE KEYBOARD/i.test(b.innerText));
+      if (!have && kb && sol) {                                    // a tile is missing: type the sentence instead
+        kb.click(); await this.sleep(400);
+        const ta = document.querySelector('textarea, [data-test="challenge-text-input"]'); if (!ta) return null;
+        Object.getOwnPropertyDescriptor(ta.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype, 'value').set.call(ta, sol);
+        ta.dispatchEvent(new Event('input', { bubbles: true })); return 'type:kb';
+      }
+      for (const t of words) {
+        const b = bank().find(b => tokText(b) === t.toLowerCase());
         if (!b) return null;                                       // token missing → hand back, no heart spent
-        b.click(); await this.sleep(150);
+        b.click(); await this.sleep(250);
       }
       return 'tokens';
+    }
+    if (Array.isArray(c.correctIndices) && c.correctIndices.length && !dom.length && bank().length) {   // tapComplete: fill blanks from the bank, in order
+      for (const i of c.correctIndices) {
+        const w = choiceText((c.choices || [])[i]); const b = bank().find(b => tokText(b) === w);
+        if (!b) return null;
+        b.click(); await this.sleep(250);
+      }
+      return 'tapIndices';
     }
     if (Array.isArray(c.correctIndices) && c.correctIndices.length && dom.length) {
       const want = c.correctIndices.map(i => choiceText((c.choices || [])[i]));
@@ -21324,7 +18870,8 @@ window.__duo.grader = function () {
     }
     if (typeof c.correctIndex === 'number' && dom.length) {
       const w = choiceText((c.choices || [])[c.correctIndex]);
-      const i = dom.findIndex(e => txt(e) === w || (w && txt(e).includes(w)));
+      const strip = e => txt(e).replace(/^\d+\s+/, '');                 // tiles read "1 ești"
+      const i = dom.findIndex(e => strip(e) === w);                      // ponytail: no includes(): "e" matched "ești"
       dom[i >= 0 ? i : c.correctIndex].click(); return 'index';
     }
     return null;
@@ -21336,8 +18883,13 @@ window.__duo.grader = function () {
     const r = this.read();
     if (r.hearts === 0) return { stop: 'no hearts', r };
     if (r.blame && /CONTINUE/i.test(r.next || '')) { await this.go(); return { ok: true, was: r.type, next: this.read() }; }
+    if (!r.type && /CONTINUE/i.test(r.next || '')) { await this.go(); await this.sleep(600); return { ok: true, was: 'interstitial', next: this.read() }; }  // ponytail: mid-lesson Duo animation, no challenge
     let via = null; try { via = await this.solveLang(); } catch (e) { via = null; }
     if (!via) return base.call(this);
+    // study ledger: what was asked and what the answer was (private notebook, langBoot flushes it)
+    try { const c = this.chal() || {}; const ans = (c.correctSolutions && c.correctSolutions[0]) || (c.correctTokens && c.correctTokens.filter(t => /[\p{L}\p{N}]/u.test(t)).join(' ')) ||
+      (typeof c.correctIndex === 'number' && choiceText((c.choices || [])[c.correctIndex])) || (Array.isArray(c.correctIndices) && c.correctIndices.map(i => choiceText((c.choices || [])[i])).join(' ')) || '';
+      (this.ledgerLang = this.ledgerLang || []).push({ at: new Date().toISOString(), type: c.type, prompt: c.prompt || r.prompt || '', answer: ans, via, href: location.pathname }); } catch (e) {}
     await this.sleep(300);
     const after = await this.go();
     if (after.blame === 'blame-incorrect') return { stop: 'wrong', via, r, after };
@@ -21367,14 +18919,17 @@ window.__duo.grader = function () {
     const white = c.fen.split(' ')[1] === 'w';
     const sq = q => { let f = q.charCodeAt(0) - 97, rk = +q[1] - 1; if (!white) { f = 7 - f; rk = 7 - rk; }
       return [Math.round((bx + s * (f + 0.5)) * k), Math.round((by + s * (7 - rk + 0.5)) * k)]; };
-    const clicks = c.chessPuzzleInfo.correctMoves.map(m => {
+    const moves = c.chessPuzzleInfo.correctMoves.flatMap(m => String(m).split(/\s+/)).filter(Boolean);   // "f1d3 f1e2" = two alternatives in one entry
+    const clicks = moves.map(m => {
       const a = sq(m.slice(0, 2)), b = sq(m.slice(2, 4)), out = [a, b];
       // promotion: picker centred under the square, clamped 2.3 squares inside the
       // board's right edge; the queen is the leftmost icon, 1.45 squares left of centre
-      if (m[4]) { const cx = Math.min(b[0], Math.round((bx + 8 * s - 2.3 * s) * k)); out.push([Math.round(cx - 1.45 * s * k), Math.round(b[1] + 2.1 * s * k)]); }
+      // promotion picker: 4.5 squares wide, centred under the pawn but clamped inside the
+      // board; the queen sits 0.8 squares in from the picker's left edge, 2.2 squares below
+      if (m[4]) { const left = Math.max(bx, Math.min(b[0] / k - 2.25 * s, bx + 8 * s - 4.5 * s)); out.push([Math.round((left + 0.8 * s) * k), Math.round(b[1] + 2.2 * s * k)]); }
       return out;
     });
-    return { white, moves: c.chessPuzzleInfo.correctMoves, clicks };
+    return { white, moves, clicks };
   };
   // CONTINUE through the result screen and return the next puzzle's plan, or a
   // {noPuzzle} read of whatever else is on screen (choice question, /learn).
@@ -21405,7 +18960,7 @@ window.__duo.grader = function () {
     const bx = r.left + r.width * 0.0975, by = r.top + r.height * 0.1, s = r.width * 0.8 / 8;
     const sq = q => { let f = q.charCodeAt(0) - 97, rk = +q[1] - 1; if (!white) { f = 7 - f; rk = 7 - rk; }
       return [Math.round((bx + s * (f + 0.5)) * k), Math.round((by + s * (7 - rk + 0.5)) * k)]; };
-    const promo = b => { const cx = Math.min(b[0], Math.round((bx + 8 * s - 2.3 * s) * k)); return [Math.round(cx - 1.45 * s * k), Math.round(b[1] + 2.1 * s * k)]; };
+    const promo = b => { const left = Math.max(bx, Math.min(b[0] / k - 2.25 * s, bx + 8 * s - 4.5 * s)); return [Math.round((left + 0.8 * s) * k), Math.round(b[1] + 2.2 * s * k)]; };
     return { sq, promo };
   };
   D.matchStep = function (level = 2) {
@@ -21464,3 +19019,124 @@ window.__duo.grader = function () {
   };
 })();
 ;'__duo ready';
+
+// ---- 2026-09-08: Stories ----
+// Story nodes are a separate player. Each challenge element carries
+// storyElement.{type, correctAnswerIndex, ...} on the fiber of its choice
+// buttons; continue is [data-test="stories-player-continue"].
+(function () {
+  const D = window.__duo;
+  const fiberUp = (el, pick) => { const k = Object.keys(el).find(k => k.startsWith('__reactFiber')); let f = el && el[k]; for (let i = 0; i < 40 && f; i++, f = f.return) { const r = pick(f.memoizedProps || {}); if (r) return r; } return null; };
+  D.storyEl = function () {
+    const c = document.querySelector('[data-test="stories-choice"], [data-test*="challenge-tap-token"]:not([data-test="challenge-tap-token-text"])');
+    return c ? fiberUp(c, p => p.storyElement || p.currentChallenge) : null;
+  };
+  D.storyDump = function () {
+    const e = this.storyEl() || {};
+    return { type: e.type, keys: Object.keys(e), tests: [...new Set([...document.querySelectorAll('[data-test]')].map(x => x.dataset.test))].filter(t => !/quit|progress|audio|backdrop/.test(t)) };
+  };
+  // One step: answer if a key is visible, else CONTINUE. Returns what it did.
+  D.storyStep = async function () {
+    const cont = document.querySelector('[data-test="stories-player-continue"], [data-test="stories-player-done"]');
+    // POINT_TO_PHRASE: the boxed words inside the sentence are tap-token buttons
+    const choices = [...document.querySelectorAll('[data-test="stories-choice"]')].length
+      ? [...document.querySelectorAll('[data-test="stories-choice"]')]
+      : [...document.querySelectorAll('[data-test*="challenge-tap-token"]:not([data-test="challenge-tap-token-text"])')];
+    // ponytail: CONTINUE is disabled until answered, so an enabled one means "move on"
+    if (cont && !cont.disabled && cont.getAttribute('aria-disabled') !== 'true') { cont.click(); await this.sleep(700); return 'cont'; }
+    const e = choices.length ? this.storyEl() : null;
+    if (e && typeof e.correctAnswerIndex === 'number' && choices[e.correctAnswerIndex]) {
+      const el = choices[e.correctAnswerIndex]; if (el.getAttribute('aria-disabled') !== 'true') { el.click(); await this.sleep(700); return 'story:' + e.type; }
+    }
+    if (e && e.type === 'ARRANGE' && Array.isArray(e.phraseOrder)) {   // tap tiles in phraseOrder
+      const txt = b => ((b.querySelector('[data-test="challenge-tap-token-text"]') || b).innerText || '').trim().toLowerCase();
+      for (const i of e.phraseOrder) {
+        const w = String(e.selectablePhrases[i] || '').toLowerCase();
+        const b = choices.find(b => txt(b) === w && b.getAttribute('aria-disabled') !== 'true' && !b.disabled);
+        if (!b) return null;
+        b.click(); await this.sleep(350);
+      }
+      return 'story:ARRANGE';
+    }
+    if (e && e.type === 'MATCH' && Array.isArray(e.matches)) {     // pairs: click phrase then translation
+      const txt = b => ((b.querySelector('[data-test="challenge-tap-token-text"]') || b).innerText || '').trim().toLowerCase();
+      const live = () => choices.filter(b => b.getAttribute('aria-disabled') !== 'true' && !b.disabled);
+      let did = 0;
+      for (const m of e.matches) {
+        const want = Object.values(m).filter(v => typeof v === 'string').map(v => v.toLowerCase());
+        const hit = live().filter(b => want.includes(txt(b))).slice(0, 2);
+        if (hit.length < 2) continue;
+        for (const b of hit) { b.click(); await this.sleep(350); } did++;
+      }
+      return did ? 'story:MATCH' : null;
+    }
+    if (e && Array.isArray(e.correctAnswerIndices)) {   // ponytail: shape guess, dumped if wrong
+      for (const i of e.correctAnswerIndices) { if (choices[i]) { choices[i].click(); await this.sleep(400); } }
+      return 'story:' + e.type;
+    }
+    if (cont && !cont.disabled && cont.getAttribute('aria-disabled') !== 'true') { cont.click(); await this.sleep(700); return 'cont'; }
+    return null;
+  };
+})();
+;'__duo ready';
+
+// ---- 2026-09-08: course switch ----
+// __duo.course('es') / ('math') / ('chess') / ('music'): PATCH the server-side
+// current course, then remount /learn. Language ids are DUOLINGO_<LANG>_EN
+// (uppercase; 'zh' -> ZH-CN, 'nl' -> NL-NL). Chess has no in-page loop (Rive
+// board needs real clicks); math uses boot.js, languages use langBoot.js.
+(function () {
+  const D = window.__duo;
+  D.courseId = k => ({ math: 'MATH_BT', chess: 'CHESS_CH', music: 'MUSIC_MU', zh: 'DUOLINGO_ZH-CN_EN', nl: 'DUOLINGO_NL-NL_EN' })[k] || ('DUOLINGO_' + k.toUpperCase() + '_EN');
+  D.course = async function (k) {
+    const uid = JSON.parse(atob(document.cookie.split('; ').find(c => c.startsWith('jwt_token=')).split('=')[1].split('.')[1])).sub;
+    const r = await fetch(`/2017-06-30/users/${uid}?fields=currentCourseId`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ currentCourseId: this.courseId(k) }) });
+    if (r.status !== 200) return { ok: false, status: r.status, id: this.courseId(k) };   // 400 = not enrolled: visit /enroll/<lang>/en first
+    localStorage.duoCourse = k; localStorage.removeItem('langCursor');
+    history.pushState({}, '', '/learn'); dispatchEvent(new PopStateEvent('popstate'));
+    // the SPA may keep the old tree; wait for the title to flip, else hard reload (loop dies, re-inject)
+    const t0 = document.title; for (let i = 0; i < 20 && document.title === t0; i++) await this.sleep(1000);
+    if (document.title === t0 && !/math|chess|music/.test(k)) { localStorage.duoReload = '1'; location.reload(); }
+    return { ok: true, id: this.courseId(k) };
+  };
+  // least-XP enrolled language other than the current one → course(); 'least completed first'
+  D.nextCourse = async function () {
+    const uid = JSON.parse(atob(document.cookie.split('; ').find(c => c.startsWith('jwt_token=')).split('=')[1].split('.')[1])).sub;
+    const u = await (await fetch(`/2017-06-30/users/${uid}?fields=courses,currentCourseId`)).json();
+    const langs = u.courses.filter(c => /^DUOLINGO_/.test(c.id) && c.id !== u.currentCourseId).sort((a, b) => a.xp - b.xp);
+    if (!langs.length) return null;
+    const code = langs[0].id.replace(/^DUOLINGO_/, '').replace(/_EN$/, '').split('-')[0].toLowerCase();
+    return this.course(code);
+  };
+})();
+;'__duo ready';
+
+// ---- 2026-09-09: puzzle key by position ----
+// chessPuzzleInfo.moveEvaluationsForPositions: { "<board> <side>": [{move, moveCorrectness, enemyResponse}] }.
+// Look the live FEN up and play the 'correct' entry; correctMoves alone mixes steps and alternatives.
+(function () {
+  const D = window.__duo;
+  D.puzzleBest = function () {
+    const c = this.chal(); if (!c || !c.chessPuzzleInfo) return null;
+    const fen = this.liveFen() || c.fen; if (!fen) return null;
+    const key = fen.split(' ').slice(0, 2).join(' ');
+    const ev = c.chessPuzzleInfo.moveEvaluationsForPositions || {};
+    const list = ev[key] || ev[Object.keys(ev).find(k => k.split(' ')[0] === key.split(' ')[0])] || [];
+    const best = list.find(e => e.moveCorrectness === 'correct') || list.find(e => e.moveCorrectness === 'suboptimal');
+    return best ? { move: best.move, fen, known: true } : null;
+  };
+})();
+;'__duo ready';
+
+// run.mjs now has a real mouse (Playwright) and can perform the drag that
+// dragSynth() (synthetic pointer events) never could on these widgets. When
+// run2/autoLesson bails with 'needdrag', expose the plan's two points in
+// page CSS px (plan() already resolves iframe-local rects to page space via
+// fr.left/fr.top, so no extra offset needed here) for the runner to drag.
+window.__duo.pendingDrag = function () {
+  try {
+    const p = this.plan();
+    if (p && Array.isArray(p.from) && Array.isArray(p.to)) return { from: p.from, to: p.to, kind: p.kind || null };
+  } catch (e) {}
+  return null;
+};

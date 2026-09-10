@@ -1,9 +1,0 @@
-{
-  "manifest_version": 3,
-  "name": "pwnlingo",
-  "version": "1.0",
-  "description": "Re-injects duo.js/boot.js (Duolingo lessons) and chess.js/chessBoot.js (lichess training) on every matching page load so the loop needs no operator.",
-  "permissions": ["scripting", "tabs"],
-  "host_permissions": ["https://www.duolingo.com/*", "https://lichess.org/*"],
-  "background": { "service_worker": "ext.js" }
-}

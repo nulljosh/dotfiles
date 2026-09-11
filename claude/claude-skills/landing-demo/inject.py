@@ -2,6 +2,7 @@ import re, sys, shutil, os
 ROOT=os.path.expanduser('~/Documents/Code')
 # name, landing file, app url ('' = same page with ?embed), extra selectors hidden when embedded
 APPS=[
+('Stanza','co-stanza/web/index.html','app.html',''),
  ('Bookrank','bookrank/index.html','', '.hero'),
  ('Breathe','breathe/web/index.html','', 'header,h1,.sub'),
  ('Toroid','conway/index.html','play.html', ''),
@@ -51,6 +52,7 @@ for name,rel,url,hide in APPS:
     p=os.path.join(ROOT,rel); s=open(p).read()
     if 'id="demoFrame"' in s: print('skip',rel); continue
     if not url: url=(os.path.basename(p) if os.path.basename(p)!='index.html' else './')+'?embed'
+    else: url+=('&' if '?' in url else '?')+'embed'
     extra=(','+','.join('.embed '+h for h in hide.split(','))) if hide else ''
     head=HEAD%extra
     if 'devices.css' in s: head=head.replace('<link rel="stylesheet" href="devices.css">\n','')
@@ -62,3 +64,18 @@ for name,rel,url,hide in APPS:
     d=os.path.dirname(p)
     if not os.path.exists(os.path.join(d,'devices.css')): shutil.copy(os.path.join(ROOT,'nulljosh.github.io/devices.css'),d)
     print('ok',rel,url)
+
+# ponytail: the embedded app must hide its own header/title inside the frame, or it
+# duplicates the hero title (this bit voxprint ~5 times). inject.py only edits the
+# landing page, never the target app file, so check that whoever wired the demo
+# actually added the `.embed` handling to the app itself, every run.
+for name,rel,url,hide in APPS:
+    p=os.path.join(ROOT,rel); s=open(p).read()
+    if 'id="demoFrame"' not in s: continue
+    m=re.search(r'data-src="([^"]+)"',s)
+    if not m: continue
+    target=m.group(1).split('?')[0].lstrip('/')
+    tp=os.path.join(os.path.dirname(p),target) if target and target!='.' else p
+    if not os.path.isfile(tp): continue
+    if 'embed' not in open(tp).read():
+        print('WARN: no ?embed handling in', os.path.relpath(tp,ROOT), '- title will duplicate inside the device frame for', name)

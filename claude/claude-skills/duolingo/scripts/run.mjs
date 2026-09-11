@@ -53,6 +53,12 @@ const S = { started: new Date().toISOString(), track, lessons: 0, puzzles: 0, ma
 const saveState = () => fs.writeFileSync(path.join(D, 'state.json'), JSON.stringify({ at: new Date().toISOString(), ...S }, null, 1));
 const ledger = rows => rows.length && fs.appendFileSync(path.join(D, 'lessons.jsonl'), rows.map(r => JSON.stringify(r)).join('\n') + '\n');
 
+// self-calibrating promotion-picker slot: {piece: slotIndex}, learned by trial when the
+// guessed 'qrbn' order fails a graded puzzle, persisted so it sticks across runs.
+const CALIB_PATH = path.join(D, 'promo-calib.json');
+let promoCalib = {}; try { promoCalib = JSON.parse(fs.readFileSync(CALIB_PATH, 'utf8')); } catch {}
+const saveCalib = () => fs.writeFileSync(CALIB_PATH, JSON.stringify(promoCalib));
+
 const ctx = await chromium.launchPersistentContext(path.join(D, '.pw-profile'), {
   headless: true, viewport: { width: 1400, height: 900 }, args: ['--disable-background-timer-throttling'],
 });
@@ -65,6 +71,7 @@ const inject = async () => {
   // defined before the solver's top-level script runs.
   const files = isMath ? ['mathjs.min.js', 'math.js'] : isChessTrack ? ['solver.js', 'js-chess-engine.js'] : ['solver.js'];
   for (const f of files) await page.addScriptTag({ content: fs.readFileSync(path.join(D, f), 'utf8') });
+  if (isChessTrack) await page.evaluate(c => { window.__duo.promoCalib = c; }, promoCalib);
 };
 const xp = () => page.evaluate(async u => { try { return (await (await fetch(`/2017-06-30/users/${u}?fields=totalXp`)).json()).totalXp; } catch (e) { return null; } }, uid);
 // held click: instant down/up is ignored by the Rive chess board
@@ -304,7 +311,7 @@ while (true) {
         const mv = pick.mv; played.add(mv);
         let ci = st.plan.moves.indexOf(mv), pts;
         if (ci >= 0) pts = st.plan.clicks[ci];
-        else pts = await page.evaluate((m) => { const c = __duo.chal(); const g = __duo.chessSquares(c.fen.split(' ')[1] === 'w', innerWidth); const a = g.sq(m.slice(0, 2)), b = g.sq(m.slice(2, 4)); const o = [a, b]; if (m[4]) o.push(g.promo(b)); return o; }, mv);
+        else pts = await page.evaluate((m) => { const c = __duo.chal(); const g = __duo.chessSquares(c.fen.split(' ')[1] === 'w', innerWidth); const a = g.sq(m.slice(0, 2)), b = g.sq(m.slice(2, 4)); const o = [a, b]; if (m[4]) o.push(g.promo(b, m[4])); return o; }, mv);
         const moved = await chessMove(pts); done = await graded(); log({ ev: 'pick', mv, via: pick.via, moved, done });
         if (!done) await sleep(2200);
       }
@@ -318,6 +325,16 @@ while (true) {
         lastCountedKey = key;
         const ok = !/incorrect|wrong/i.test(graded_ || '');
         S.puzzles++; if (!ok) S.misses++; S.last = 'puzzle'; log({ ev: 'puzzle', moves: st.plan.moves, ok }); saveState();
+        // self-calibration: a promotion move that graded wrong means the guessed picker
+        // slot ('qrbn' order) is off for this piece — cycle to the next slot (0-3) and
+        // persist it, so the next puzzle needing that piece (and a retry of this one,
+        // since it gets re-served until it's answered correctly) uses the learned slot.
+        const promoPiece = st.plan.moves.find(m => m[4] && m.length === 5)?.[4];
+        if (promoPiece) {
+          if (ok) { promoCalib[promoPiece] = 'qrbn'.indexOf(promoPiece); saveCalib(); }
+          else { promoCalib[promoPiece] = ((promoCalib[promoPiece] ?? 'qrbn'.indexOf(promoPiece)) + 1) % 4; saveCalib();
+            await page.evaluate(c => { window.__duo.promoCalib = c; }, promoCalib); }
+        }
         await page.evaluate(() => __duo.chessNext()).catch(() => {});
       } else {
         log({ ev: 'puzzle-unresolved', moves: st.plan.moves });

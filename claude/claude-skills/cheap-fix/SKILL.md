@@ -5,6 +5,8 @@ description: Fix as much of the codebase as possible for free by delegating smal
 
 Delegate mechanical, single-file, zero-judgment edits to a local model running on Ollama, instead of burning your own tokens on typing. You stay the orchestrator: you scope the task, pick the model, verify every result before it touches disk, and you're the one who commits.
 
+**Hard rule: you may not write the fix yourself.** Before doing anything else, check the local endpoint is reachable (`curl -s -m 3 localhost:11434/api/tags` or oMLX's `:8000/v1/models`). If it's up, every eligible task in this run MUST go through an actual `curl` call to that endpoint — no drafting the edit in your own head and calling that "delegating." If the endpoint is down, say so and stop; don't silently fall back to doing the edit yourself under the `/cheap-fix` name. That defeats the entire point — the model doing the writing costs $0, you doing it costs quota.
+
 ## Arguments
 
 Optional: a scope (one repo, a list of repos, or "whole codebase") and a task description. Default: whole `~/Documents/Code`, task inferred from what the user asked.

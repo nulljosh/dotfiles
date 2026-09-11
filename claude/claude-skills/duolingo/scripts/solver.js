@@ -193,8 +193,17 @@ window.__duo = window.__duo || {};
     const sq = q => { let f = q.charCodeAt(0) - 97, rk = +q[1] - 1; if (!white) { f = 7 - f; rk = 7 - rk; }
       return [Math.round((bx + s * (f + 0.5)) * k), Math.round((by + s * (7 - rk + 0.5)) * k)]; };
     // promotion picker: 4.5 squares wide, centred under the pawn but clamped inside the
-    // board; the queen sits 0.8 squares in from the picker's left edge, 2.2 squares below
-    const promo = b => { const left = Math.max(bx, Math.min(b[0] / k - 2.25 * s, bx + 8 * s - 4.5 * s)); return [Math.round((left + 0.8 * s) * k), Math.round(b[1] + 2.2 * s * k)]; };
+    // board; icon 0 (assumed queen) sits 0.8 squares in from the picker's left edge, 2.2
+    // squares below, remaining icons ~1 square apart. Underpromotion (rook/bishop/knight)
+    // needs the right slot index, not the queen's — D.promoCalib (piece -> learned slot
+    // index) overrides the guessed order 'qrbn' once run.mjs has confirmed it by trial.
+    const promo = (b, piece) => {
+      const left = Math.max(bx, Math.min(b[0] / k - 2.25 * s, bx + 8 * s - 4.5 * s));
+      const calib = D.promoCalib || {};
+      const idx = piece && calib[piece] != null ? calib[piece] : 'qrbn'.indexOf(piece || 'q');
+      const off = 0.8 + Math.max(idx, 0) * 1.0;
+      return [Math.round((left + off * s) * k), Math.round(b[1] + 2.2 * s * k)];
+    };
     return { sq, promo };
   };
 
@@ -205,7 +214,7 @@ window.__duo = window.__duo || {};
     const moves = c.chessPuzzleInfo.correctMoves.flatMap(m => String(m).split(/\s+/)).filter(Boolean);   // "f1d3 f1e2" = two alternatives in one entry
     const clicks = moves.map(m => {
       const a = g.sq(m.slice(0, 2)), b = g.sq(m.slice(2, 4)), out = [a, b];
-      if (m[4]) out.push(g.promo(b));
+      if (m[4]) out.push(g.promo(b, m[4]));
       return out;
     });
     return { white, moves, clicks };
@@ -267,7 +276,7 @@ window.__duo = window.__duo || {};
     const mv = this.lasker(fen, level), from = Object.keys(mv)[0], to = mv[from];
     const g = this.chessSquares(white), a = g.sq(from.toLowerCase()), b = g.sq(to.toLowerCase());
     const clicks = [a, b];
-    if (/[18]/.test(to[1]) && this.pawnAt(fen, from.toLowerCase())) clicks.push(g.promo(b));   // pawn reaching last rank → queen
+    if (/[18]/.test(to[1]) && this.pawnAt(fen, from.toLowerCase())) clicks.push(g.promo(b, 'q'));   // pawn reaching last rank → queen
     return { move: from + to, clicks, fen, ply: hist.length };
   };
 

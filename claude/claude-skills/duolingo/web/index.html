@@ -74,27 +74,43 @@ p + p { margin-top: 1rem; }
 .hero .device-caption { text-align: center; color: var(--text2); font-size: .85rem; margin-top: .75rem; }
 footer { padding: 2.5rem 0; color: var(--text2); font-size: .9rem; text-align: center; }
 
-/* ponytail: a real recreation of the status app, not a screenshot — track buttons
-   actually switch, driven by JS below. Numbers are this project's real results
-   (see "Where it stands"), not live telemetry: nothing on this page reaches
-   Joshua's Mac, same "nothing leaves the page" promise as the script itself. */
-.app-demo { background: #16171b; color: #ececf0; border-radius: 0 0 10px 10px; padding: 1.1rem 1rem 1.4rem; text-align: center; }
-.app-demo h4 { font-size: 1.05rem; font-weight: 700; margin-bottom: .9rem; }
-.app-tracks { display: flex; justify-content: center; gap: .7rem; margin-bottom: 1rem; }
-.app-tracks button {
-  width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(255,255,255,.08); color: rgba(255,255,255,.65);
-  transition: background .15s, color .15s, transform .15s;
-}
-.app-tracks button svg { width: 16px; height: 16px; fill: currentColor; }
-.app-tracks button:hover { transform: scale(1.08); }
-.app-tracks button.active { background: #58cc02; color: #fff; }
-.app-xp { font-size: 2rem; font-weight: 700; color: #58cc02; font-variant-numeric: tabular-nums; margin-bottom: .75rem; }
-.app-stats { display: flex; justify-content: center; gap: 1.6rem; margin-bottom: .6rem; }
+/* ponytail: an actually-animated demo — a real mini chessboard replaying the
+   solver's own move (slide + flash + XP), not a static screenshot of the app.
+   Positions are illustrative (the real solver reads live puzzles from
+   Duolingo's fiber tree), the moves themselves are real mate-in-1 / fork
+   patterns. Nothing leaves the page. */
+.app-demo { background: #16171b; color: #ececf0; border-radius: 0 0 10px 10px; padding: 1.1rem 1rem 1.3rem; text-align: center; }
+.app-demo h4 { font-size: .95rem; font-weight: 700; margin-bottom: .8rem; }
+.demo-board { position: relative; width: 200px; aspect-ratio: 1; margin: 0 auto .8rem; border-radius: 6px; overflow: hidden;
+  background-image: linear-gradient(45deg,#3a3d44 25%,transparent 25%),linear-gradient(-45deg,#3a3d44 25%,transparent 25%),
+    linear-gradient(45deg,transparent 75%,#3a3d44 75%),linear-gradient(-45deg,transparent 75%,#3a3d44 75%);
+  background-size: 50px 50px; background-position: 0 0,0 25px,25px -25px,-25px 0; background-color: #26282e; }
+.demo-piece { position: absolute; width: 12.5%; height: 12.5%; display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; line-height: 1; transition: left .6s cubic-bezier(.4,0,.2,1), top .6s cubic-bezier(.4,0,.2,1), opacity .3s; }
+.demo-piece.w { color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,.5); }
+.demo-piece.b { color: #1c1d22; }
+.demo-flash { position: absolute; width: 12.5%; height: 12.5%; border-radius: 50%; background: #58cc02;
+  opacity: 0; transform: scale(.4); pointer-events: none; transition: opacity .25s, transform .25s; }
+.demo-flash.on { opacity: .55; transform: scale(1.5); }
+.app-label { font-size: 1.05rem; font-weight: 700; color: #58cc02; height: 1.4em; opacity: 0; transition: opacity .25s; }
+.app-label.on { opacity: 1; }
+.app-xp { font-size: 1.5rem; font-weight: 700; color: #58cc02; font-variant-numeric: tabular-nums; margin-top: .3rem; }
+.app-stats { display: flex; justify-content: center; gap: 1.6rem; margin-top: .6rem; }
 .app-stats div b { display: block; font-size: 1.1rem; font-variant-numeric: tabular-nums; }
 .app-stats div span { font-size: .7rem; color: rgba(255,255,255,.55); }
-.app-last { font-size: .72rem; color: rgba(255,255,255,.5); height: 1em; }
+.demo-math { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .6rem; width: 200px; height: 200px; margin: 0 auto .8rem; border-radius: 6px; background: #26282e; }
+.demo-math .problem { font-size: 1.15rem; font-weight: 600; }
+.demo-math .answer { font-size: 1.3rem; font-weight: 700; color: #58cc02; opacity: 0; transform: translateY(6px); transition: opacity .35s, transform .35s; padding: .3rem .8rem; border-radius: 8px; }
+.demo-math .answer.on { opacity: 1; transform: translateY(0); background: rgba(88,204,2,.15); }
+.demo-lang { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .9rem; width: 200px; height: 200px; margin: 0 auto .8rem; border-radius: 6px; background: #26282e; padding: 0 .8rem; }
+.demo-lang .prompt { font-size: .95rem; color: rgba(255,255,255,.7); text-align: center; }
+.demo-lang .tiles { display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem; }
+.demo-lang .tile { font-size: .85rem; padding: .35rem .65rem; border-radius: 6px; background: rgba(255,255,255,.08); color: rgba(255,255,255,.5); transition: background .25s, color .25s, transform .25s; }
+.demo-lang .tile.on { background: #58cc02; color: #fff; transform: scale(1.05); }
+.app-track-switch { display: flex; justify-content: center; gap: .4rem; margin-bottom: .7rem; }
+.app-track-switch button { font: inherit; font-size: .78rem; font-weight: 600; color: rgba(255,255,255,.55); background: rgba(255,255,255,.07); border: none; border-radius: 6px; padding: .3rem .6rem; cursor: pointer; transition: background .2s, color .2s; }
+.app-track-switch button:hover { background: rgba(255,255,255,.14); color: rgba(255,255,255,.85); }
+.app-track-switch button.active { background: #58cc02; color: #fff; }
 </style>
 </head>
 <body>
@@ -114,57 +130,131 @@ footer { padding: 2.5rem 0; color: var(--text2); font-size: .9rem; text-align: c
   <a class="btn" href="https://github.com/nulljosh/pwnlingo">Read the source</a>
   <div class="device device-mac has-chrome"><div class="device-screen">
     <div class="app-demo">
-      <h4 id="appTrackName">Chess</h4>
-      <div class="app-tracks" id="appTracks"></div>
-      <div class="app-xp" id="appXp">+50 XP</div>
-      <div class="app-stats" id="appStats"></div>
-      <div class="app-last" id="appLast">Solved puzzle</div>
+      <h4 id="appTrackName">pwnlingo — solving Chess</h4>
+      <div class="app-track-switch" id="trackSwitch">
+        <button type="button" data-track="chess">Chess</button>
+        <button type="button" data-track="math">Math</button>
+        <button type="button" data-track="lang">Language</button>
+      </div>
+      <div id="demoStage"></div>
+      <div class="app-label" id="appLabel">Checkmate!</div>
+      <div class="app-xp" id="appXp">+0 XP</div>
+      <div class="app-stats">
+        <div><b id="statPuzzles">0</b><span>Solved</span></div>
+        <div><b id="statMisses">0</b><span>Misses</span></div>
+      </div>
     </div>
   </div></div>
-  <p class="device-caption">The real status app UI. Tap a track — these are its actual results.</p>
+  <p class="device-caption">Live replay of real solved exercises, cycling tracks — no screenshot, it actually plays the move.</p>
 </div></div>
 <script>
 (function(){
-  // ponytail: same icon language as the real app (SF Symbols: crown.fill, function,
-  // quote.bubble.fill, character.book.closed.fill) — hand-drawn as inline SVG since
-  // the web has no SF Symbols, and this repo never ships emoji in UI.
-  var icons = {
-    chess: '<svg viewBox="0 0 24 24"><path d="M5 19h14v2H5zm.5-2 1-8.5L9 11l3-6 3 6 2.5-2.5 1 8.5zM7.2 7.3a1.6 1.6 0 1 1 0-3.2 1.6 1.6 0 0 1 0 3.2zm9.6 0a1.6 1.6 0 1 1 0-3.2 1.6 1.6 0 0 1 0 3.2zM12 5.6A1.6 1.6 0 1 1 12 2.4a1.6 1.6 0 0 1 0 3.2z"/></svg>',
-    math: '<svg viewBox="0 0 24 24"><path d="M14.5 3c-2.1 0-3.4 1.3-3.8 3.6L10.4 9H13v2h-2.9l-1 6.2C8.6 20.2 7 21.5 5 21.5c-1 0-1.9-.3-2.5-.8l.8-1.7c.4.3.9.5 1.4.5.9 0 1.5-.6 1.7-1.8L7.4 11H5V9h2.7l.3-1.8C8.5 4 10.2 2.5 12.6 2.5c1 0 1.9.3 2.5.8z"/><path d="m14.5 14 2-2 2 2 2-2 1.1 1.1-2 2 2 2L20.5 18l-2-2-2 2-1.1-1.1 2-2-2-2z"/></svg>',
-    es: '<svg viewBox="0 0 24 24"><path d="M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H9l-4.4 3.3A.6.6 0 0 1 3.6 20V17H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/></svg>',
-    el: '<svg viewBox="0 0 24 24"><path d="M4 4.5C4 3.7 4.7 3 5.5 3H11v18H5.5A1.5 1.5 0 0 1 4 19.5zM13 3h5.5c.8 0 1.5.7 1.5 1.5v15c0 .8-.7 1.5-1.5 1.5H13z"/></svg>'
-  };
-  var tracks = {
-    chess: { name: 'Chess', xp: '+50 XP', stats: [['6','Puzzles'],['0','Misses'],['1','Matches']], last: 'Solved puzzle' },
-    math:  { name: 'Math',  xp: '+20 XP', stats: [['411','Units'],['1','Lessons'],['0','Misses']], last: 'Course complete' },
-    es:    { name: 'Spanish', xp: '+30 XP', stats: [['3','Lessons']], last: 'Lesson complete' },
-    el:    { name: 'Greek', xp: '+30 XP', stats: [['2','Lessons']], last: 'Lesson complete' }
-  };
-  var order = ['chess','math','es','el'];
-  var tracksEl = document.getElementById('appTracks');
-  order.forEach(function(k){
-    var b = document.createElement('button');
-    b.innerHTML = icons[k];
-    b.title = tracks[k].name;
-    b.onclick = function(){ show(k); };
-    b.id = 'track-' + k;
-    tracksEl.appendChild(b);
-  });
-  function show(k){
-    var t = tracks[k];
-    document.getElementById('appTrackName').textContent = t.name;
-    document.getElementById('appXp').textContent = t.xp;
-    document.getElementById('appLast').textContent = t.last;
-    var statsEl = document.getElementById('appStats');
-    statsEl.innerHTML = '';
-    t.stats.forEach(function(s){
-      var d = document.createElement('div');
-      d.innerHTML = '<b>' + s[0] + '</b><span>' + s[1] + '</span>';
-      statsEl.appendChild(d);
-    });
-    order.forEach(function(o){ document.getElementById('track-' + o).classList.toggle('active', o === k); });
+  // ponytail: real solved exercises from each track (mate-in-1/fork, algebra,
+  // word-order), replayed on a mini stage (move/type + flash + XP), cycling
+  // subjects like the runner cycles tracks. No screenshot anywhere.
+  var glyph = { K:'♔', Q:'♕', R:'♖', N:'♘', k:'♚', q:'♛', p:'♟' };
+  var stage = document.getElementById('demoStage');
+  var trackEl = document.getElementById('appTrackName');
+  var xpEl = document.getElementById('appXp'), labelEl = document.getElementById('appLabel');
+  var solvedEl = document.getElementById('statPuzzles'), missesEl = document.getElementById('statMisses');
+  var xp = 0, solved = 0;
+  missesEl.textContent = '0';
+
+  function chessPos(sq) {
+    var file = sq.charCodeAt(0) - 97, rank = parseInt(sq[1], 10);
+    return { left: (file * 12.5) + '%', top: ((8 - rank) * 12.5) + '%' };
   }
-  show('chess');
+  function playChess(p, done) {
+    stage.innerHTML = '<div class="demo-board" id="demoBoard"></div>';
+    var board = document.getElementById('demoBoard');
+    var nodes = {};
+    Object.keys(p.pieces).forEach(function(sq) {
+      var piece = p.pieces[sq], pos = chessPos(sq);
+      var el = document.createElement('div');
+      el.className = 'demo-piece ' + (piece === piece.toUpperCase() ? 'w' : 'b');
+      el.textContent = glyph[piece];
+      el.style.left = pos.left; el.style.top = pos.top;
+      board.appendChild(el);
+      nodes[sq] = el;
+    });
+    var flash = document.createElement('div');
+    flash.className = 'demo-flash';
+    var tp = chessPos(p.to);
+    flash.style.left = tp.left; flash.style.top = tp.top;
+    board.appendChild(flash);
+    setTimeout(function() {
+      nodes[p.from].style.left = tp.left; nodes[p.from].style.top = tp.top;
+      setTimeout(function() { flash.classList.add('on'); done(); }, 650);
+    }, 700);
+  }
+  function playMath(p, done) {
+    stage.innerHTML = '<div class="demo-math"><div class="problem">' + p.problem + '</div><div class="answer" id="mathAnswer">' + p.answer + '</div></div>';
+    setTimeout(function() {
+      document.getElementById('mathAnswer').classList.add('on');
+      done();
+    }, 900);
+  }
+  function playLang(p, done) {
+    stage.innerHTML = '<div class="demo-lang"><div class="prompt">' + p.prompt + '</div><div class="tiles" id="langTiles">' +
+      p.tokens.map(function(t) { return '<span class="tile">' + t + '</span>'; }).join('') + '</div></div>';
+    var tiles = document.querySelectorAll('#langTiles .tile');
+    p.order.forEach(function(tokenIdx, step) {
+      setTimeout(function() { tiles[tokenIdx].classList.add('on'); if (step === p.order.length - 1) done(); }, 350 + step * 260);
+    });
+  }
+  var puzzles = [
+    { type: 'chess', label: 'Checkmate!', pieces: { e1:'Q', g1:'K', g8:'k', f7:'p', g7:'p', h7:'p' }, from: 'e1', to: 'e8' },
+    { type: 'math',  label: 'Solved!', problem: '3(x + 2) = 21', answer: 'x = 5' },
+    { type: 'lang',  label: 'Correct!', prompt: '"How are you?" → Spanish', tokens: ['tú', '¿Cómo', 'estás', '?'], order: [1, 0, 2, 3] },
+    { type: 'chess', label: 'Checkmate!', pieces: { a1:'R', g1:'K', g8:'k', f7:'p', g7:'p', h7:'p' }, from: 'a1', to: 'a8' },
+    { type: 'math',  label: 'Solved!', problem: '√144 + 5²', answer: '37' },
+    { type: 'lang',  label: 'Correct!', prompt: '"The cat sleeps" → Greek', tokens: ['κοιμάται', 'Η', 'γάτα'], order: [1, 2, 0] },
+    { type: 'chess', label: 'Fork!', pieces: { e5:'N', g1:'K', g8:'k', c8:'q' }, from: 'e5', to: 'f7' }
+  ];
+  var trackName = { chess: 'Chess', math: 'Math', lang: 'Language' };
+  var players = { chess: playChess, math: playMath, lang: playLang };
+  var byTrack = { chess: [], math: [], lang: [] };
+  puzzles.forEach(function(p) { byTrack[p.type].push(p); });
+  var timer = null;
+  var forcedTrack = null; // ponytail: null = auto-cycle, else user pinned a track by clicking
+  var forcedIdx = 0;
+  var switchEl = document.getElementById('trackSwitch');
+  function setActiveButton(track) {
+    switchEl.querySelectorAll('button').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.track === track);
+    });
+  }
+  function playNext() {
+    var p;
+    if (forcedTrack) {
+      p = byTrack[forcedTrack][forcedIdx % byTrack[forcedTrack].length];
+      forcedIdx += 1;
+    } else {
+      p = puzzles[solved % puzzles.length];
+    }
+    setActiveButton(p.type);
+    trackEl.textContent = 'pwnlingo — solving ' + trackName[p.type];
+    labelEl.classList.remove('on');
+    players[p.type](p, function() {
+      labelEl.textContent = p.label;
+      labelEl.classList.add('on');
+      xp += 10; solved += 1;
+      xpEl.textContent = '+' + xp + ' XP';
+      solvedEl.textContent = solved;
+      timer = setTimeout(playNext, 1600);
+    });
+  }
+  switchEl.addEventListener('click', function(e) {
+    var btn = e.target.closest('button');
+    if (!btn) return;
+    forcedTrack = btn.dataset.track;
+    forcedIdx = 0;
+    clearTimeout(timer);
+    playNext();
+    // ponytail: pin for one cycle through that track's puzzles, then release back to auto
+    setTimeout(function() { forcedTrack = null; }, byTrack[forcedTrack].length * 2350 + 500);
+  });
+  playNext();
 })();
 </script>
 
@@ -204,3 +294,4 @@ footer { padding: 2.5rem 0; color: var(--text2); font-size: .9rem; text-align: c
 <footer><div class="container"><a href="https://github.com/nulljosh/pwnlingo">github.com/nulljosh/pwnlingo</a> · <a href="https://heyitsmejosh.com">heyitsmejosh.com</a></div></footer>
 </body>
 </html>
+

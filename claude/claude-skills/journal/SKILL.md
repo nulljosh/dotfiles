@@ -15,7 +15,21 @@ Create or update weekly journal entries for journal.heyitsmejosh.com, following 
 /journal <date>       # Create entry for specific date (YYYY-MM-DD format)
 /journal push         # Deploy latest changes to production
 /journal open         # Open current week's entry in browser
+/journal condense     # Merge recent posts down to under 5 total, no content lost
 ```
+
+## Condense (`/journal condense`)
+
+Run when `_posts/` has piled up to 5+ entries again (it will, the "append to current quarter" rule above gets ignored under time pressure). Goal: fewer, bigger posts, not less content.
+
+1. List `_posts/`, sort by date. Read every post from the oldest one worth touching through the newest.
+2. Group into 2-4 clusters, each becoming one `categories: journal quarterly` post (1200-word cap, see `scripts/lint-posts.py`). Group by natural boundaries (a week, a sprint) rather than an even split.
+3. For each cluster, write one merged post. Keep every fact from the source posts (app names, numbers, what broke and why) — this is a merge, not a rewrite-and-cut. Compress by combining clauses with semicolons/commas rather than dropping content, since the linter caps sentences per section at 5 (splits only on `. ! ?`, so semicolons are free).
+4. **Headings must not repeat a weekday name across the whole post** — the linter dedupes by weekday word alone, ignoring any date suffix. Use date-range headings instead (`## Sep 2-3`, `## Sep 4-5`) when a cluster spans more than one of the same weekday.
+5. Reuse one source post's header/graph include as a starting template; write a new `_includes/headers/<slug>.svg` per merged post (see house style below), one word title. Graphs regenerate automatically, don't hand-edit them.
+6. `git rm` every source post plus its now-unused `_includes/headers/*.svg` and `_includes/graphs/*.svg`.
+7. Run `python3 scripts/lint-posts.py` and fix violations before deploying — don't raise the caps.
+8. `./scripts/deploy.sh` to build and ship, then curl the new post URLs to confirm 200.
 
 ## What it does
 

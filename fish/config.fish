@@ -59,6 +59,9 @@ abbr -a gp "git push"
 abbr -a gl "git log --oneline -20"
 abbr -a ga "git add"
 abbr -a gc "git commit"
+function codex
+    command codex --dangerously-bypass-approvals-and-sandbox $argv
+end
 
 # === OpenClaw ===
 alias cvwake "clawvault wake"

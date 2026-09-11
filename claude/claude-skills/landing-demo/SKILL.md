@@ -28,6 +28,7 @@ Then run `python3 ~/.claude/skills/landing-demo/inject.py`, screenshot once with
 
 ## Rules
 
+- **The embedded app must hide its own header/title, or the visitor sees it twice** (hero title, then the app's own header repeating it, stacked right below). This bit co-stanza (`app.html` had no `?embed` handling at all). Any target page — same-page or a separate app URL — needs: `<script>if(/[?&]embed\b/.test(location.search))document.documentElement.classList.add('embed')</script>` plus `.embed header{display:none}` (or the app's actual header/nav selector) in its own `<head>`. `inject.py` now always appends `?embed` to a separate app URL; check the target file itself was updated to honor it — the script can't inject CSS into a page it isn't editing.
 - The frame holds the real app, never a screenshot or a mock. If the app is auth-gated with no guest mode, there is no demo: say so instead of faking one.
 - One frame, matched to the visitor. Do not show all four devices.
 - Keep the caption honest: "live", not "demo mode", unless it really is.

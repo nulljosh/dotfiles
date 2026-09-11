@@ -6,3 +6,4 @@ secrets.zsh
 .env.local
 .env.*.local
 .env.production
+claude/claude-skills/mail/

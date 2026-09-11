@@ -23,6 +23,8 @@ Supabase Auth "Send Email" hook → authmail Cloudflare Worker → Resend → us
 
 `~/Documents/Code/authmail/src/index.js` is the whole thing — a `THEMES` map keyed by redirect-URL substring, subject/body copy per `email_action_type`, Svix webhook verification, one `fetch` to `api.resend.com/emails`. Password reset is the `recovery` type — it is not a separate feature, just another row in `SUBJECT`/`BODY`.
 
+**Welcome email** rides the same request as the signup confirmation — when `type === "signup"`, the Worker fires a second Resend call (`welcome` type) right after the confirm email sends. No separate DB webhook or post-confirmation trigger; it lands the moment they sign up, alongside the "click to verify" email, both themed via the same `THEMES` row.
+
 **Adding a new app to branded auth email = one line.** Add a row to `THEMES` in `src/index.js`:
 ```js
 myapp: { name: "MyApp", accent: "#RRGGBB", match: ["myapp", "my-app"] },

@@ -3,6 +3,7 @@
 # dotfiles
 
 ![version](https://img.shields.io/badge/version-v2.0.0-blue)
+![license](https://img.shields.io/badge/license-MIT-green) [![GitHub](https://img.shields.io/badge/GitHub-nulljosh%2Fdotfiles-black?logo=github)](https://github.com/nulljosh/dotfiles)
 
 My shell, my terminal, my prompt. Everything a fresh Mac needs to feel like mine in one command.
 ![architecture](architecture.svg)

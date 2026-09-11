@@ -5,183 +5,89 @@ description: Run an offline ASO audit on canonical App Store metadata under `./m
 
 # asc ASO audit
 
-Run a two-phase ASO audit: offline checks against local metadata files, then keyword gap analysis via Astro MCP.
-When available, include Apple-generated app tags as a discoverability signal.
+Two-phase ASO audit: offline checks against local metadata, then keyword gap analysis via Astro MCP. Include Apple-generated app tags as a discoverability signal when available.
 
 ## Preconditions
+- Metadata pulled locally via `asc metadata pull --app "APP_ID" --version "1.2.3" --dir "./metadata"`. Metadata from `asc migrate export` or `asc localizations download` needs normalizing into the canonical `./metadata` layout first.
+- Astro gap analysis needs the app tracked in Astro MCP (optional — offline checks run without it).
+- Apple discoverability tags: `asc app-tags list --app "APP_ID" --output json` (works when the API returns tags for the app).
 
-- Metadata pulled locally into canonical files via `asc metadata pull --app "APP_ID" --version "1.2.3" --dir "./metadata"`.
-- If metadata came from `asc migrate export` or `asc localizations download`, normalize it into the canonical `./metadata` layout before running this skill.
-- For Astro gap analysis: app tracked in Astro MCP (optional — offline checks run without it).
-- For Apple-generated discoverability tags: `asc app-tags list --app "APP_ID" --output json` works when the API returns tags for the app.
+## Before you start
+1. Read `references/aso_rules.md` for the rules each check enforces.
+2. Identify the latest version directory under `metadata/version/` (highest semver) — use it for all version-level fields.
+3. Primary locale is `en-US` unless the user says otherwise.
 
-## Before You Start
+## Metadata file paths
+- App-info (`subtitle`): `metadata/app-info/{locale}.json`
+- Version fields (`keywords`, `description`, `whatsNew`): `metadata/version/{latest-version}/{locale}.json`
+- App name: may be missing from exported metadata — fetch via `asc apps info list` or ask the user, don't flag as a missing-field error.
 
-1. Read `references/aso_rules.md` to understand the rules each check enforces.
-2. Identify the **latest version directory** under `metadata/version/` (highest semantic version number). Use this for all version-level fields.
-3. The **primary locale** is `en-US` unless the user specifies otherwise.
+## Phase 1: offline checks (no network)
 
-## Metadata File Paths
+**1. Keyword waste.** Tokenize `subtitle` (+ `name` if present); flag any token also in `keywords` — already indexed, wastes budget.
+`⚠️ Warning — "quran" appears in subtitle AND keywords — remove from keywords to free 6 characters`
+- Latin/Cyrillic: split by whitespace, strip punctuation, lowercase.
+- CJK: split by `、` `，` `,` or iterate characters — whitespace tokenization doesn't work here.
+- Arabic: split by whitespace, also generate prefix-stripped variants (strip ال) since Apple likely normalizes definite articles — e.g. "القرآن" in subtitle should flag both "القرآن" and "قرآن" in keywords.
+- Split keywords by comma, trim, lowercase, report intersection (including fuzzy prefix matches).
 
-- **App-info fields** (`subtitle`): `metadata/app-info/{locale}.json`
-- **Version fields** (`keywords`, `description`, `whatsNew`): `metadata/version/{latest-version}/{locale}.json`
-- **App name**: May not be present in exported metadata. If `name` is missing from the app-info JSON, fetch it via `asc apps info list` or ask the user. Do not flag it as a missing-field error.
-
-## Phase 1: Offline Checks
-
-Run these 5 checks against the local metadata directory. No network calls required.
-
-### 1. Keyword Waste
-
-Tokenize the `subtitle` field (and `name` if available). Flag any token that also appears in the `keywords` field — it is already indexed and wastes keyword budget.
-
-```
-Severity: ⚠️ Warning
-Example:  "quran" appears in subtitle AND keywords — remove from keywords to free 6 characters
-```
-
-How to check:
-1. Read `metadata/app-info/{locale}.json` for `subtitle` (and `name` if present)
-2. Read `metadata/version/{latest-version}/{locale}.json` for `keywords`
-3. Tokenize subtitle (+ name):
-   - **Latin/Cyrillic scripts:** split by whitespace, strip leading/trailing punctuation, lowercase
-   - **Chinese/Japanese/Korean:** split by `、` `，` `,` or iterate characters — each character or character-group is a token. Whitespace tokenization does not work for CJK.
-   - **Arabic:** split by whitespace, then also generate prefix-stripped variants (remove ال prefix) since Apple likely normalizes definite articles. For example, "القرآن" in subtitle should flag both "القرآن" and "قرآن" in keywords.
-4. Split keywords by comma, trim whitespace, lowercase
-5. Report intersection (including fuzzy matches from prefix stripping)
-
-### Optional: App Tag Alignment
-
-App tags are Apple-generated labels that can appear in search results and product pages. They are not editable ASO metadata, but they are useful evidence for whether Apple's classification matches the intended positioning.
-
+**Optional: app tag alignment.** App tags are Apple-generated, not editable, but useful evidence of whether Apple's classification matches intended positioning.
 ```bash
 asc app-tags list --app "APP_ID" --output json
 asc app-tags view --app "APP_ID" --id "TAG_ID" --output json
 ```
+Note alignment if tags reinforce the subtitle/keyword strategy; recommend metadata/category changes if tags point to an unintended category. Don't promise metadata changes will immediately change Apple-generated tags.
 
-Use tags as context only:
-- If visible tags reinforce the subtitle/keyword strategy, note the alignment.
-- If tags point to an unintended category or use case, recommend metadata/category changes that may improve future classification.
-- Do not promise that changing metadata will immediately change Apple-generated tags.
-
-### 2. Underutilized Fields
-
-Flag fields using less than their recommended minimum:
-
+**2. Underutilized fields.**
 | Field | Minimum | Limit | Rationale |
 |-------|---------|-------|-----------|
 | Keywords | 90 chars | 100 | 90%+ usage maximizes indexing |
 | Subtitle | 20 chars | 30 | 65%+ usage recommended |
 
-```
-Severity: ⚠️ Warning
-Example:  keywords is 62/100 characters (62%) — 38 characters of indexing opportunity unused
-```
+`⚠️ Warning — keywords is 62/100 characters (62%) — 38 characters of indexing opportunity unused`
 
-### 3. Missing Fields
+**3. Missing fields.** Flag empty/missing: `subtitle`, `keywords`, `description`, `whatsNew`. `name` may not be in the export — only flag if the app-info JSON has a `name` key with an empty value.
+`❌ Error — subtitle is empty for locale en-US`
 
-Flag empty or missing required fields: `subtitle`, `keywords`, `description`, `whatsNew`.
+**4. Bad keyword separators.** Check `keywords` for spaces after commas (`quran, recitation`), semicolons (`quran;recitation`), pipes (`quran|recitation`).
+`❌ Error — keywords contain spaces after commas — wastes 3 characters`
 
-Note: `name` may not be in the export — only flag it if the app-info JSON explicitly contains a `name` key with an empty value.
+**5. Cross-locale keyword gaps.** Compare `keywords` across locales; flag locales identical to primary (`en-US`) — usually means not localized.
+`⚠️ Warning — ar keywords identical to en-US — likely not localized for Arabic market`
+Check: load keywords for all locales, compare each non-primary to primary, flag exact matches (case-insensitive).
 
-```
-Severity: ❌ Error
-Example:  subtitle is empty for locale en-US
-```
+**6. Description keyword coverage.** Apple doesn't index descriptions for search, but users seeing their search terms reflected convert better — indirectly boosts rankings.
+`💡 Info — 3 of 16 keywords not found in description: namaz, tarteel, adhan`
+Check each keyword as a substring of the description (case-insensitive), per locale. Account for inflected forms: Arabic root matches, verb conjugations ("memorizar" ≈ "memorices"), case declensions (Russian "сура" ≈ "суры"). Don't flag Latin-script keywords in non-Latin descriptions (e.g. "quran" in Cyrillic text) — separate search paths.
 
-### 4. Bad Keyword Separators
+## Phase 2: Astro MCP keyword gap analysis
 
-Check the `keywords` field for formatting issues:
-- Spaces after commas (`quran, recitation`)
-- Semicolons instead of commas (`quran;recitation`)
-- Pipes instead of commas (`quran|recitation`)
+Run if Astro MCP is available and the app is tracked. **Run per store/locale, not just US** — keyword popularity varies dramatically across markets.
 
-```
-Severity: ❌ Error
-Example:  keywords contain spaces after commas — wastes 3 characters
-```
+1. `get_app_keywords` — current tracked keywords and rankings.
+2. For each locale with a corresponding territory (`ar-SA`→Saudi Arabia, `fr-FR`→France, `tr`→Turkey), use `add_keywords` to add tracking in that store — without it `search_rankings` returns empty for non-US stores.
+3. `extract_competitors_keywords` with 3-5 top competitor app IDs — highest-value Astro tool, reveals keywords competitors rank for that you don't. Run per store when possible.
+4. `get_keyword_suggestions` — category-based recommendations.
+5. `search_rankings` — current rankings for tracked keywords per store.
+6. Diff suggested/competitor keywords against tokens in `subtitle`, `name`, `keywords`.
+7. Report all gaps ranked by popularity score (highest first), with source (competitor vs. suggestion).
 
-### 5. Cross-Locale Keyword Gaps
+**Cross-field combo strategy**: consider how single words combine across title + subtitle + keywords — e.g. adding "namaz" to keywords when "vakti" is already present matches "namaz vakti" (66 popularity); adding "holy" to keywords when "Quran" is in the subtitle matches "holy quran" (58 popularity). Flag high-value combos.
 
-Compare `keywords` fields across all available locales. Flag locales where keywords are identical to the primary locale (`en-US` by default) — this usually means they were not localized.
+**Skip conditions**: Astro not connected → "Connect Astro MCP for keyword gap analysis". App not tracked → "Add app to Astro with `mcp__astro__add_app` for gap analysis". Store not tracked for a locale → add with `add_keywords` before querying.
 
-```
-Severity: ⚠️ Warning
-Example:  ar keywords identical to en-US — likely not localized for Arabic market
-```
+## Phase 3: AppSigma competitor signals (optional)
 
-How to check:
-1. Load keywords for all locales
-2. Compare each non-primary locale against the primary
-3. Flag exact matches (case-insensitive)
+If `appsigma` MCP is connected, pull competitor review/ranking signals to complement Astro's gaps.
+1. For each Phase 2 competitor app ID, fetch recent reviews and rating histogram.
+2. Surface recurring complaint themes (e.g. "crashes on iOS 18", "no dark mode") as feature-gap opportunities relevant to `whatsNew`/description positioning (not ASO fields themselves).
+3. Fetch chart position/history for the competitor set — a keyword a #3-ranked competitor owns matters more than one from a #400 app.
 
-### 6. Description Keyword Coverage
+**Skip condition**: not connected → "Add `appsigma` MCP server for competitor review/chart signals (`claude mcp add --transport http appsigma https://api.appsigma.io/mcp --header \"X-API-Key: YOUR_KEY\"`)"
 
-Check whether keywords appear naturally in the `description` field. While Apple does **not** index descriptions for search, users who see their search terms reflected in the description are more likely to download — this improves conversion rate, which indirectly boosts rankings.
+## Output format
 
-```
-Severity: 💡 Info
-Example:  3 of 16 keywords not found in description: namaz, tarteel, adhan
-```
-
-How to check:
-1. Load `keywords` and `description` for each locale
-2. For each keyword, check if it appears as a substring in the description (case-insensitive)
-3. Account for inflected forms: Arabic root matches, verb conjugations (e.g., "memorizar" ≈ "memorices"), and case declensions (e.g., Russian "сура" ≈ "суры")
-4. Report missing keywords per locale — recommend weaving them naturally into existing sentences
-5. Do NOT flag: Latin-script keywords in non-Latin descriptions (e.g., "quran" in Cyrillic text) — these target separate search paths
-
-## Phase 2: Astro MCP Keyword Gap Analysis
-
-If Astro MCP is available and the app is tracked, run keyword gap analysis. **Run this per store/locale, not just for the US store** — keyword popularity varies dramatically across markets.
-
-### Steps
-
-1. **Get current keywords**: Call `get_app_keywords` with the app ID to retrieve tracked keywords and their current rankings.
-
-2. **Ensure multi-store tracking**: For each locale with a corresponding App Store territory (e.g., `ar-SA` → Saudi Arabia, `fr-FR` → France, `tr` → Turkey), use `add_keywords` to add keyword tracking in that store. Without this, `search_rankings` returns empty for non-US stores.
-
-3. **Extract competitor keywords**: Call `extract_competitors_keywords` with 3-5 top competitor app IDs to find keyword gaps. This is the highest-value Astro tool — it reveals keywords competitors rank for that you don't. Run this per store when possible.
-
-4. **Get suggestions**: Call `get_keyword_suggestions` with the app ID for additional recommendations based on category analysis.
-
-5. **Check current rankings**: Call `search_rankings` to see where the app currently ranks for tracked keywords in each store.
-
-6. **Diff against metadata**: Compare suggested and competitor keywords against the tokens present in `subtitle`, `name` (if available), and `keywords` fields from the local metadata.
-
-7. **Surface gaps**: Report all gaps ranked by popularity score (highest first). Include the source (competitor analysis vs. suggestion).
-
-### Cross-Field Combo Strategy
-
-When recommending keyword additions, consider how single words combine across indexed fields (title + subtitle + keywords). For example:
-- Adding "namaz" to keywords when "vakti" is already present enables matching the search "namaz vakti" (66 popularity)
-- Adding "holy" to keywords when "Quran" is in the subtitle enables matching "holy quran" (58 popularity)
-
-Flag high-value combos in recommendations.
-
-### Skip Conditions
-
-- Astro MCP not connected → skip with note: "Connect Astro MCP for keyword gap analysis"
-- App not tracked in Astro → skip with note: "Add app to Astro with `mcp__astro__add_app` for gap analysis"
-- Store not tracked for a locale → add tracking with `add_keywords` before querying
-
-## Phase 3: AppSigma Competitor Signals (optional)
-
-If the `appsigma` MCP server is connected, pull competitor review/ranking signals to complement Astro's keyword gaps.
-
-### Steps
-
-1. For each competitor app ID already used in Phase 2, fetch recent reviews and rating histogram.
-2. Surface recurring complaint themes (e.g. "crashes on iOS 18", "no dark mode") as feature-gap opportunities — not ASO fields, but relevant to `whatsNew`/description positioning.
-3. Fetch current chart position/history for the competitor set to gauge whether keyword gaps found in Phase 2 are worth prioritizing (a keyword a #3-ranked competitor owns matters more than one from a #400 app).
-
-### Skip Conditions
-
-- `appsigma` MCP not connected → skip with note: "Add `appsigma` MCP server for competitor review/chart signals (`claude mcp add --transport http appsigma https://api.appsigma.io/mcp --header \"X-API-Key: YOUR_KEY\"`)"
-
-## Output Format
-
-Present results as a single audit report. The report covers only the latest version directory.
+Single audit report, covering only the latest version directory:
 
 ```
 ### ASO Audit Report
@@ -190,7 +96,6 @@ Present results as a single audit report. The report covers only the latest vers
 **Metadata source:** [path including version number]
 
 #### Field Utilization
-
 | Field | Value | Length | Limit | Usage |
 |-------|-------|--------|-------|-------|
 | Name | ... | X | 30 | X% |
@@ -200,7 +105,6 @@ Present results as a single audit report. The report covers only the latest vers
 | Description | (first 50 chars)... | X | 4000 | X% |
 
 #### Offline Checks
-
 | # | Check | Severity | Field | Locale | Detail |
 |---|-------|----------|-------|--------|--------|
 | 1 | Keyword waste | ⚠️ | keywords | en-US | "quran" duplicated in subtitle |
@@ -208,27 +112,20 @@ Present results as a single audit report. The report covers only the latest vers
 **Summary:** X errors, Y warnings across Z locales
 
 #### Keyword Gap Analysis (Astro MCP)
-
 | Keyword | Popularity | In Metadata? | Suggested Action |
 |---------|-----------|--------------|-----------------|
 | quran recitation | 72 | ❌ | Add to keywords |
 
 #### Recommendations
-
-1. [Highest priority action — errors first]
-2. [Next priority — keyword waste]
+1. [Highest priority — errors first]
+2. [Next — keyword waste]
 3. [Utilization improvements]
 4. [Keyword gap opportunities]
 ```
 
 ## Notes
-
-- Offline checks work without any network access — they read local files only.
-- Astro gap analysis is additive — the audit is useful even without it.
-- Run this skill after `asc metadata pull` to ensure canonical metadata files are current.
-- For keyword-only follow-up after the audit, prefer the canonical keyword workflow:
-  - `asc metadata keywords diff --app "APP_ID" --version "1.2.3" --dir "./metadata"`
-  - `asc metadata keywords apply --app "APP_ID" --version "1.2.3" --dir "./metadata" --confirm`
-  - `asc metadata keywords sync --app "APP_ID" --version "1.2.3" --dir "./metadata" --input "./keywords.csv"` when importing external keyword research
-- After making changes, re-run the audit to verify fixes.
-- The Field Utilization table includes promotional text for completeness, but no check validates its content (it is not indexed by Apple).
+- Offline checks read local files only, no network needed. Astro gap analysis is additive — audit still useful without it.
+- Run after `asc metadata pull` so canonical metadata is current.
+- Keyword-only follow-up: `asc metadata keywords diff --app "APP_ID" --version "1.2.3" --dir "./metadata"`, then `asc metadata keywords apply ... --confirm`, or `asc metadata keywords sync ... --input "./keywords.csv"` for external keyword research.
+- Re-run the audit after changes to verify fixes.
+- Field Utilization table includes promotional text for completeness, but no check validates its content — Apple doesn't index it.

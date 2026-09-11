@@ -5,160 +5,85 @@ description: Build, archive, export, upload, and manage Xcode version/build numb
 
 # Xcode build and export
 
-Use this skill when you need to build an app from source and prepare it for App Store Connect. Prefer `asc xcode archive` and `asc xcode export` over raw `xcodebuild` recipes when they fit the project.
+Build an app from source and prepare it for App Store Connect. Prefer `asc xcode archive`/`asc xcode export` over raw `xcodebuild` when they fit the project.
 
 ## Preconditions
+- Xcode + command line tools installed.
+- Signing identity/provisioning profiles available, or automatic signing enabled.
+- ASC auth configured when upload or build lookup is needed.
 
-- Xcode and command line tools are installed.
-- Signing identity and provisioning profiles are available, or automatic signing is enabled.
-- App Store Connect auth is configured when upload or build lookup is needed.
-
-## Manage version and build numbers
-
+## Version and build numbers
 ```bash
 asc xcode version view
 asc xcode version edit --version "1.3.0" --build-number "42"
 asc xcode version bump --type build
 asc xcode version bump --type patch
 ```
+`--project-dir "./MyApp"` when not running from project root, `--project "./MyApp/App.xcodeproj"` for multi-project dirs, `--target "App"` for deterministic reads in multi-target projects.
 
-Use `--project-dir "./MyApp"` when not running from the project root. Use `--project "./MyApp/App.xcodeproj"` when the directory contains multiple projects. Use `--target "App"` for deterministic reads in multi-target projects.
-
-To avoid low build-number rejects, resolve a remote-safe build number first:
-
+Avoid low build-number rejects — resolve a remote-safe number first:
 ```bash
 asc builds next-build-number --app "APP_ID" --version "1.2.3" --platform IOS --output json
 asc xcode version edit --build-number "NEXT_BUILD"
 ```
 
-## Preferred iOS/tvOS/visionOS build flow
+## iOS/tvOS/visionOS build flow
 
-### 1. Archive with asc
-
+**1. Archive** (`--project "App.xcodeproj"` instead of `--workspace` for project-only apps):
 ```bash
-asc xcode archive \
-  --workspace "App.xcworkspace" \
-  --scheme "App" \
-  --configuration Release \
-  --clean \
+asc xcode archive --workspace "App.xcworkspace" --scheme "App" --configuration Release --clean \
   --archive-path ".asc/artifacts/App.xcarchive" \
-  --xcodebuild-flag=-destination \
-  --xcodebuild-flag=generic/platform=iOS \
-  --output json
+  --xcodebuild-flag=-destination --xcodebuild-flag=generic/platform=iOS --output json
 ```
 
-Use `--project "App.xcodeproj"` instead of `--workspace` for project-only apps.
-
-### 2. Export with asc
-
+**2. Export.** Add `--wait` if `ExportOptions.plist` uses direct ASC upload (polls for build discovery/processing):
 ```bash
-asc xcode export \
-  --archive-path ".asc/artifacts/App.xcarchive" \
-  --export-options "ExportOptions.plist" \
-  --ipa-path ".asc/artifacts/App.ipa" \
-  --xcodebuild-flag=-allowProvisioningUpdates \
-  --output json
+asc xcode export --archive-path ".asc/artifacts/App.xcarchive" --export-options "ExportOptions.plist" \
+  --ipa-path ".asc/artifacts/App.ipa" --xcodebuild-flag=-allowProvisioningUpdates --output json
+
+asc xcode export --archive-path ".asc/artifacts/App.xcarchive" --export-options "UploadExportOptions.plist" \
+  --ipa-path ".asc/artifacts/App.ipa" --wait --output json
 ```
 
-If `ExportOptions.plist` uses direct App Store Connect upload, add `--wait` to poll for build discovery and processing:
-
-```bash
-asc xcode export \
-  --archive-path ".asc/artifacts/App.xcarchive" \
-  --export-options "UploadExportOptions.plist" \
-  --ipa-path ".asc/artifacts/App.ipa" \
-  --wait \
-  --output json
-```
-
-### 3. Upload or publish
-
-Upload an exported IPA:
-
+**3. Upload or publish**:
 ```bash
 asc builds upload --app "APP_ID" --ipa ".asc/artifacts/App.ipa" --wait
-```
-
-Distribute to TestFlight:
-
-```bash
 asc publish testflight --app "APP_ID" --ipa ".asc/artifacts/App.ipa" --group "GROUP_ID" --wait
-```
-
-Publish to the App Store:
-
-```bash
 asc publish appstore --app "APP_ID" --ipa ".asc/artifacts/App.ipa" --version "1.2.3" --wait
 asc publish appstore --app "APP_ID" --ipa ".asc/artifacts/App.ipa" --version "1.2.3" --wait --submit --confirm
 ```
 
 ## macOS App Store flow
 
-Archive with the helper:
-
 ```bash
-asc xcode archive \
-  --project "MacApp.xcodeproj" \
-  --scheme "MacApp" \
-  --configuration Release \
-  --clean \
+asc xcode archive --project "MacApp.xcodeproj" --scheme "MacApp" --configuration Release --clean \
   --archive-path ".asc/artifacts/MacApp.xcarchive" \
-  --xcodebuild-flag=-destination \
-  --xcodebuild-flag=generic/platform=macOS \
-  --output json
+  --xcodebuild-flag=-destination --xcodebuild-flag=generic/platform=macOS --output json
 ```
 
-If your macOS export produces a `.pkg`, use Xcode export with your `ExportOptions.plist`, then upload the package:
-
+For a `.pkg` export, use raw `xcodebuild -exportArchive` with your `ExportOptions.plist`, then upload:
 ```bash
-xcodebuild -exportArchive \
-  -archivePath ".asc/artifacts/MacApp.xcarchive" \
-  -exportPath ".asc/artifacts/MacAppExport" \
-  -exportOptionsPlist "ExportOptions.plist" \
-  -allowProvisioningUpdates
+xcodebuild -exportArchive -archivePath ".asc/artifacts/MacApp.xcarchive" \
+  -exportPath ".asc/artifacts/MacAppExport" -exportOptionsPlist "ExportOptions.plist" -allowProvisioningUpdates
 
-asc builds upload \
-  --app "APP_ID" \
-  --pkg ".asc/artifacts/MacAppExport/MacApp.pkg" \
-  --version "1.0.0" \
-  --build-number "123" \
-  --wait
+asc builds upload --app "APP_ID" --pkg ".asc/artifacts/MacAppExport/MacApp.pkg" \
+  --version "1.0.0" --build-number "123" --wait
 ```
-
-For `.pkg` uploads, `--version` and `--build-number` are required because they are not auto-extracted like IPA metadata.
+`.pkg` uploads require `--version` and `--build-number` explicitly — not auto-extracted like IPA metadata.
 
 ## Raw xcodebuild fallback
-
-Use raw `xcodebuild` only when `asc xcode archive/export --help` does not cover a project-specific option. Prefer passing extra arguments through `--xcodebuild-flag` first.
-
+Only when `asc xcode archive/export --help` doesn't cover a project-specific option — try `--xcodebuild-flag` first.
 ```bash
 xcodebuild -showBuildSettings -scheme "App"
 ```
 
 ## Troubleshooting
-
-### No profiles for bundle ID during export
-
-- Add `--xcodebuild-flag=-allowProvisioningUpdates` to `asc xcode export`.
-- Verify the Apple ID is logged into Xcode.
-- Verify profiles with the `asc-signing-setup` skill.
-
-### CFBundleVersion too low
-
-```bash
-asc builds next-build-number --app "APP_ID" --version "1.2.3" --platform IOS
-asc xcode version edit --build-number "NEXT_BUILD"
-```
-
-Then rebuild and upload again.
-
-### Build rejected for missing macOS icon
-
-macOS requires ICNS icons with all required sizes. Fix the asset catalog, rebuild, then export/upload again.
+- **No profiles for bundle ID during export** — add `--xcodebuild-flag=-allowProvisioningUpdates`; verify Apple ID logged into Xcode; verify profiles with `asc-signing-setup`.
+- **CFBundleVersion too low** — `asc builds next-build-number --app "APP_ID" --version "1.2.3" --platform IOS`, then `asc xcode version edit --build-number "NEXT_BUILD"`, rebuild, re-upload.
+- **Build rejected for missing macOS icon** — needs ICNS icons at all required sizes; fix the asset catalog, rebuild, re-export/upload.
 
 ## Notes
-
-- Prefer `asc xcode archive` and `asc xcode export` for deterministic local artifacts.
-- Use `--overwrite` only when replacing existing local artifacts intentionally.
-- Use `--wait` on upload/publish paths when the next step depends on processed builds.
-- For submission readiness, use `asc-submission-health`.
+- Prefer `asc xcode archive`/`export` for deterministic local artifacts.
+- `--overwrite` only when intentionally replacing existing local artifacts.
+- `--wait` on upload/publish when the next step depends on processed builds.
+- Submission readiness → `asc-submission-health`.

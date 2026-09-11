@@ -5,164 +5,62 @@ description: Reconcile App Store Connect subscriptions and in-app purchases with
 
 # asc RevenueCat catalog sync
 
-Use this skill to keep App Store Connect (ASC) and RevenueCat aligned, including creating missing ASC items and mapping them to RevenueCat resources.
+Keep App Store Connect (ASC) and RevenueCat aligned: create missing ASC items and map them into RevenueCat.
 
 ## When to use
-- You want to bootstrap RevenueCat from an existing ASC catalog.
-- You want to create missing ASC subscriptions/IAPs, then map them into RevenueCat.
-- You need a drift audit before release.
-- You want deterministic product mapping based on identifiers.
+Bootstrap RevenueCat from an existing ASC catalog; create missing ASC subscriptions/IAPs then map into RevenueCat; drift audit before release; deterministic product mapping by identifier.
 
 ## Preconditions
-- `asc` authentication is configured (`asc auth login` or `ASC_*` env vars).
-- RevenueCat MCP server is configured and authenticated.
-- In Cursor and VS Code, OAuth auth is available for RevenueCat MCP. API key auth is also supported.
-- You know:
-  - ASC app ID (`APP_ID`)
-  - RevenueCat `project_id`
-  - target RevenueCat app type (`app_store` or `mac_app_store`) and bundle ID for create flows
-- Use a write-enabled RevenueCat API v2 key when applying changes.
+- `asc` auth configured (`asc auth login` or `ASC_*` env vars).
+- RevenueCat MCP configured and authenticated (OAuth in Cursor/VS Code, or API key).
+- Known: ASC `APP_ID`, RevenueCat `project_id`, target RC app type (`app_store`/`mac_app_store`) and bundle ID for create flows.
+- Write-enabled RevenueCat API v2 key for applying changes.
 
 ## Safety defaults
-- Start in **audit mode** (read-only).
-- Require explicit confirmation before writes.
-- Never delete resources in this workflow.
-- Continue on per-item failures and report all failures at the end.
+Start in audit mode (read-only). Require explicit confirmation before writes. Never delete resources in this workflow. Continue past per-item failures, report all at the end.
 
 ## Canonical identifiers
-- Primary cross-system key: ASC `productId` == RevenueCat `store_identifier`.
-- Keep `productId` stable once products are live.
-- Do not use display names as unique identifiers.
+Cross-system key: ASC `productId` == RevenueCat `store_identifier`. Keep `productId` stable once live. Never use display names as unique identifiers.
 
 ## Scope boundary
-- RevenueCat MCP configures RevenueCat resources; it does not create App Store Connect products directly.
-- Use `asc` commands to create missing ASC subscription groups, subscriptions, and IAPs before RevenueCat mapping.
+RevenueCat MCP configures RevenueCat resources only — it doesn't create ASC products. Use `asc` to create missing ASC groups/subscriptions/IAPs first, then map into RevenueCat.
 
 ## Modes
 
-### 1) Audit mode (default)
-1. Read ASC source catalog.
-2. Read RevenueCat target catalog.
-3. Build a diff with actions:
-   - missing in ASC
-   - missing in RevenueCat
-   - mapping conflicts (identifier/type/app mismatch)
-4. Present a plan and wait for confirmation.
+**1) Audit (default)**: read ASC catalog → read RevenueCat catalog → diff (missing in ASC, missing in RevenueCat, mapping conflicts) → present plan, wait for confirmation.
 
-### 2) Apply mode (explicit)
-Execute approved actions in this order:
-1. Ensure ASC groups/subscriptions/IAP exist.
-2. Ensure RevenueCat app/products exist.
-3. Ensure entitlements and product attachments.
-4. Ensure offerings/packages and package attachments.
-5. Verify and print a final reconciliation summary.
+**2) Apply (explicit)**, in order: ensure ASC groups/subscriptions/IAP exist → ensure RC app/products exist → ensure entitlements + product attachments → ensure offerings/packages + package attachments → verify and print final reconciliation summary.
 
-## Step-by-step workflow
+## Step-by-step
 
-### Step A - Read current ASC catalog
-
+**A. Read ASC catalog**
 ```bash
 asc subscriptions groups list --app "APP_ID" --paginate --output json
 asc iap list --app "APP_ID" --paginate --output json
-# for each subscription group:
-asc subscriptions list --group-id "GROUP_ID" --paginate --output json
+asc subscriptions list --group-id "GROUP_ID" --paginate --output json   # per group
 ```
 
-### Step B - Read current RevenueCat catalog (MCP)
+**B. Read RevenueCat catalog (MCP)**, with `project_id` and pagination: `mcp_RC_get_project`, `mcp_RC_list_apps`, `mcp_RC_list_products`, `mcp_RC_list_entitlements`, `mcp_RC_list_offerings`, `mcp_RC_list_packages`.
 
-Use these MCP tools (with `project_id` and pagination where applicable):
-- `mcp_RC_get_project`
-- `mcp_RC_list_apps`
-- `mcp_RC_list_products`
-- `mcp_RC_list_entitlements`
-- `mcp_RC_list_offerings`
-- `mcp_RC_list_packages`
+**C. Build mapping plan.** Product type mapping: ASC subscription → RC `subscription`; IAP `CONSUMABLE` → `consumable`; `NON_CONSUMABLE` → `non_consumable`; `NON_RENEWING_SUBSCRIPTION` → `non_renewing_subscription`. Entitlement policy: one per subscription group (or explicit user-provided map) for subscriptions; one per product for non-consumable IAP; none by default for consumable IAP unless asked.
 
-### Step C - Build mapping plan
-
-Map ASC product types to RevenueCat product types:
-- ASC subscription -> RevenueCat `subscription`
-- ASC IAP `CONSUMABLE` -> RevenueCat `consumable`
-- ASC IAP `NON_CONSUMABLE` -> RevenueCat `non_consumable`
-- ASC IAP `NON_RENEWING_SUBSCRIPTION` -> RevenueCat `non_renewing_subscription`
-
-Suggested entitlement policy:
-- subscriptions: one entitlement per subscription group (or explicit map provided by user)
-- non-consumable IAP: one entitlement per product
-- consumable IAP: no entitlement by default unless user asks
-
-### Step D - Ensure missing ASC items (if requested)
-
-Create missing ASC resources first, then re-read ASC to capture canonical IDs.
-
+**D. Ensure missing ASC items** (if requested) — create first, then re-read ASC to capture canonical IDs:
 ```bash
-# create subscription group
 asc subscriptions groups create --app "APP_ID" --reference-name "Premium"
-
-# create subscription
-asc subscriptions create \
-  --group-id "GROUP_ID" \
-  --reference-name "Monthly" \
-  --product-id "com.example.premium.monthly" \
-  --subscription-period ONE_MONTH
-
-# create iap
-asc iap create \
-  --app "APP_ID" \
-  --type NON_CONSUMABLE \
-  --ref-name "Lifetime" \
-  --product-id "com.example.lifetime"
+asc subscriptions create --group-id "GROUP_ID" --reference-name "Monthly" --product-id "com.example.premium.monthly" --subscription-period ONE_MONTH
+asc iap create --app "APP_ID" --type NON_CONSUMABLE --ref-name "Lifetime" --product-id "com.example.lifetime"
 ```
 
-### Step E - Ensure RevenueCat app and products
+**E. Ensure RC app and products** — `mcp_RC_create_app` if missing; `mcp_RC_create_product` with `store_identifier` = ASC `productId`, `app_id` = RC app ID, `type` from the mapping above.
 
-Use MCP:
-- create app if missing: `mcp_RC_create_app`
-- create products: `mcp_RC_create_product`
-  - `store_identifier` = ASC `productId`
-  - `app_id` = RevenueCat app ID
-  - `type` from mapping above
+**F. Ensure entitlements and attachments** — `mcp_RC_list_entitlements`/`mcp_RC_create_entitlement`, `mcp_RC_attach_products_to_entitlement`, verify with `mcp_RC_get_products_from_entitlement`.
 
-### Step F - Ensure entitlements and attachments
+**G. Ensure offerings and packages (optional)** — `mcp_RC_list_offerings`/`mcp_RC_create_offering`/`mcp_RC_update_offering` (`is_current=true` only if requested); `mcp_RC_list_packages`/`mcp_RC_create_package`; `mcp_RC_attach_products_to_package` with `eligibility_criteria: "all"`.
 
-Use MCP:
-- list/create entitlements: `mcp_RC_list_entitlements`, `mcp_RC_create_entitlement`
-- attach products: `mcp_RC_attach_products_to_entitlement`
-- verify attachments: `mcp_RC_get_products_from_entitlement`
-
-### Step G - Ensure offerings and packages (optional)
-
-Use MCP:
-- list/create/update offerings:
-  - `mcp_RC_list_offerings`
-  - `mcp_RC_create_offering`
-  - `mcp_RC_update_offering` (`is_current=true` only if requested)
-- list/create packages:
-  - `mcp_RC_list_packages`
-  - `mcp_RC_create_package`
-- attach products to packages:
-  - `mcp_RC_attach_products_to_package` with `eligibility_criteria: "all"`
-
-Recommended package keys:
-- `ONE_WEEK` -> `$rc_weekly`
-- `ONE_MONTH` -> `$rc_monthly`
-- `TWO_MONTHS` -> `$rc_two_month`
-- `THREE_MONTHS` -> `$rc_three_month`
-- `SIX_MONTHS` -> `$rc_six_month`
-- `ONE_YEAR` -> `$rc_annual`
-- lifetime IAP -> `$rc_lifetime`
-- custom -> `$rc_custom_<name>`
+Recommended package keys: `ONE_WEEK`→`$rc_weekly`, `ONE_MONTH`→`$rc_monthly`, `TWO_MONTHS`→`$rc_two_month`, `THREE_MONTHS`→`$rc_three_month`, `SIX_MONTHS`→`$rc_six_month`, `ONE_YEAR`→`$rc_annual`, lifetime IAP→`$rc_lifetime`, custom→`$rc_custom_<name>`.
 
 ## Expected output format
-
-Return a final summary with:
-- ASC created counts (groups/subscriptions/IAP)
-- RevenueCat created counts (apps/products/entitlements/offerings/packages)
-- attachment counts (entitlement-products, package-products)
-- skipped existing items
-- failed items with actionable errors
-
-Example:
+Final summary with ASC created counts (groups/subscriptions/IAP), RC created counts (apps/products/entitlements/offerings/packages), attachment counts (entitlement-products, package-products), skipped existing items, failed items with actionable errors.
 
 ```text
 ASC: created groups=1 subscriptions=2 iap=1, skipped=14, failed=0
@@ -173,20 +71,12 @@ Failures:
 ```
 
 ## Agent behavior
-- Always run audit first, even in apply mode.
-- Ask for confirmation before create/update operations.
-- Match by `store_identifier` first.
-- Use full pagination (`--paginate` for ASC, `starting_after` for RevenueCat tools).
-- Continue processing after per-item failures and report all failures together.
-- Never auto-delete ASC or RevenueCat resources in this skill.
+- Always audit first, even in apply mode. Confirm before create/update.
+- Match by `store_identifier` first. Full pagination (`--paginate` for ASC, `starting_after` for RC).
+- Continue past per-item failures, report all together. Never auto-delete resources.
 
 ## Common pitfalls
-- Wrong RevenueCat `project_id` or app ID.
-- Creating RC products under the wrong platform app.
-- Accidentally assigning consumables to entitlements.
-- Skipping the post-create ASC re-read step.
-- Missing offering/package verification after product creation.
+Wrong RC `project_id`/app ID; creating RC products under the wrong platform app; assigning consumables to entitlements by accident; skipping the post-create ASC re-read; missing offering/package verification after product creation.
 
 ## Additional resources
-- Workflow examples: [examples.md](examples.md)
-- Source references: [references.md](references.md)
+Workflow examples: [examples.md](examples.md) · Source references: [references.md](references.md)

@@ -1,11 +1,13 @@
 ---
 name: wrapup
-description: Session wrap — refresh the journal with this session's work, ingest current project state into the notes wiki, deploy both. Use when the user says /wrapup, /wrap-up, /goodnight, /goodbye, or asks to wrap up.
+description: Session wrap — refresh the journal with this session's work, ingest current project state into the notes wiki, deploy both. Use when the user says /wrapup, /wrap-up, /goodnight, /goodbye, pastes a Claude usage screenshot, or asks to wrap up.
 ---
 
 # /wrapup — session wrap
 
 One command to log this session's work everywhere.
+
+**Usage-screenshot trigger:** if the user pastes a screenshot of Claude usage/limits (usage bar, "5-hour limit", token/cost meter) instead of typing a command, that screenshot IS the signal — no confirmation needed. Switch immediately to lean mode (invoke the `lean` skill) and trim scope before running the Steps below: finish only the in-flight step of any current task the shortest way possible (no new scope, no exploration, no subagents/simulator/Chrome beyond what wrapup itself needs), commit-or-stash rather than polish, and keep the report to ≤5 lines (shipped / parked / resume point). Do not start anything new after this fires.
 
 **Run cheap:** delegate the whole wrap to one subagent — Agent tool, `subagent_type: general-purpose`, `model: haiku` — with the Steps below as its prompt. Relay its TLDR to the user. The main session's model is untouched.
 

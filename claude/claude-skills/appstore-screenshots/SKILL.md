@@ -18,7 +18,9 @@ fastlane snapshot
 
 This needs `dangerouslyDisableSandbox: true` on the Bash call — xcodebuild's result-bundle writer fails with a `mkstemp` error under the default sandbox.
 
-Screenshots land in `fastlane/screenshots/en-US/<device>-<name>.png`. Copy the ones referenced by the README into wherever the README points (check existing `<img src=...>` tags), `git add -f` them (they're usually `*.png`-gitignored), update the README if filenames changed, then commit + push.
+Screenshots land in `fastlane/screenshots/en-US/<device>-<name>.png`. Copy the ones referenced by the README into wherever the README points (check existing `<img src=...>` tags — if a landing page under `src/` or `public/` also references the same files, e.g. `public/screenshots/`, those are covered by the same copy), `git add -f` them (they're usually `*.png`-gitignored), update the README if filenames changed, then commit + push.
+
+If the repo's `package.json` has a `deploy` script (Cloudflare Worker/Pages, Vercel, etc.), run it after pushing — committing new screenshots to git does not redeploy a Worker on its own, so the live landing page keeps serving the old build until you deploy.
 
 ## If setting up from scratch
 

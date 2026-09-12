@@ -12,6 +12,7 @@ COLOR=0xff00ff00
 sketchybar --set claude_usage label="${PCT}%" icon.color=$COLOR
 
 if [ "$SENDER" = "mouse.clicked" ]; then
+  sketchybar --set claude_usage popup.drawing=off --set pwnlingo popup.drawing=off --set clock popup.drawing=off
   sketchybar --set claude_usage popup.drawing=toggle
 elif [ -n "$FULL" ]; then
   sketchybar --remove '/claude_usage\.detail\..*/' 2>/dev/null

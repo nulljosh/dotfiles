@@ -13,6 +13,7 @@ LABEL="🔥$STREAK"
 sketchybar --set pwnlingo label="$LABEL" icon.drawing=off
 
 if [ "$SENDER" = "mouse.clicked" ]; then
+  sketchybar --set claude_usage popup.drawing=off --set pwnlingo popup.drawing=off --set clock popup.drawing=off
   sketchybar --set pwnlingo popup.drawing=toggle
 else
   sketchybar --remove '/pwnlingo\.detail\..*/' 2>/dev/null

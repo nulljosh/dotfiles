@@ -24,6 +24,7 @@ link "$DOTFILES/starship/starship-terminal.toml" "$HOME/.config/starship-termina
 link "$DOTFILES/claude/commands"               "$HOME/.claude/commands"
 link "$DOTFILES/claude/skills"                 "$HOME/.agents/skills"
 link "$DOTFILES/claude/claude-skills"          "$HOME/.claude/skills"
+link "$DOTFILES/codex/skills/wrapup"           "$HOME/.codex/skills/wrapup"
 link "$DOTFILES/fish/functions"        "$HOME/.config/fish/functions"
 link "$DOTFILES/fish/conf.d"           "$HOME/.config/fish/conf.d"
 link "$DOTFILES/git/.gitconfig"        "$HOME/.gitconfig"

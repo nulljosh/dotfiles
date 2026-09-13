@@ -19,6 +19,7 @@ APPS=[
  ('Lexly','lexly/index.html','/app/?demo=1', ''),
  ('Sidewise','sidewise/public/index.html','/app.html', ''),
  ('NYC Survive','nyc/landing/index.html','/app/', ''),
+ ('Siftbox','siftbox/landing/index.html','', '.brand,h1,.lede,.grid'),
 ]
 HEAD='''<link rel="stylesheet" href="devices.css">
 <script>

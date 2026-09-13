@@ -1,6 +1,6 @@
 ---
 name: wiki-refresh
-description: Refresh every index/catalog surface (Obsidian wiki index+overview, notes/master.md, ~/Documents/Code/CLAUDE.md) for stale app names after a rename, and catch small drift like it. Use when asked to refresh the wiki index, or after any app/repo rename, as part of /wrapup step 3.
+description: Refresh every index/catalog surface (Obsidian wiki index+overview, notes/master.md, ~/Documents/Code/CLAUDE.md) for stale app names after a rename, and catch small drift like it. Also audits the Obsidian Entities list's ship-status ordering against real ASC state. Use when asked to refresh the wiki index, or after any app/repo rename, as part of /wrapup step 3.
 ---
 
 # wiki-refresh
@@ -26,6 +26,7 @@ Renames happen often (Brief→Casewright→Litigate, spark→sparkjar, tally→t
 5. Leave every `### Recent (...)` / `**NIGHTLY WRAP...**` paragraph and every `wiki/pages/*.md` entity's own history/changelog section untouched — those are history.
 6. Note any DNS/domain or repo-name follow-up implied by the rename (old CNAME now stale, old GitHub repo name) as a roadmap bullet if not already tracked — don't action it, just flag it.
 7. Commit + push `notes/notes/master.md` and `~/Documents/Code/CLAUDE.md` if changed. The Obsidian vault has no git remote — just save the files.
+8. **ASC audit for ship-status order**: `wiki/index.md`'s Entities section is ordered most-shipped to least-shipped (see `wiki/CLAUDE.md`'s Index format section for the tier definitions). Memory files and entity pages can be stale, so for any app whose tier is unclear or hasn't been touched in a while, verify with the ASC CLI instead of guessing: `asc apps list` to find the app record, then `asc versions list --app-id <id>` (or the app's own `asc web review show` for a rejection reason) to get its real per-platform state. Re-tier and move that entry if the audit disagrees with where it currently sits. Skip apps that are pure web (no ASC record) — their tier comes from whether the site is live, not ASC.
 
 ## Rules
 - Never rewrite a past wrap entry or entity-page changelog to use the new name — that's revisionist and breaks the "what was true then" record.

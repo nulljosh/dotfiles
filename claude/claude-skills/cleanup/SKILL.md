@@ -7,7 +7,7 @@ description: Free disk space hard — mole deep clean + Xcode/dev cache purge. U
 
 ## Quick mode (default, "quick cleanup" / low disk)
 
-One backgrounded command, ~10 GB in under 2 min (measured 2026-09-06: 11 → 21 GB free). Run `df -h /` before and after; it's the only report that matters.
+One backgrounded command, ~10 GB in under 2 min (measured 2026-09-06: 11 → 21 GB free). Run `df -h /System/Volumes/Data` before and after — NOT `df -h /`, that's the read-only system volume and barely moves. macOS Settings → Storage lags reality by tens of GB and shouldn't be trusted either; `diskutil apfs list` (Capacity In Use By Volumes) is the ground truth if you need to sanity-check it.
 
 ```
 rm -rf ~/Library/Developer/Xcode/DerivedData/*
@@ -30,6 +30,8 @@ Run it with `run_in_background` and a 300 s timeout so `brew cleanup` doesn't st
 4. **Logs**: `rm -rf ~/Library/Logs/*`.
 5. **Ollama**: `ollama list` — flag models unused >30 days, don't auto-delete.
 6. **Report**: top 5 remaining hogs via `du -xh -d2 ~ 2>/dev/null | sort -hr | head`.
+7. **Media hoards** (~/TV, ~/Movies, ~/Music/Music): confirm contents and get explicit go-ahead before deleting — don't assume genre or that it's disposable (2026-09-11: ~/TV was assumed all-anime, actually had Cobra Kai + Family Guy too; user still said nuke it, but ask first).
+8. **Local LLM models** (~/.ollama/models, ~/models, anything feeding a local server like oMLX): these are active tooling, not cache — never auto-delete, only flag size.
 
 ## Never delete
-User documents, ~/Documents/Code, iCloud data. `~/Library/Developer/Xcode/Archives` holds shipped app archives — ask first (it was wiped without asking on 2026-09-06; don't repeat that).
+User documents, ~/Documents/Code, iCloud data. `~/Library/Developer/Xcode/Archives` holds shipped app archives — ask first (it was wiped without asking on 2026-09-06; don't repeat that). Same for `~/Library/Application Support/Claude/vm_bundles` (Claude Desktop sandbox VM images, not cache) and any per-app Application Support directory (Steam, etc.) — real data, ask first.

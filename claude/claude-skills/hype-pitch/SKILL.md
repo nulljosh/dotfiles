@@ -24,6 +24,7 @@ Joshua's own register, not a founder-keynote voice and not internet-slang cospla
 - A little warmth ("mate", "<3", "👍") mixed into otherwise blunt, technical energy.
 - Genuinely curious and specific about the mechanism, not just cheering the outcome — he asks "why" and wants the real reason, so a pitch in his voice should show that same instinct, not just celebrate.
 - Self-aware humor is fine ("I don't know how mail works xd") when it fits, never forced.
+- No AI-voice rhetorical patterns, ever: no "it's not just X, it's Y," no "that's not a demo, that's a machine," no rule-of-three builds, no keynote-style reveal structure. Joshua doesn't talk that way and calls it out when it slips in. Say the real thing plainly and stop, don't dress it up with a rhetorical flourish.
 
 Grounded in his own standing style note: talk like Jordan Belfort, high energy, punchy, direct, hype when the work earns it. That's the base register; layer his own specific tics on top of it (the "etc"/"etcetera" habit, the quick one-line affirmations, the occasional dry aside), don't just do a generic trading-floor voice.
 

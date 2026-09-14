@@ -15,11 +15,13 @@ The annoying part is a human opening a dashboard and clicking around. So don't m
    - Supabase: `supabase projects api-keys --project-ref <ref>`
    - Vercel project vars: `vercel env pull` (existing) / tokens at vercel.com/account/tokens
    - Cloudflare: account calls already use `CLOUDFLARE_API_TOKEN` in env
-3. **Console only → drive Chrome (the common case for AI keys).**
+3. **Cloudflare Workers-deploy token specifically → mint it once with no expiry, never again.** This is the fix for recurring wrangler/CI 2FA fatigue, not a one-off: a scoped API token has no session to expire, unlike a dashboard login. If a repo's `.github/workflows/deploy.yml` needs `CLOUDFLARE_API_TOKEN` and doesn't have one (`gh secret list --repo <owner>/<repo>` to check), drive Chrome to `dash.cloudflare.com/profile/api-tokens` → Create Token → "Edit Cloudflare Workers" template → rename it `<repo>-ci-deploy` → Account Resources: pick the account → Zone Resources: switch "Specific zone" to **All zones from an account**, pick the same account (Workers Routes is zone-scoped so this step is required or Continue blocks with "Choose a zone resource") → leave TTL blank (no expiry, this is the whole point) → Continue to summary → Create Token → copy the `cfut_...` value shown once → `gh secret set CLOUDFLARE_API_TOKEN --repo <owner>/<repo> --body "<token>"`. Verify with `gh run rerun <last failed run id>` or wait for the next push, then `gh run list --workflow=deploy.yml --limit 1`.
+4. **Console only → drive Chrome (the common case for AI keys).**
    - Load tools in ONE call: `ToolSearch "select:mcp__claude-in-chrome__tabs_context_mcp,mcp__claude-in-chrome__navigate,mcp__claude-in-chrome__computer,mcp__claude-in-chrome__read_page,mcp__claude-in-chrome__get_page_text,mcp__claude-in-chrome__tabs_create_mcp"`
    - `tabs_context_mcp` → new tab straight to the key page deep link (table below).
    - Click "Create/Get API key", then `read_page`/`get_page_text` to scrape the key value.
    - Session is already logged in → no credentials needed. **Only** if a login/2FA wall actually appears: tell the user to log into that tab, then continue. Never enter credentials.
+   - **"Sign in with Apple" wall specifically** (Cloudflare and others offer it): Apple's own 2FA push/Face-ID approval on a trusted device can't be scripted — that step is genuinely the user's, same as ASC's `asc-login` flow. Tell them to auth in the open tab, then poll (`computer` screenshot or `get_page_text`) until the URL leaves the login/redirect path before continuing. If the destination service also texts a 6-digit code (distinct from Apple's own push), `~/.local/bin/asc-2fa-code`'s SMS-read pattern (`sqlite3 ~/Library/Messages/chat.db`, filtered to messages after a start timestamp) generalizes to any provider's SMS code, not just ASC — reuse that approach rather than asking the user to relay the digits by hand.
 
 ## Provider key pages (deep links — skip the nav)
 

@@ -64,6 +64,16 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/speak-response.sh"
+          }
+        ]
+      }
     ]
   },
   "statusLine": {

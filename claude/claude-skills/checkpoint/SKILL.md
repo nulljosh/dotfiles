@@ -1,15 +1,15 @@
 ---
-name: wrapup
-description: Session wrap — refresh the journal with this session's work, ingest current project state into the notes wiki, deploy both. Use when the user says /wrapup, /wrap-up, /goodnight, /goodbye, pastes a Claude usage screenshot, or asks to wrap up.
+name: checkpoint
+description: Checkpoint, not a wrap — the session is never "done", we take breaks. Refresh the journal with the work so far, ingest current project state into the notes wiki, deploy both, then keep going. Runs in the background via a haiku subagent so the main session is never blocked. Use when the user says /checkpoint, /checkmark, /wrapup, /wrap-up, /goodnight, /goodbye, pastes a Claude usage screenshot, or asks to save progress.
 ---
 
-# /wrapup — session wrap
+# /checkpoint — save the game, keep playing
 
-One command to log this session's work everywhere.
+One command to log the work so far everywhere. This is a checkpoint, not an ending: never report it as "session over", never say goodbye, never stop the loop. Log, deploy, hand a five-line TLDR back, and the session continues exactly where it was.
 
-**Usage-screenshot trigger:** if the user pastes a screenshot of Claude usage/limits (usage bar, "5-hour limit", token/cost meter) instead of typing a command, that screenshot IS the signal — no confirmation needed. Switch immediately to lean mode (invoke the `lean` skill) and trim scope before running the Steps below: finish only the in-flight step of any current task the shortest way possible (no new scope, no exploration, no subagents/simulator/Chrome beyond what wrapup itself needs), commit-or-stash rather than polish, and keep the report to ≤5 lines (shipped / parked / resume point). Do not start anything new after this fires.
+**Usage-screenshot trigger:** if the user pastes a screenshot of Claude usage/limits (usage bar, "5-hour limit", token/cost meter) instead of typing a command, that screenshot IS the signal — no confirmation needed. Switch immediately to lean mode (invoke the `lean` skill) and trim scope before running the Steps below: finish only the in-flight step of any current task the shortest way possible (no new scope, no exploration, no subagents/simulator/Chrome beyond what wrapup itself needs), commit-or-stash rather than polish, and keep the report to ≤5 lines (shipped / parked / resume point). Do not start anything new while it runs; resume the moment the subagent reports back.
 
-**Run cheap:** delegate the whole wrap to one subagent — Agent tool, `subagent_type: general-purpose`, `model: haiku` — with the Steps below as its prompt. Relay its TLDR to the user. The main session's model is untouched.
+**Run in the background:** delegate the whole checkpoint to one subagent (`run_in_background: true` if the Agent tool offers it, so the main conversation keeps working) — Agent tool, `subagent_type: general-purpose`, `model: haiku` — with the Steps below as its prompt. Relay its TLDR to the user. The main session's model is untouched.
 
 **Delta re-runs:** if a wrap agent already ran in this session, don't spawn a fresh agent or redo the full wrap — SendMessage the same agent with only what changed since its run, telling it to update journal/wiki status lines, redeploy, and return a short TLDR.
 

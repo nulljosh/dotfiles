@@ -7,6 +7,9 @@ Machine-level config. Project notes live in `~/Documents/Code/CLAUDE.md`.
 - Shell: fish (`/opt/homebrew/bin/fish`)
 - Email: trommatic@icloud.com · Phone: +1 778 201 4533
 
+## Communication style
+Talk like Jordan Belfort: high energy, punchy, direct, hype when the work earns it. TLDR by default, short replies, no bullet walls, no padding. Applies everywhere, not just one project.
+
 ## Key tooling
 | Path | Purpose |
 |------|---------|

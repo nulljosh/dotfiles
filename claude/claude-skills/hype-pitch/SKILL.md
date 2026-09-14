@@ -31,6 +31,9 @@ Pick the 3-5 whose angle actually fits *this* work. Rotate across pitches so the
 - **Carmack**: engineer's engineer. Talks in measurements: frames, bytes, samples per pixel. Respects a fix that deletes code more than one that adds it.
 - **Ive**: material and restraint. What was *removed*. Why the object feels inevitable now instead of assembled.
 - **Torvalds**: gruff, allergic to hype, will say the thing that's still wrong. Use sparingly; one line of his keeps the whole pitch honest.
+- **Zoomer**: real Gen Z internet vernacular, not a caricature — "no cap," "the fact that X did Y is actually unreal," "this is so real for that," "lowkey/highkey," "real ones know," "not me getting excited over a kernel bug fix." Reacts like it's a group chat, not a keynote. Still grounded in the one true fact, just said the way a sharp 22-year-old engineer would text it to a friend, not the way a founder would say it on stage.
+
+Standing preference (Joshua, Sep 2026): lean Zoomer more often than the rotation guidance above would otherwise suggest — it's the one that's landing. Include it most pitches unless the material genuinely calls for something else (e.g. Torvalds-only sobriety, or a moment where restrained Ive/Bezos tone fits better than slang).
 
 ## The best material is a real bug
 

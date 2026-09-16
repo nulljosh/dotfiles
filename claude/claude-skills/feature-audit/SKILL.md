@@ -17,8 +17,9 @@ Run exactly one phase per invocation — re-read the CSV first to resume where t
 
 ## Phase 2 — Test loop
 1. For every row with `status = untested`, exercise the behavior — use the project's `run` skill or `ios-simulator` skill if applicable, otherwise hit the code path/API directly.
-2. Set `status` to `pass` or `fail`. On `fail`, fill `error` with what actually happened vs. what was expected.
-3. Do not fix anything in this phase.
+2. Default to a screenshot. If the story involves animation, transition, drag/gesture, loading state, or a multi-step sequence, capture video instead (`record-web` skill for web, XcodeBuildMCP `record_sim_video` for iOS/macOS) — a still can't show a timing bug.
+3. Set `status` to `pass` or `fail`. On `fail`, fill `error` with what actually happened vs. what was expected.
+4. Do not fix anything in this phase.
 
 ## Phase 3 — Fix loop
 1. For every row with `status = fail`, fix the underlying bug with the smallest correct diff — no refactors, no unrelated cleanup.

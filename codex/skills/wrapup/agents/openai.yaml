@@ -1,4 +1,0 @@
-interface:
-  display_name: Wrap Up
-  short_description: Journal and ingest a completed session
-  default_prompt: Wrap up this session in the journal and Obsidian wiki.

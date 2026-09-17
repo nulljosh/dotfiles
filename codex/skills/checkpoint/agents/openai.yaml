@@ -1,0 +1,4 @@
+interface:
+  display_name: Checkpoint
+  short_description: Journal and ingest a completed session
+  default_prompt: Checkpoint this session in the journal and Obsidian wiki.

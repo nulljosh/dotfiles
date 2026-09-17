@@ -1,9 +1,9 @@
 ---
-name: wrapup
-description: Record a completed coding session in Joshua's journal and Obsidian wiki, refresh relevant project state, then publish and push the resulting changes. Use when asked to wrap up a session or journal and ingest its work.
+name: checkpoint
+description: Record a completed coding session in Joshua's journal and Obsidian wiki, refresh relevant project state, then publish and push the resulting changes. Use when asked to checkpoint a session, wrap up, or journal and ingest its work.
 ---
 
-# Wrap up a session
+# Checkpoint a session
 
 Record what actually happened in this session. Use the conversation and the relevant repos' diffs, commits, and live checks as evidence. A recent git log is a cross-check, not a substitute for the session: other work may have landed in the same time window. Do not claim that an automated test proves a real-device test.
 

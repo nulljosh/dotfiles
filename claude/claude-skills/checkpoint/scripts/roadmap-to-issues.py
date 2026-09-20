@@ -25,9 +25,22 @@ def items(path):
             continue
         m = re.match(r"^(?:\d+\.|[-*]) \[( |x|~)\] (.+)", line)
         if m:
-            title = re.sub(r"[*`]", "", m.group(2)).strip().rstrip(".")
-            if len(title) > 5:
-                yield m.group(1) != " ", title[:200], heading
+            text = re.sub(r"[*`]", "", m.group(2)).strip().rstrip(".")
+            if len(text) > 5:
+                yield m.group(1) != " ", short_title(text), text, heading
+
+
+def short_title(text, limit=70):
+    """A headline, not the whole roadmap line. Full text goes in the issue body.
+
+    ponytail: the title is still the dedupe key (see module docstring), so two
+    items sharing a first sentence would collide and the second be skipped.
+    roadmap.md stays the source of truth, so that costs a tracker row, not work.
+    """
+    head = re.split(r"(?<=[.!?])\s", text, maxsplit=1)[0]
+    if len(head) <= limit:
+        return head.rstrip(".")
+    return text[:limit].rsplit(" ", 1)[0].rstrip(" ,;:.") + "\u2026"
 
 
 def main():
@@ -44,7 +57,7 @@ def main():
            "--json", "number,title,state", cwd=repo).stdout or "[]")}
 
     made = closed = 0
-    for done, title, heading in items(rm):
+    for done, title, full, heading in items(rm):
         found = existing.get(title)
         if done:
             if found and found["state"] == "OPEN":
@@ -59,11 +72,31 @@ def main():
         label = "bug" if BUG.search(title) else "enhancement"
         print(f"open  [{label}] {title}")
         if not dry:
-            body = "From `%s`%s." % (rm.name, " under **%s**" % heading if heading else "")
+            body = "%s\n\nFrom `%s`%s." % (
+                full, rm.name, " under **%s**" % heading if heading else "")
             sh("gh", "issue", "create", "-t", title, "-l", label, "-b", body, cwd=repo)
         made += 1
     print(f"{repo.name}: {made} opened, {closed} closed{' (dry run)' if dry else ''}")
 
 
+def self_check():
+    long = ("Statement upload, two real bugs found and fixed, awaiting a retry "
+            "to confirm they were the cause. The Blob fix was incomplete.")
+    t = short_title(long)
+    assert t.endswith("\u2026"), t
+    assert len(t) <= 71, (len(t), t)
+    assert not t.endswith(" \u2026") and "  " not in t, t
+    # cuts on a word boundary, never mid-word
+    assert long.startswith(t[:-1]), t
+    # a short first sentence is kept whole, no ellipsis
+    assert short_title("Fix the icon. It is blurry.") == "Fix the icon"
+    # a short item passes through untouched
+    assert short_title("Add dark mode") == "Add dark mode"
+    print("self-check ok")
+
+
 if __name__ == "__main__":
-    main()
+    if "--self-check" in sys.argv:
+        self_check()
+    else:
+        main()

@@ -35,15 +35,18 @@ One command to log the work so far everywhere. This is a checkpoint, not an endi
    - Bullet style, no frontmatter, no emojis (see notes/CLAUDE.md).
    - Commit + push.
 
-4. **Stale-memory check** — for each repo touched this session, grep `~/.claude/projects/-Users-joshua/memory/project_*.md` for a matching memory file. If this session's commits change status the memory records (version bump, submission, ship, fix, or code the memory describes as removed/added that a commit touches again), edit that memory file directly to correct it — update the stale claim, keep the `**Why:**`/`**How to apply:**` structure intact, note what changed. Then list it in the TLDR as "memory fixed: <file>".
+4. **GitHub issues** — mirror each touched repo's roadmap into its issue tracker so open work is official, not just a markdown checklist:
+   `python3 ~/.claude/skills/checkpoint/scripts/roadmap-to-issues.py <repo>` (add `--dry-run` first if the repo has never been synced, and eyeball the titles). It opens an issue per open top-level roadmap item (labelled `bug` or `enhancement`), closes issues whose item got checked off, and skips anything already there. Repos with no `gh` remote are skipped automatically. Run this BEFORE the roadmap prune in step 3 if you reorder, since prune deletes the `- [x]` lines the closer needs.
 
-5. **TLDR** — end with a short bullet list of what landed in journal and wiki, the count of commits and repos touched, any memory fixes made (or "memory: nothing stale"), plus the journal URL.
+5. **Stale-memory check** — for each repo touched this session, grep `~/.claude/projects/-Users-joshua/memory/project_*.md` for a matching memory file. If this session's commits change status the memory records (version bump, submission, ship, fix, or code the memory describes as removed/added that a commit touches again), edit that memory file directly to correct it — update the stale claim, keep the `**Why:**`/`**How to apply:**` structure intact, note what changed. Then list it in the TLDR as "memory fixed: <file>".
 
-6. **Notify** — call the `PushNotification` tool with the TLDR summary so the wrap is visible even if this ran in the background.
+6. **TLDR** — end with a short bullet list of what landed in journal and wiki, the count of commits and repos touched, issues opened/closed, any memory fixes made (or "memory: nothing stale"), plus the journal URL.
+
+7. **Notify** — call the `PushNotification` tool with the TLDR summary so the wrap is visible even if this ran in the background.
 
 ## Rules
 - Work lean: batch git scans, no subagents.
 - Don't invent work — only what git shows for this window.
 
 ## Usage awareness
-If usage is high going into a wrap, still do steps 1-2 (journal is the durable record) but trim the wiki/roadmap-prune sweep to repos actually touched this session — skip the fleet-wide entity-page pass across untouched apps. Memory-fix check (step 4) stays scoped to touched repos already, so it's cheap regardless.
+If usage is high going into a wrap, still do steps 1-2 (journal is the durable record) but trim the wiki/roadmap-prune sweep to repos actually touched this session — skip the fleet-wide entity-page pass across untouched apps. Memory-fix check (step 5) stays scoped to touched repos already, so it's cheap regardless.

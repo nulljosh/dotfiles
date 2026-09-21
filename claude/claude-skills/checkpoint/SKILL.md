@@ -19,34 +19,38 @@ One command to log the work so far everywhere. This is a checkpoint, not an endi
    `git log --oneline --since="12 hours ago"`. Skip repos with no commits.
 
 2. **Journal** — read `~/.claude/skills/journal/SKILL.md` in full first, especially the Voice section, before writing anything:
-   - Update the current entry in `~/Documents/Code/journal/_posts/` (blog split from `inkpress` into its own repo 2026-07-21 — `inkpress` is now the RSS-reader iOS app only; one post per month by default; verify the weekday of today's date before picking the day section). **Before appending, check the latest post's frontmatter `date:`** — if it's more than ~10 days old, or the file is over ~20KB, start a NEW post instead of appending (see `journal/CLAUDE.md`'s size/staleness exception, added 2026-07-21 after 2026-07-03-june-july.md silently grew to 157KB/18 days stale).
-   - **Grep the post for the day's existing `##` heading before writing.** If today already has one (from an earlier wrap this same session or an earlier run today), append a new paragraph inside it. Never add a second heading for the same day ("## Friday (evening)", "## Friday (continued)", etc.) — that's the exact bug that caused duplicate/fragmented sections before. One heading per day, full stop.
+   - Update the newest post in `~/Documents/Code/journal/_posts/`. Read `journal/CLAUDE.md` first. **The journal holds 3-5 big posts, one per few months. Never create a new post from a checkpoint** unless the newest post's `date:` is over ~2 months old. It got to 11 posts on 2026-09-20 because every checkpoint started a new one.
+   - Posts are `categories: journal quarterly`: flowing prose paragraphs, no day headings, 1200-word cap. Fold new work into the paragraph it belongs to. If the post is at the cap, tighten existing wording to make room; do not drop facts and do not start a new file. If the post already has `##` day headings, append inside today's heading and never add a second heading for the same day.
    - Write first person, like Joshua recapping his day to a friend — not third person, not a changelog. 2-5 sentences, pick what actually mattered, skip commit hashes/bundle IDs/error codes unless the story is genuinely about that error. See journal SKILL.md's Voice section for a bad/good example before writing.
-   - Update the apps summary.
    - **Run `python3 scripts/lint-posts.py` and fix every violation before committing.** It caps length, bans commit hashes, version and build numbers, em dashes and lists inside day sections, and rejects a second heading for the same weekday. `deploy.sh` runs it too and will refuse to publish. The session dump you were handed is long; the entry is not. Compress it, do not transcribe it.
    - Commit, deploy via `./scripts/deploy.sh` (never plain git push for deploy), and `git push`.
 
-3. **Wiki** — update `~/Documents/Code/notes/notes/master.md` AND the Obsidian wiki vault:
+3. **Obsidian vault** (`~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Code/wiki/`). Its own step because it is the one that gets skipped: it is not a git repo, so nothing downstream notices when it is missed, and updating master.md is NOT a substitute. Skipped on 2026-09-20 for exactly that reason.
+   - Read `wiki/CLAUDE.md`. For every repo from step 1 with real commits (ignore fleet-wide boilerplate like launch-kit or docs refreshes unless that IS the story), open `wiki/pages/<repo>.md`, update its current-state lines and bump `updated:` in the frontmatter. Create the page if missing and add it to `wiki/index.md`.
+   - Update `wiki/pages/_overview.md` only where an entity page's state changed what it says.
+   - Append one entry to `wiki/log.md`: `## [YYYY-MM-DD] checkpoint | <title>`, naming every page touched as `[[page]]`.
+   - **Gate, run it and paste the output into the TLDR:** `cd "<vault>" && grep -c "^## \[$(date +%F)\] checkpoint" log.md && find pages -name '*.md' -mmin -30 | wc -l`. Both numbers must be above zero. If either is zero the checkpoint is not done; go back and do the step.
+
+4. **Notes and roadmaps** — update `~/Documents/Code/notes/notes/master.md`:
    - `master.md`: bump the "Updated" date, refresh the Roadmap / Active Projects table and Ship Now list with current state, prune completed `- [x]` items.
-   - Obsidian vault (`~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Code/wiki/`): ingest this session's work per `wiki/CLAUDE.md`'s ingest workflow — update/create the touched apps' entity pages in `wiki/pages/`, then refresh `wiki/index.md` and `wiki/pages/_overview.md` so they match what the entity pages now say. This is the actual "Wiki Index" surface people read — don't skip it just because master.md got updated.
    - Run `~/.claude/skills/wiki-refresh/SKILL.md` (read it in full) across all three surfaces it covers (Obsidian vault, master.md, `~/Documents/Code/CLAUDE.md`): catch stale app names in index/current-state sections left over from any rename. Only touch current-state/index lines, never past wrap-log entries or entity-page changelog/history sections.
    - **Roadmap sweep**: for each repo touched this session, `grep -c "^- \[ \]"` its `roadmap.md`/`ROADMAP.md` and spot-check open items against this session's commits/memory files — check off (`- [x]`) anything actually shipped, don't just leave it stale. Small drift check, not a full re-audit.
    - **Roadmap prune**: after the sweep above, run the `roadmap-prune` skill on each repo touched this session (`python3 ~/.claude/skills/roadmap-prune/scripts/prune.py <repo>/roadmap.md`) to strip the `- [x]` items back out — history lives in git log, the roadmap file should only ever show what's still open. Commit the prune as part of that repo's wiki-wrap commit.
    - Bullet style, no frontmatter, no emojis (see notes/CLAUDE.md).
    - Commit + push.
 
-4. **GitHub issues** — mirror each touched repo's roadmap into its issue tracker so open work is official, not just a markdown checklist:
-   `python3 ~/.claude/skills/checkpoint/scripts/roadmap-to-issues.py <repo>` (add `--dry-run` first if the repo has never been synced, and eyeball the titles). It opens an issue per open top-level roadmap item (labelled `bug` or `enhancement`), closes issues whose item got checked off, and skips anything already there. Repos with no `gh` remote are skipped automatically. Run this BEFORE the roadmap prune in step 3 if you reorder, since prune deletes the `- [x]` lines the closer needs.
+5. **GitHub issues** — mirror each touched repo's roadmap into its issue tracker so open work is official, not just a markdown checklist:
+   `python3 ~/.claude/skills/checkpoint/scripts/roadmap-to-issues.py <repo>` (add `--dry-run` first if the repo has never been synced, and eyeball the titles). It opens an issue per open top-level roadmap item (labelled `bug` or `enhancement`), closes issues whose item got checked off, and skips anything already there. Repos with no `gh` remote are skipped automatically. Run this BEFORE the roadmap prune in step 4, since prune deletes the `- [x]` lines the closer needs.
 
-5. **Stale-memory check** — for each repo touched this session, grep `~/.claude/projects/-Users-joshua/memory/project_*.md` for a matching memory file. If this session's commits change status the memory records (version bump, submission, ship, fix, or code the memory describes as removed/added that a commit touches again), edit that memory file directly to correct it — update the stale claim, keep the `**Why:**`/`**How to apply:**` structure intact, note what changed. Then list it in the TLDR as "memory fixed: <file>".
+6. **Stale-memory check** — for each repo touched this session, grep `~/.claude/projects/-Users-joshua/memory/project_*.md` for a matching memory file. If this session's commits change status the memory records (version bump, submission, ship, fix, or code the memory describes as removed/added that a commit touches again), edit that memory file directly to correct it — update the stale claim, keep the `**Why:**`/`**How to apply:**` structure intact, note what changed. Then list it in the TLDR as "memory fixed: <file>".
 
-6. **TLDR** — end with a short bullet list of what landed in journal and wiki, the count of commits and repos touched, issues opened/closed, any memory fixes made (or "memory: nothing stale"), plus the journal URL.
+7. **TLDR** — one line per surface, every surface, in this order: journal, vault (pages touched + the gate's two numbers), master.md, roadmaps, issues opened/closed, memory fixes (or "memory: nothing stale"). Then commit and repo counts and the journal URL. A surface that was not done says `SKIPPED: <why>`. Never leave a surface out of the list; a missing line reads as done when it was not.
 
-7. **Notify** — call the `PushNotification` tool with the TLDR summary so the wrap is visible even if this ran in the background.
+8. **Notify** — call the `PushNotification` tool with the TLDR summary so the wrap is visible even if this ran in the background.
 
 ## Rules
 - Work lean: batch git scans, no subagents.
 - Don't invent work — only what git shows for this window.
 
 ## Usage awareness
-If usage is high going into a wrap, still do steps 1-2 (journal is the durable record) but trim the wiki/roadmap-prune sweep to repos actually touched this session — skip the fleet-wide entity-page pass across untouched apps. Memory-fix check (step 5) stays scoped to touched repos already, so it's cheap regardless.
+If usage is high going into a wrap, still do steps 1-2 (journal is the durable record) but trim the vault, master.md and roadmap-prune work to repos actually touched this session — skip the fleet-wide entity-page pass across untouched apps. Trimming means fewer pages, never zero: the step 3 gate still has to pass. Memory-fix check (step 6) stays scoped to touched repos already, so it's cheap regardless.

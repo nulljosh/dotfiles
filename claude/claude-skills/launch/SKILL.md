@@ -1,19 +1,22 @@
 ---
 name: launch
-description: Build and push a launch kit for one or more apps under ~/Documents/Code — Product Hunt post (tagline, description, first comment, gallery), landing-page SEO/OG check, App Store listing sanity, Hacker News / Reddit / X copy — all sourced from the repo's own README, WHITEPAPER, metadata and screenshots. Use when the user says /launch, "launch <app>", "product hunt", "publish kit", "SEO for <app>", or wants to promote an app that is live.
+description: Build and push a launch kit for one or more apps under ~/Documents/Code — Product Hunt post (tagline, description, first comment, gallery), landing-page SEO/OG check, App Store listing sanity, Hacker News, Reddit (vetted subreddit map), X and directory-listing copy, all sourced from the repo's own README, WHITEPAPER, metadata and screenshots. Use when the user says /launch, "launch <app>", "product hunt", "publish kit", "SEO for <app>", "reddit <app>", "advertise on reddit", "show hn", or wants to promote an app that is live.
 ---
 
 # launch
 
-`/launch <app> [<app>...] [--all] [--ph] [--seo] [--dry] [--ph-url <url>]`
+`/launch <app> [<app>...] [--all] [--ph] [--hn] [--reddit] [--seo] [--dry] [--ph-url <url>]`
 
 - `<app>`: repo dir name under `~/Documents/Code` (voxprint, epiphany, curvely...). `--all` = every
   row in `~/Documents/Code/GTM.md` ledger that is live somewhere (web URL or ASC READY_FOR_SALE).
 - `--ph`: also open the Product Hunt "new post" form in Chrome and prefill it (Joshua clicks Submit).
+- `--hn`: open `https://news.ycombinator.com/submit` in Chrome, prefill title + URL from `launch/hn.md`, stop at Submit.
+- `--reddit`: for each `launch/reddit/<sub>.md` with no karma/flair gate open, open `https://www.reddit.com/r/<sub>/submit`,
+  prefill title + body, stop at Post. One tab per subreddit, three at most per run.
 - `--seo`: only run the landing-page SEO/OG audit + fix, skip the PH kit.
 - `--dry`: build `launch/` and report, don't commit or open Chrome.
 - `--ph-url <url>`: the post is live; record it as `Post: <url>` in `launch/producthunt.md` and badge the README.
-- Default (no flags): build kit, fix SEO gaps, commit + push. Chrome only with `--ph`.
+- Default (no flags): build kit, fix SEO gaps, commit + push. Chrome only with `--ph`, `--hn` or `--reddit`.
 
 ## Sources of truth (read, never invent)
 
@@ -38,8 +41,11 @@ Missing live URL → stop and report; don't launch a dead page.
      (≤260 chars), topics (3), first comment (maker story, 150–250 words, from WHITEPAPER, ends
      with what's paid and what's free per GTM rail), pricing line, links (web, App Store, GitHub).
    - `hn.md`: "Show HN: <Name> – <one-liner>" title (≤80) + 3–5 sentence body.
-   - `reddit.md`: one title + body per fitting subreddit (r/SideProject always; r/iOSProgramming,
-     r/macapps, r/privacy etc. only if truly fitting).
+   - `reddit/<subreddit>.md` + `reddit/checklist.md`: follow `~/.claude/skills/launch/reddit.md` (subreddit
+     map, per-sub rules, karma/flair gates). One tailored post per fitting subreddit, never the same body twice.
+   - `directories.md`: one short listing (name, one-liner, 2-sentence description, category, links) reused for
+     the submit-once directories: AlternativeTo, Indie Hackers products, BetaList (pre-launch only), Uneed,
+     SaaSHub, and dev.to (a build-story post, only when the WHITEPAPER has a real technical hook).
    - `x.md`: one thread, 3 posts max.
    - `gallery/`: hard-link or copy the best 3–5 screenshots, renamed `01-*.png`. PH wants
      1270×760 or 3:2 for the first image; if only phone shots exist, compose 3 phone frames on a
@@ -86,10 +92,15 @@ copy files first. Verified 2026-09-09 across 12 apps, lessons baked in:
 - Copy is prose, never bullet walls, no em dashes, no emojis, no "seamlessly/leverage/delve".
 - Launch order and rails come from GTM.md, don't re-decide them. Free apps get "Free" in the
   pricing line; $1 IAP apps say exactly what the dollar buys.
-- Don't create PH posts unattended, don't post to HN/Reddit/X at all — the files are drafts.
+- Nothing is ever submitted unattended. PH, HN and Reddit get prefilled in Chrome and stop at the button;
+  Joshua clicks. X and the directories stay drafts. Self-promo bans on HN and Reddit are account-wide and
+  permanent, and one account pushing many apps at once is exactly what trips them.
+- Pace it: one app per channel per week. `--all` builds every kit but never opens Chrome for more than one app.
+- HN gets only apps with a technical story (on-device ML, a kernel, a novel algorithm). A thin utility on
+  Show HN sinks and costs goodwill; write `hn.md` anyway, mark it `Skip: no technical hook` at the top.
 - Skip an app if its store status is REJECTED on every platform and it has no web URL.
 
 ## Report
 
-One table: app · kit ✓ · SEO fixes (n) · ASC gaps (n) · PH badge (y/n) · PH prefilled (y/n) · link to `launch/`.
+One table: app · kit ✓ · SEO fixes (n) · ASC gaps (n) · reddit subs (n) · HN worth posting (y/n) · PH badge (y/n) · prefilled (PH/HN/Reddit) · link to `launch/`.
 Then the recommended launch order copied from GTM.md. Under 8 words if only one app and all green.

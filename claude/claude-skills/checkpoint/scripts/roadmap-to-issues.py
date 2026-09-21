@@ -74,7 +74,10 @@ def main():
         if not dry:
             body = "%s\n\nFrom `%s`%s." % (
                 full, rm.name, " under **%s**" % heading if heading else "")
-            sh("gh", "issue", "create", "-t", title, "-l", label, "-b", body, cwd=repo)
+            r = sh("gh", "issue", "create", "-t", title, "-l", label, "-b", body, cwd=repo)
+            if r.returncode:  # a missing label fails the create. Never count it as opened.
+                print(f"FAILED: {r.stderr.strip()[-160:]}")
+                continue
         made += 1
     print(f"{repo.name}: {made} opened, {closed} closed{' (dry run)' if dry else ''}")
 

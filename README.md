@@ -8,6 +8,8 @@
 My shell, my terminal, my prompt. Everything a fresh Mac needs to feel like mine in one command.
 ![architecture](architecture.svg)
 
+<img src="progress.svg" width="460">
+
 ## Features
 
 - **fish**: the daily shell. Aliases, abbreviations, tool init

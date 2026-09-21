@@ -7,3 +7,5 @@ secrets.zsh
 .env.*.local
 .env.production
 claude/claude-skills/mail/
+__pycache__/
+*.pyc

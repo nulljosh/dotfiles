@@ -375,10 +375,11 @@ def run_applescript(source, timeout=120, _retry=True):
         p = subprocess.run(["osascript", "-"], input=source, text=True,
                            capture_output=True, timeout=timeout + 10)
     except FileNotFoundError:
-        raise PxmError("osascript not found", hint="This skill only works on macOS.", code=EXIT_ENV)
+        raise PxmError("osascript not found", hint="This skill only works on macOS.",
+                       code=EXIT_ENV) from None
     except subprocess.TimeoutExpired:
         raise PxmError("no answer from %s after %ds" % (APP, timeout), hint=HINTS[-1712],
-                       number=-1712)
+                       number=-1712) from None
     if p.returncode == 0:
         return p.stdout.strip()
     number, message = parse_osascript_error(p.stderr)
@@ -461,7 +462,7 @@ def cmd_check(_args):
         if e.code == EXIT_ENV:
             raise
         raise PxmError("%s is not installed" % APP, hint="Install it from the Mac App Store.",
-                       code=EXIT_ENV)
+                       code=EXIT_ENV) from None
     version = run_applescript('tell application "%s" to get version' % APP, timeout=60)
     print("ok: %s %s answers AppleScript" % (APP, version))
 

@@ -1,6 +1,6 @@
 # Architecture
 
-dotfiles is a monorepo holding macOS shell configuration, Claude Code skills, and reference templates. Managed via symlinks from the repo into home directory config paths. Shell configs (fish/zsh) init tools and set up PATH. Skills are subagents that handle specialized tasks (document processing, deployment, app management). No secrets are committed; all sensitive keys live in gitignored `secrets.fish` and `secrets.zsh`.
+Dotfiles is what makes a fresh Mac feel like this user's Mac in one command. It holds the shell setup, terminal look, and Claude Code skills (small automated helpers for tasks like document editing, deploying apps, or managing App Store listings), plus a few project templates to start new repos from. Files live in this repo and are linked into place in the home folder, so editing a file here changes the live config too. No passwords or API keys are committed; those live in separate files that git ignores.
 
 ## How it runs
 

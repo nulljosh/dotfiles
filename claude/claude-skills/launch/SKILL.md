@@ -1,6 +1,6 @@
 ---
 name: launch
-description: Build and push a launch kit for one or more apps under ~/Documents/Code — Product Hunt post (tagline, description, first comment, gallery), landing-page SEO/OG check, App Store listing sanity, Hacker News, Reddit (vetted subreddit map), X and directory-listing copy, all sourced from the repo's own README, WHITEPAPER, metadata and screenshots. Use when the user says /launch, "launch <app>", "product hunt", "publish kit", "SEO for <app>", "reddit <app>", "advertise on reddit", "show hn", or wants to promote an app that is live.
+description: Build and push launch kits for apps under ~/Documents/Code, read the user's Product Hunt launches and public product pages, and prepare Product Hunt, HN, Reddit, X, and directory posts. Use for /launch, Product Hunt account or product data, SEO, or promotion of a live app.
 ---
 
 # launch
@@ -9,7 +9,7 @@ description: Build and push a launch kit for one or more apps under ~/Documents/
 
 - `<app>`: repo dir name under `~/Documents/Code` (voxprint, epiphany, curvely...). `--all` = every
   row in `~/Documents/Code/GTM.md` ledger that is live somewhere (web URL or ASC READY_FOR_SALE).
-- `--ph`: also open the Product Hunt "new post" form in Chrome and prefill it (Joshua clicks Submit).
+- `--ph`: open the Product Hunt "new post" form in Joshua's normal Chrome profile and prepare the kit for entry. Prefill only when an authenticated browser tool works; Joshua reviews and clicks Submit.
 - `--hn`: open `https://news.ycombinator.com/submit` in Chrome, prefill title + URL from `launch/hn.md`, stop at Submit.
 - `--reddit`: for each `launch/reddit/<sub>.md` with no karma/flair gate open, open `https://www.reddit.com/r/<sub>/submit`,
   prefill title + body, stop at Post. One tab per subreddit, three at most per run.
@@ -41,7 +41,7 @@ Missing live URL → stop and report; don't launch a dead page.
      (≤260 chars), topics (3), first comment (maker story, 150–250 words, from WHITEPAPER, ends
      with what's paid and what's free per GTM rail), pricing line, links (web, App Store, GitHub).
    - `hn.md`: "Show HN: <Name> – <one-liner>" title (≤80) + 3–5 sentence body.
-   - `reddit/<subreddit>.md` + `reddit/checklist.md`: follow `~/.claude/skills/launch/reddit.md` (subreddit
+   - `reddit/<subreddit>.md` + `reddit/checklist.md`: follow `<skill-dir>/reddit.md` (subreddit
      map, per-sub rules, karma/flair gates). One tailored post per fitting subreddit, never the same body twice.
    - `directories.md`: one short listing (name, one-liner, 2-sentence description, category, links) reused for
      the submit-once directories: AlternativeTo, Indie Hackers products, BetaList (pre-launch only), Uneed,
@@ -61,19 +61,21 @@ Missing live URL → stop and report; don't launch a dead page.
    subtitle + promotional text present, ≥3 screenshots per device family, keywords ≤100 chars.
    Report gaps; fix promotionalText via `asc localizations update --id` (see
    `[[reference_asc_promotional_text_live]]`). Never touch price or availability here.
-5. **README badge**: `python3 ~/.claude/skills/launch/badge.py <app> [<url>]`. Reads the `Post:` line in
+5. **README badge**: `python3 <skill-dir>/badge.py <app> [<url>]`. Reads the `Post:` line in
    `launch/producthunt.md` (or `--ph-url`), appends a shields.io Product Hunt badge to the README badge
    row, commits `readme: Product Hunt badge`. No URL yet = skipped, never a placeholder link.
    `badge.py --all` sweeps every repo, badging only those whose `launch/producthunt.md` already has a
    `Post:` line — use it after any new app's PH post goes live instead of naming apps one by one.
 6. **Commit + push** (`launch: kit + seo for <app>`), per `[[feedback_auto_push]]`.
-7. **`--ph` only**: open `https://www.producthunt.com/posts/new` in Chrome (claude-in-chrome),
-   paste name/tagline/description/topics/links, upload `launch/gallery/*` via `file_upload`, stop
-   at the Submit/Schedule button. Joshua clicks it. Same rule as `[[feedback_card_gated_apis_autofill]]`.
+7. **`--ph` only**: prefer the ChatGPT/Codex Chrome extension in Joshua's regular signed-in profile. In the desktop app, select `@Chrome` for the task and allow Product Hunt access when prompted. Read `/my/products` first to avoid duplicate posted or scheduled launches. Run `python3 <skill-dir>/producthunt.py prepare <app>` to open the normal Chrome profile and show fields from `launch/producthunt.md`. Fill name/tagline/description/topics/links and upload `launch/gallery/*`; stop at Submit/Schedule. If browser control is unavailable, leave the prepared fields and gallery paths for Joshua to enter in Chrome. Joshua reviews and clicks Submit. Same rule as `[[feedback_card_gated_apis_autofill]]`.
+
+## Product Hunt data
+
+Prefer the Chrome extension on `/my/products` for the full product and launch state. Run `python3 <skill-dir>/producthunt.py list` when browser control is unavailable, or `page <product-url>` for a public page. The helper reads a `PRODUCTHUNT_TOKEN` environment variable or the macOS Keychain item `producthunt-api`. Product Hunt's [API docs](https://www.producthunt.com/v2/docs) describe a personal developer token for scripts; save it to Keychain locally, never in a repo or chat. With a token, `list` pages through the authenticated user's `madePosts`. This is launches, not necessarily every claimed Product Page. Without a token, it scans existing `launch/producthunt.md` links and verifies `nulljosh1` as maker on each public page; report that list as incomplete. Public profile requests may hit Cloudflare, and headless Chrome will not solve an account challenge. Do not present a challenge page as product data. Read access is sufficient here.
 
 ## Mechanics
 
-`python3 ~/.claude/skills/launch/mech.py <app> <url> <tagline> <description>` does gallery, og.png,
+`python3 <skill-dir>/mech.py <app> <url> <tagline> <description>` does gallery, og.png,
 meta injection, robots/sitemap, deploy, commit, push and prints one JSON line. Claude writes the
 copy files first. Verified 2026-09-09 across 12 apps, lessons baked in:
 - Landing source order: `docs/`, `landing/`, root, `web/`. But the SERVED page is often
@@ -92,7 +94,7 @@ copy files first. Verified 2026-09-09 across 12 apps, lessons baked in:
 - Copy is prose, never bullet walls, no em dashes, no emojis, no "seamlessly/leverage/delve".
 - Launch order and rails come from GTM.md, don't re-decide them. Free apps get "Free" in the
   pricing line; $1 IAP apps say exactly what the dollar buys.
-- Nothing is ever submitted unattended. PH, HN and Reddit get prefilled in Chrome and stop at the button;
+- Nothing is ever submitted unattended. PH, HN and Reddit are prepared in Chrome and stop at the button;
   Joshua clicks. X and the directories stay drafts. Self-promo bans on HN and Reddit are account-wide and
   permanent, and one account pushing many apps at once is exactly what trips them.
 - Pace it: one app per channel per week. `--all` builds every kit but never opens Chrome for more than one app.

@@ -5,7 +5,7 @@ description: Work through LEC / D2L Pre-Calculus 12 quizzes in the user's own lo
 
 # LEC quiz + content capture
 
-Course: Pre-Calculus 12, LECSS Section 53 (Jeremy Ratcliffe), Sep 14 2026 – Jun 23 2027.
+Course: Pre-Calculus 12, LECSS Section 53 (Jeremy Ratcliffe), D2L OU 184298 (198889 is the old Dhiman section). The LEC app (~/Documents/Code/lec) is the preferred way in: it signs in, coaches, and logs every submission.
 Portals: `lecss.registerbc.ca` (enrollment) and `langleysd35.onlinelearningbc.com` (D2L/WCLN, OU 153403).
 
 ## Ground rule: use the user's real Chrome

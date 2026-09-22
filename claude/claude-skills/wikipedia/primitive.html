@@ -1,0 +1,195 @@
+<title>Primitive.dev</title>
+<style>
+  :root{
+    --bg:#ffffff; --text:#202122; --text-muted:#54595d;
+    --link:#0645ad; --link-visited:#0b0080;
+    --border:#a2a9b1; --box-bg:#f8f9fa; --box-header:#eaecf0;
+    --hr:#a2a9b1; --code-bg:#f8f9fa;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#101418; --text:#e6e6e6; --text-muted:#a2a9b1;
+      --link:#8ab4f8; --link-visited:#c58af9;
+      --border:#3a3f45; --box-bg:#181d23; --box-header:#20262d;
+      --hr:#3a3f45; --code-bg:#181d23;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101418; --text:#e6e6e6; --text-muted:#a2a9b1;
+    --link:#8ab4f8; --link-visited:#c58af9;
+    --border:#3a3f45; --box-bg:#181d23; --box-header:#20262d;
+    --hr:#3a3f45; --code-bg:#181d23;
+  }
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg); color:var(--text); margin:0;
+    font-family:"Noto Serif","Georgia",serif; font-size:16px; line-height:1.65;
+    padding-inline:16px;
+  }
+  .page{max-width:960px; margin:0 auto; padding-block:24px;}
+  .sitelabel{
+    font-family:"Linux Libertine","Georgia",serif; font-size:13px; color:var(--text-muted);
+    border-bottom:1px solid var(--hr); padding-bottom:10px; margin-bottom:14px;
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px;
+  }
+  h1.title{
+    font-family:"Linux Libertine","Georgia",serif; font-weight:400; font-size:2.1em;
+    border-bottom:1px solid var(--hr); padding-bottom:8px; margin:0 0 4px;
+    text-wrap:balance;
+  }
+  .tagline{color:var(--text-muted); font-style:italic; font-size:.95em; margin-bottom:18px;}
+  .layout{display:flex; gap:28px; align-items:flex-start; flex-wrap:wrap;}
+  .article{flex:1 1 480px; min-width:0; max-width:65ch;}
+  .infobox{
+    flex:0 0 300px; width:300px; max-width:100%;
+    border:1px solid var(--border); background:var(--box-bg);
+    font-family:"Helvetica Neue",Arial,sans-serif; font-size:13px;
+  }
+  .infobox .ib-title{
+    background:var(--box-header); font-weight:700; text-align:center;
+    padding:8px 10px; font-size:15px; font-family:"Linux Libertine","Georgia",serif;
+  }
+  .infobox .ib-tag{text-align:center; font-style:italic; padding:6px 10px 10px; color:var(--text-muted); border-bottom:1px solid var(--border);}
+  .infobox table{width:100%; border-collapse:collapse;}
+  .infobox tr{border-top:1px solid var(--border);}
+  .infobox tr:first-child{border-top:none;}
+  .infobox th{
+    text-align:left; vertical-align:top; padding:6px 8px; width:36%;
+    color:var(--text-muted); font-weight:600; white-space:nowrap;
+  }
+  .infobox td{padding:6px 8px; vertical-align:top; word-break:break-word;}
+  h2{
+    font-family:"Linux Libertine","Georgia",serif; font-weight:400; font-size:1.5em;
+    border-bottom:1px solid var(--hr); padding-bottom:4px; margin-top:1.6em;
+  }
+  h3{font-family:"Linux Libertine","Georgia",serif; font-weight:700; font-size:1.15em; margin-top:1.3em;}
+  a{color:var(--link); text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  a.visited{color:var(--link-visited);}
+  ul{padding-left:1.4em;}
+  li{margin-bottom:.3em;}
+  code{background:var(--code-bg); border:1px solid var(--border); border-radius:2px; padding:0 4px; font-size:.9em; font-family:ui-monospace,Menlo,monospace;}
+  table.pricing{border-collapse:collapse; width:100%; margin:1em 0; font-size:.92em;}
+  table.pricing th, table.pricing td{border:1px solid var(--border); padding:6px 10px; text-align:left;}
+  table.pricing th{background:var(--box-header);}
+  sup.ref{font-size:.75em; color:var(--link);}
+  .refs{font-size:.9em; color:var(--text-muted);}
+  .refs ol{padding-left:1.4em;}
+  .refs li{margin-bottom:.5em;}
+  .catbox{
+    margin-top:2em; padding-top:10px; border-top:1px solid var(--hr);
+    font-size:.85em; color:var(--text-muted);
+  }
+  .catbox a{margin-right:4px;}
+  .disambig{font-size:.85em; color:var(--text-muted); border:1px solid var(--border); background:var(--box-bg); padding:8px 12px; margin-bottom:16px;}
+  blockquote{
+    border-left:3px solid var(--border); margin:1em 0; padding:2px 0 2px 14px;
+    color:var(--text-muted); font-style:italic;
+  }
+</style>
+
+<div class="page">
+  <div class="sitelabel">
+    <span><strong>Devpedia</strong>, the developer-tools encyclopedia</span>
+    <span>Article &middot; Talk &middot; Read</span>
+  </div>
+
+  <h1 class="title">Primitive</h1>
+  <div class="tagline">Email infrastructure built for AI agents, not humans</div>
+
+  <div class="layout">
+    <div class="article">
+      <p>
+        <strong>Primitive</strong> (stylized <strong>primitive.dev</strong>) is an email
+        infrastructure product that exposes sending and receiving email as an HTTP REST API,
+        aimed at AI agents rather than traditional application backends. Instead of an agent
+        managing SMTP credentials or a mail server, Primitive issues managed
+        <code>*.primitive.email</code> addresses that receive real mail and can trigger hosted
+        JavaScript functions on inbound messages.<sup class="ref">[1]</sup>
+      </p>
+
+      <h2>Overview</h2>
+      <p>
+        The product is positioned around a claim that "every hop in the email pipeline runs on
+        primitive-owned servers, end-to-end," and that a direct SMTP delivery returns the
+        recipient's <code>250 OK</code> plus a queue ID within the same request.<sup class="ref">[1]</sup>
+        Primitive also markets managed sending-IP reputation, automatic bounce and complaint
+        processing, and a built-in spam-filtering pipeline, framing these as problems normally
+        handled by dedicated email infrastructure teams.<sup class="ref">[1]</sup>
+      </p>
+
+      <h2>Features</h2>
+      <h3>Email operations</h3>
+      <ul>
+        <li>HTTP REST API for sending and receiving email</li>
+        <li>Managed <code>*.primitive.email</code> subdomain addresses for receiving real mail</li>
+        <li>Hosted JavaScript function execution on inbound messages, replacing always-on consumer processes</li>
+        <li>A "chat" verb for sending a message and receiving a threaded reply in a single round trip</li>
+        <li>Custom domain support with managed SPF, DKIM, DMARC, and TLS-RPT authentication</li>
+      </ul>
+
+      <h3>Developer tooling</h3>
+      <ul>
+        <li>Official SDKs for Node.js, Python, and Go, generated from an OpenAPI&nbsp;3.1 specification</li>
+        <li>A command-line tool</li>
+        <li>A Model Context Protocol (MCP) server exposed over Streamable HTTP</li>
+        <li>A Natural Language Web (NLWeb) query endpoint</li>
+      </ul>
+
+      <h3>Authentication</h3>
+      <p>
+        API access uses bearer tokens: API keys prefixed <code>prim_</code> or OAuth access
+        tokens prefixed <code>prim_oat_</code>, with OAuth authorization-server metadata
+        published at standard <code>.well-known</code> endpoints.<sup class="ref">[1]</sup>
+      </p>
+
+      <h2>Pricing</h2>
+      <p>Primitive publishes three usage-based tiers, metered against email volume, storage, function invocations, and runtime.<sup class="ref">[1]</sup></p>
+      <table class="pricing">
+        <tr><th>Tier</th><th>Base price</th><th>Included credits</th></tr>
+        <tr><td>Developer</td><td>$0/month</td><td>$5</td></tr>
+        <tr><td>Power</td><td>$13/month</td><td>$13</td></tr>
+        <tr><td>Platinum</td><td>$299/month</td><td>$299</td></tr>
+      </table>
+
+      <h2>Integrations</h2>
+      <p>
+        Primitive advertises compatibility with Claude, Cursor, VS Code / GitHub Copilot, and
+        Goose, and can be installed as a skill inside Claude Code and similar coding
+        agents.<sup class="ref">[1]</sup>
+      </p>
+
+      <h2>Open source</h2>
+      <p>
+        Primitive's SDKs and command-line tool are published publicly on GitHub under the
+        <code>primitivedotdev/sdks</code> repository, while the hosted email infrastructure
+        itself remains proprietary.<sup class="ref">[1]</sup>
+      </p>
+
+      <div class="refs">
+        <h2>References</h2>
+        <ol>
+          <li id="ref1">Primitive. <a class="visited" href="https://primitive.dev" target="_blank" rel="noopener">primitive.dev</a>. Retrieved 2026-09-15.</li>
+        </ol>
+      </div>
+
+      <div class="catbox">
+        Categories: <a href="#">Email infrastructure</a> <a href="#">Developer tools</a> <a href="#">AI agent tooling</a> <a href="#">API-first companies</a>
+      </div>
+    </div>
+
+    <div class="infobox">
+      <div class="ib-title">Primitive</div>
+      <div class="ib-tag">Email infrastructure for AI agents</div>
+      <table>
+        <tr><th>Type</th><td>Developer infrastructure / API product</td></tr>
+        <tr><th>Industry</th><td>Email infrastructure, AI agent tooling</td></tr>
+        <tr><th>Products</th><td>Email sending &amp; receiving API, MCP server, CLI, SDKs</td></tr>
+        <tr><th>Languages</th><td>Node.js, Python, Go SDKs</td></tr>
+        <tr><th>Pricing model</th><td>Usage-based, tiered ($0&ndash;$299/mo)</td></tr>
+        <tr><th>Open source</th><td>SDKs &amp; CLI (GitHub: primitivedotdev/sdks)</td></tr>
+        <tr><th>Website</th><td><a class="visited" href="https://primitive.dev" target="_blank" rel="noopener">primitive.dev</a></td></tr>
+      </table>
+    </div>
+  </div>
+</div>

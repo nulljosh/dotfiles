@@ -1,6 +1,6 @@
 ---
 name: asc-name-creator
-description: Brainstorm and verify App Store app name candidates, checking real-time availability against Apple's exact-match namespace using asc. Use when an app name is taken, when naming/renaming an app for the App Store, or when asked to find an available app name.
+description: Brainstorm and verify App Store app name candidates, checking real-time availability against Apple's exact-match namespace using asc. Also covers brand, company and OS naming with bulk domain checks (domains.sh). Use when an app name is taken, when naming a company, product or OS and hunting for a free domain, when naming/renaming an app for the App Store, or when asked to find an available app name.
 ---
 
 # ASC Name Creator
@@ -83,3 +83,23 @@ Final live name, everywhere it propagated, and which candidates came back TAKEN.
 - Taken looks like `ENTITY_ERROR.ATTRIBUTE.INVALID.DUPLICATE.DIFFERENT_ACCOUNT` / "The app name you entered is already being used".
 - ASC reads are eventually consistent — a name read straight after a write can be stale. `probe.sh` retries its restore for this reason.
 - For brand-new apps not yet in ASC, creation goes through `asc web apps create` (see `asc-app-create-ui`); the same duplicate rejection applies there, so probe the name first.
+
+## Brand, company and OS names (domains)
+
+For a company or product name rather than an App Store title, the namespace that matters is the domain. `domains.sh` checks a whole batch at once and prints only what looks free:
+
+```bash
+./domains.sh koinoki koibon treekoi              # bare .com
+TLDS="computer systems" ./domains.sh joshuatree  # extra TLDs too
+ALL=1 ./domains.sh matsu                         # show taken and unknown as well
+```
+
+What a day of checking 200+ names taught (2026-09-20):
+
+- Every real dictionary word has its bare .com taken, in any language. Do not spend checks on them; say so up front.
+- Every pronounceable coinage of five letters or fewer is squatted too. Start coining at six letters and go up from there.
+- Three shapes that still have room: six to eight letter blends of two words the user likes (koi + "no ki" = Koinoki), the "Name Computer" or "Name Labs" company form (how Apple Computer started), and a real word on a fitting TLD (`.computer`, `.systems`).
+- Joshua dislikes the `-os.com` suffix and wants a company-grade bare .com. Never propose `nameos.com`.
+- Check collisions inside computing before pitching. Known burns: Bonsai is PrismML's LLM, Koi Computers sells HPC hardware, Flint OS and Koa.js exist, macOS used Mojave, Sequoia and Sonoma.
+- Rank candidates against the user's own anchors and lead with one pick. Taste so far: likes Bonsai and Koi (short, Japanese, a living thing you can draw as an emblem), hard consonants, a vowel ending. Matsu and Tupelo were "okay". Yucca, Agave and Rowan were rejected as too soft.
+- whois and DNS are signals only. Always say a name is unconfirmed until a registrar check and a trademark search are done.

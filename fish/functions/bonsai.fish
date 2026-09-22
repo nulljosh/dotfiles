@@ -14,5 +14,5 @@ function bonsai-cli --description 'Chat with Bonsai 2 in the terminal'
         echo 'Connect LaCie first. Bonsai is stored on the external drive.' >&2
         return 1
     end
-    command "$runner" -m "$model" -c 8192 -ngl 99 --reasoning off --reasoning-budget 0 $argv
+    command "$runner" -m "$model" -c 32768 -ngl 99 --reasoning off --reasoning-budget 0 $argv
 end

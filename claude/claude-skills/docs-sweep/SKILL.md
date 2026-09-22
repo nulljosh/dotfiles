@@ -1,6 +1,6 @@
 ---
 name: docs-sweep
-description: Find every app under ~/Documents/Code missing a README.md or WHITEPAPER.md and write them in the house voice. Use when the user asks to document all apps, fill in missing docs, or invokes /docs-sweep.
+description: Find every app under ~/Documents/Code missing a README.md, WHITEPAPER.md or docs/ARCHITECTURE.md (or under 95% docs coverage) and write them in the house voice. Use when the user asks to document all apps, fill in missing docs, or invokes /docs-sweep.
 ---
 
 # /docs-sweep — fill in missing docs, house voice
@@ -13,7 +13,9 @@ description: Find every app under ~/Documents/Code missing a README.md or WHITEP
 
 4. Base every doc on what's actually in the repo (read package.json, main source files, existing roadmap.md) — never invent features or URLs. Skip a project entirely if you can't tell what it does from the code in under a minute; flag it instead of guessing.
 
-5. **Report**: TLDR list of which projects got which doc, and which were skipped/flagged.
+5. **docs/ARCHITECTURE.md + coverage**: run `python3 ~/Documents/Code/scripts/progress-svg.py <repo>` on every repo; it prints "% documented" (code files named in `docs/ARCHITECTURE.md`, or covered by a `dir/` row) and rewrites `progress.svg`. Anything under 95% gets its architecture doc written or patched: intro, "How it runs", then `| File | What it owns |` tables with a real sentence per file. Reference: `joshuatree/docs/ARCHITECTURE.md`. Commit the doc and `progress.svg` together, push.
+
+6. **Report**: TLDR list of which projects got which doc, and which were skipped/flagged.
 
 ## Usage awareness
-Many small independent projects — fan out with fork subagents (a handful at a time, not all ~40 at once) since each doc-write is read+write on one project with no cross-project dependency. Keep going until every missing doc is filled or flagged.
+One Haiku subagent at a time working repos sequentially, two max. Never a wide fan-out, it burns the usage window in minutes. Keep going until every missing doc is filled or flagged.

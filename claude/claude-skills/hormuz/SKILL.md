@@ -12,8 +12,8 @@ curl -s https://hormuz.heyitsmejosh.com/api/status
 curl -s "https://hormuz.heyitsmejosh.com/api/oil?range=5d"   # or 1mo, 1y
 ```
 
-`status` returns `{open, last_closure, note}` — `open` is currently hardcoded true, since the
-strait has never had a sustained closure. `oil` returns `{price, prevClose, timestamps, closes}`
+`status` returns `{open, transits_per_day, baseline_per_day, as_of, last_closure, note}`, computed
+from IMF PortWatch ship counts (about a week behind). Always report the transit count with the read. `oil` returns `{price, prevClose, timestamps, closes}`
 for the given range; compute percent change first-to-last for the same long/short read the site
 shows.
 

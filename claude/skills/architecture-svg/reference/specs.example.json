@@ -1,0 +1,170 @@
+[
+{"out":"~/Documents/Code/conway/architecture.svg","title":"Conway Architecture","accent":"#1d1d1f","rows":[
+ {"kind":"client","cells":["Web|index.html + play.html","iOS|SwiftUI","macOS|SwiftUI"]},
+ {"kind":"core","cells":["life.js|(web engine)","Life.swift|(shared iOS/macOS engine)"]},
+ {"kind":"ext","cells":["life.test.js","ios/Checks/main.swift"]}]},
+
+{"out":"~/Documents/Code/dream/architecture.svg","title":"Dream Architecture","accent":"#3a5bd9","rows":[
+ {"kind":"client","cells":["Web app|web/index.html + app.js"]},
+ {"kind":"core","cells":["Cloudflare Worker|worker.js + interpret.js"]},
+ {"kind":"ext","cells":["Workers AI (Qwen)|/api/interpret"]},
+ {"kind":"store","cells":["localStorage|(entries stay on device)"]}]},
+
+{"out":"~/Documents/Code/inkpress/architecture.svg","title":"Inkpress Architecture","accent":"#c1442e","rows":[
+ {"kind":"client","cells":["iOS app|EntryListView / DetailView","Landing page|web/index.html"]},
+ {"kind":"core","cells":["JournalFeedService|RSS + Atom parsing"]},
+ {"kind":"ext","cells":["Any RSS/Atom feed","journal feed.xml"]},
+ {"kind":"store","cells":["UserDefaults|subscribed feeds"]}]},
+
+{"out":"~/Documents/Code/journal/architecture.svg","title":"Journal Architecture","accent":"#2b6b4f","rows":[
+ {"kind":"client","cells":["journal.heyitsmejosh.com|Cloudflare Pages"]},
+ {"kind":"core","cells":["Jekyll build|_layouts / _includes / _posts"]},
+ {"kind":"ext","cells":["scripts/deploy.sh","header SVGs"]},
+ {"kind":"store","cells":["_site/ + feed.xml"]}]},
+
+{"out":"~/Documents/Code/lec/architecture.svg","title":"LEC Architecture","accent":"#1f5fa8","rows":[
+ {"kind":"client","cells":["App (SwiftUI)|iOS + macOS, one target"]},
+ {"kind":"core","cells":["LECKit|API.swift + Models.swift"]},
+ {"kind":"ext","cells":["lecss.registerbc.ca|cookie auth (endpoints unverified)"]}]},
+
+{"out":"~/Documents/Code/bcgd/architecture.svg","title":"BC Garage Doors Architecture","accent":"#b3541e","rows":[
+ {"kind":"client","cells":["web/|landing page","dashboard/|inventory + stock"]},
+ {"kind":"core","cells":["src/|shared JS + tokens"]},
+ {"kind":"store","cells":["localStorage|inventory state"]}]},
+
+{"out":"~/Documents/Code/bookrank/architecture.svg","title":"Bookrank Architecture","accent":"#8a5a2b","rows":[
+ {"kind":"client","cells":["Web|index / rankings / library","iOS app|SwiftUI"]},
+ {"kind":"core","cells":["books.json + scripts/|covers, sync-summaries.sh"]},
+ {"kind":"ext","cells":["Goodreads ratings","Supabase"]},
+ {"kind":"store","cells":["Cloudflare Pages|bookrank.heyitsmejosh.com"]}]},
+
+{"out":"~/Documents/Code/cadence/architecture.svg","title":"Cadence Architecture","accent":"#1f6fb2","rows":[
+ {"kind":"client","cells":["Web dashboard|Chart.js","iOS","macOS"]},
+ {"kind":"core","cells":["functions/|Cloudflare Pages Functions"]},
+ {"kind":"ext","cells":["GitHub GraphQL API"]},
+ {"kind":"store","cells":["cadence.heyitsmejosh.com"]}]},
+
+{"out":"~/Documents/Code/charwork/architecture.svg","title":"Charwork Architecture","accent":"#444444","rows":[
+ {"kind":"client","cells":["Web (Vite)|src/","iOS app|SwiftUI","landing/"]},
+ {"kind":"core","cells":["Character canvas + palette|component placement, text export"]},
+ {"kind":"store","cells":["localStorage|+ plain-text export"]}]},
+
+{"out":"~/Documents/Code/curvely/architecture.svg","title":"Curvely Architecture","accent":"#c04a2b","rows":[
+ {"kind":"client","cells":["Web (Vite)|src/","iOS app|native SwiftUI","landing/"]},
+ {"kind":"core","cells":["Expression parser + plotter|multi-equation, pan/zoom"]},
+ {"kind":"store","cells":["localStorage|saved equations"]}]},
+
+{"out":"~/Documents/Code/dotfiles/architecture.svg","title":"dotfiles Architecture","accent":"#2f6f4f","rows":[
+ {"kind":"client","cells":["fish/","zsh/","ghostty/","starship/"]},
+ {"kind":"core","cells":["install.sh|symlinks everything into ~"]},
+ {"kind":"ext","cells":["claude/","scaffold/","applescripts/","infra/"]}]},
+
+{"out":"~/Documents/Code/epiphany/architecture.svg","title":"Epiphany Architecture","accent":"#1f6fb2","rows":[
+ {"kind":"client","cells":["Web","iOS","macOS","watchOS"]},
+ {"kind":"core","cells":["api/ + worker/|Cloudflare Workers + Pages Functions"]},
+ {"kind":"ext","cells":["Markets","Maps / adsb.lol","Yelp","Wealthsimple"]},
+ {"kind":"store","cells":["Upstash KV","Supabase"]}]},
+
+{"out":"~/Documents/Code/fengshui/architecture.svg","title":"Feng Shui Architecture","accent":"#a8323a","rows":[
+ {"kind":"client","cells":["Web reader|index.html","iOS app|SwiftUI"]},
+ {"kind":"core","cells":["content.md|single chapter source, shared"]},
+ {"kind":"store","cells":["Static site + bundled copy"]}]},
+
+{"out":"~/Documents/Code/healstack/architecture.svg","title":"Healstack Architecture","accent":"#2e7d5b","rows":[
+ {"kind":"client","cells":["Web","iOS","macOS"]},
+ {"kind":"core","cells":["Dose log + wiki + interaction checker|tolerance / washout tracking"]},
+ {"kind":"ext","cells":["functions/|Pages Functions","Supabase auth"]},
+ {"kind":"store","cells":["localStorage (offline)|+ CSV export"]}]},
+
+{"out":"~/Documents/Code/lexly/architecture.svg","title":"Lexly Architecture","accent":"#1f6fb2","rows":[
+ {"kind":"client","cells":["Web app/","iOS","macOS"]},
+ {"kind":"core","cells":["content/ + school/|courses, lessons, quizzes"]},
+ {"kind":"ext","cells":["functions/|Pages Functions","Supabase auth"]},
+ {"kind":"store","cells":["Progress: Supabase + localStorage"]}]},
+
+{"out":"~/Documents/Code/litigate/architecture.svg","title":"Litigate Architecture","accent":"#1d4f8c","rows":[
+ {"kind":"client","cells":["web/|Cloudflare Pages","ios/","macos/"]},
+ {"kind":"core","cells":["Case model|grounds, witnesses, damages, timeline"]},
+ {"kind":"ext","cells":["CanLII case-law search"]},
+ {"kind":"store","cells":["Supabase|row-level security per account"]}]},
+
+{"out":"~/Documents/Code/newsline/architecture.svg","title":"Newsline Architecture","accent":"#b3341f","rows":[
+ {"kind":"client","cells":["Web reader","iOS / iPadOS / Mac","JSON API","MCP server"]},
+ {"kind":"core","cells":["worker.js + src/|fetch, dedupe, bias tag, blindspot detect"]},
+ {"kind":"ext","cells":["16 RSS feeds / 14 newsrooms"]},
+ {"kind":"store","cells":["Workers KV cache"]}]},
+
+{"out":"~/Documents/Code/nimble/architecture.svg","title":"Nimble Architecture","accent":"#1f6fb2","rows":[
+ {"kind":"client","cells":["Web (web/)","iOS","macOS"]},
+ {"kind":"core","cells":["Sources/|query classifier: math / fact / definition"]},
+ {"kind":"ext","cells":["Offline math engine","worker/|Workers AI (Gemma)"]}]},
+
+{"out":"~/Documents/Code/notes/architecture.svg","title":"notes Architecture","accent":"#7a5c2e","rows":[
+ {"kind":"client","cells":["notes.heyitsmejosh.com","iOS app"]},
+ {"kind":"core","cells":["scripts/|markdown index + build"]},
+ {"kind":"ext","cells":["notes/","brain/","pages/"]},
+ {"kind":"store","cells":["Static site (Cloudflare Pages)"]}]},
+
+{"out":"~/Documents/Code/nulljosh.github.io/architecture.svg","title":"Portfolio Architecture","accent":"#c85a1e","rows":[
+ {"kind":"client","cells":["heyitsmejosh.com|index.html + resume inline","iOS app"]},
+ {"kind":"core","cells":["tokens.css|Jaybulb design system"]},
+ {"kind":"ext","cells":["scripts/","images/","echo/","notes/"]},
+ {"kind":"store","cells":["GitHub Pages (CNAME)"]}]},
+
+{"out":"~/Documents/Code/nyc/architecture.svg","title":"NYC Survive Architecture","accent":"#b2531f","rows":[
+ {"kind":"client","cells":["iOS","macOS","web/ + landing/"]},
+ {"kind":"core","cells":["Sources/|SpriteKit simulation, Swift 6"]},
+ {"kind":"ext","cells":["Resources/|sprites + level data","Tests/"]},
+ {"kind":"store","cells":["Local save state"]}]},
+
+{"out":"~/Documents/Code/plan/architecture.svg","title":"Plan Architecture","accent":"#2f6f4f","rows":[
+ {"kind":"client","cells":["index.html|one static page, no build"]},
+ {"kind":"core","cells":["Inline SVG net-worth chart|no chart library"]},
+ {"kind":"store","cells":["site/|deployed static output"]}]},
+
+{"out":"~/Documents/Code/quotestreak/architecture.svg","title":"Quotestreak Architecture","accent":"#a83a5b","rows":[
+ {"kind":"client","cells":["Web play.html","iOS","macOS"]},
+ {"kind":"core","cells":["game.js|multiple choice + 10s speed round"]},
+ {"kind":"ext","cells":["quotes.json|272 entries","i18n/ + locales/"]},
+ {"kind":"store","cells":["localStorage streak"]}]},
+
+{"out":"~/Documents/Code/sparkjar/architecture.svg","title":"Sparkjar Architecture","accent":"#c2861c","rows":[
+ {"kind":"client","cells":["Web app.html","iOS","macOS","watchOS"]},
+ {"kind":"core","cells":["api/ + functions/|JWT auth, ideas, votes, comments"]},
+ {"kind":"ext","cells":["AI enrichment","daemon/"]},
+ {"kind":"store","cells":["Supabase (migrations/)"]}]},
+
+{"out":"~/Documents/Code/talli/architecture.svg","title":"Talli Architecture","accent":"#1f6fb2","rows":[
+ {"kind":"client","cells":["Web public/","iOS","macOS"]},
+ {"kind":"core","cells":["api/ + worker/|Cloudflare Workers"]},
+ {"kind":"ext","cells":["data/|benefit rules","i18n/"]},
+ {"kind":"store","cells":["talli.heyitsmejosh.com"]}]},
+
+{"out":"~/Documents/Code/voxprint/architecture.svg","title":"Voxprint Architecture","accent":"#8c2f4a","rows":[
+ {"kind":"client","cells":["iOS app","macOS app","echo.heyitsmejosh.com"]},
+ {"kind":"core","cells":["WhisperKit|on-device transcription, no network"]},
+ {"kind":"ext","cells":["StoreKit paywall|Echo.storekit"]},
+ {"kind":"store","cells":["Local transcript history"]}]},
+
+{"out":"~/Documents/Code/wordroot/architecture.svg","title":"Wordroot Architecture","accent":"#7a4a1e","rows":[
+ {"kind":"client","cells":["web/","iOS app","landing/"]},
+ {"kind":"core","cells":["Etymology tree + cognate links|Latin / Greek / PIE"]},
+ {"kind":"ext","cells":["pipeline/|dictionary + etymology build","i18n/"]},
+ {"kind":"store","cells":["Bundled JSON dataset"]}]},
+
+{"out":"~/Documents/Code/homeward/docs/architecture.svg","title":"Homeward Architecture","accent":"#2e7d5b","rows":[
+ {"kind":"client","cells":["Web|Next.js 16 static export","iOS|SwiftUI + supabase-swift"]},
+ {"kind":"core","cells":["lib/|posts, edit-token links, no accounts"]},
+ {"kind":"store","cells":["Supabase|Postgres + Storage"]}]},
+
+{"out":"~/Documents/Code/roost/architecture.svg","title":"Roost Architecture","accent":"#1f6fb2","rows":[
+ {"kind":"client","cells":["Web (Vite)|index.html + src/"]},
+ {"kind":"core","cells":["Listing search + currency/locale layer"]},
+ {"kind":"ext","cells":["Nominatim (place search)","OpenStreetMap (streets)"]},
+ {"kind":"store","cells":["dist/|static deploy"]}]},
+
+{"out":"~/Documents/Code/canlii-app/architecture.svg","title":"CanLII App Architecture","accent":"#1d4f8c","rows":[
+ {"kind":"client","cells":["iOS app","web/ wrapper"]},
+ {"kind":"core","cells":["api/|serverless proxy, keeps API key server-side"]},
+ {"kind":"ext","cells":["CanLII public API"]}]}
+]

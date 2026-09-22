@@ -8,7 +8,7 @@ description: Audit app icons across all Xcode projects in ~/Documents/Code (1024
 Run `~/.claude/skills/icon-audit/audit.sh` and report the table.
 
 ## Interpreting results
-- **NO PNG** — iconset empty; ASC will show the grid placeholder. Add a 1024×1024 PNG (or Icon Composer `.icon` file) and upload a new build.
+- **NO PNG** — iconset empty; ASC will show the grid placeholder. Use the `icon-creator` skill to generate a placeholder 1024×1024 PNG into the AppIcon.appiconset, or replace with a real design, then upload a new build.
 - **has alpha** — iOS App Store rejects alpha in the 1024 marketing icon. Flatten: `sips -s format jpeg in.png --out t.jpg && sips -s format png t.jpg --out in.png` (or re-export without alpha).
 - **not 1024x1024** — resize with `sips -z 1024 1024`.
 

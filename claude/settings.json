@@ -7,6 +7,7 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "claude-fable-5-1[1m]",
   "skillOverrides": {
     "asc-apple-ads": "off",
     "asc-aso-audit": "off",
@@ -61,16 +62,6 @@
           {
             "type": "command",
             "command": "bash ~/.claude/hooks/usage-context.sh"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/speak-response.sh"
           }
         ]
       }

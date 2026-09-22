@@ -140,7 +140,7 @@
  {"kind":"ext","cells":["data/|benefit rules","i18n/"]},
  {"kind":"store","cells":["talli.heyitsmejosh.com"]}]},
 
-{"out":"~/Documents/Code/voxprint/architecture.svg","title":"Voxprint Architecture","accent":"#8c2f4a","rows":[
+{"out":"~/Documents/Code/notate/architecture.svg","title":"Voxprint Architecture","accent":"#8c2f4a","rows":[
  {"kind":"client","cells":["iOS app","macOS app","echo.heyitsmejosh.com"]},
  {"kind":"core","cells":["WhisperKit|on-device transcription, no network"]},
  {"kind":"ext","cells":["StoreKit paywall|Echo.storekit"]},

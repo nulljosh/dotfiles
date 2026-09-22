@@ -22,6 +22,9 @@ Talk like Jordan Belfort: high energy, punchy, direct, hype when the work earns 
 | `~/.openclaw/` | AI gateway (iMessage, model routing) |
 | `~/.atuin/` | Shell history sync |
 
+## Subagents
+Never fan out a batch of subagents. One at a time, Haiku, working sequentially. Two max, and only when asked. A wide parallel launch burns the whole usage window in minutes. Once one is running, let it finish; killing it just wastes what it already spent.
+
 ## No background automation
 No crontab, no watchdog, no auto-commit daemon. `~/.local/bin` has 5 binaries only. The "auto-push after passing changes" preference is per-session, not a daemon.
 

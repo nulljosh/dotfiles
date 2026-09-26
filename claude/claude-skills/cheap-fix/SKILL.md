@@ -25,6 +25,10 @@ If the task needs multi-file reasoning, tracing a bug across the codebase, match
 
 Check what's actually installed before picking: `ollama list` and `curl -s localhost:8000/v1/models` (oMLX, if running).
 
+**Empty Ollama model list = restart, not missing models.** Models live on the LaCie drive (`~/.ollama/models -> /Volumes/LaCie/ollama-models`). If `ollama serve` started before the drive mounted, `/api/tags` returns `[]` even though the blobs are there. Check `ls /Volumes/LaCie`, then `brew services restart ollama` and re-query (2026-09-25). Always put `-m`/timeouts on these calls, since a cold Ollama can hang a foreground command.
+
+**Samantha (Turing) is not a cheap-fix model.** She's a 0.5B tool picker that answers over notes, and she isn't registered in Ollama unless someone ran `ollama create samantha -f turing/Modelfile`. She can't write edits. Use llama3.1:8b, or oMLX Qwen3.5-9B for plain text.
+
 - **Structured/tool-call tasks** (anything opencode or an agent loop needs to call as a function): use a model confirmed to emit real OpenAI-format `tool_calls`, not text pretending to be one. Test first with a dummy tool schema — see Verification below. `llama3.1:8b` on Ollama is confirmed working as of 2026-09-04; Qwen models (both on oMLX and Ollama) were tested and emit broken/text-only tool-call syntax — don't use them for tool-calling paths without re-testing.
 - **Plain text generation tasks** (write a description, bump a string, generate a one-liner) that YOU apply via Edit — model doesn't need real tool-calling here, any chat-capable local model works. Qwen-Coder writes better code/text than Llama if you're just taking its text output and applying it yourself.
 - Never assume a model's tool-calling works because a config flag says `tool_call: true`. That flag is a claim, not a fact — test it.
@@ -47,6 +51,7 @@ Confirmed good fits, cheapest to run first:
 - **package.json `description`**: pull the real README intro, have the model write one line from it. Never invent from the name alone.
 - **package.json `keywords`**: generate 3-5 from the description you already wrote. Cheap follow-on once descriptions exist.
 - **Version bumps**: a plain string edit (`1.0.0` → `1.0.1`), model or not — doesn't even need one, just do it directly.
+- **Empty GitHub repo descriptions**: most of the fleet has no package.json, so scan with `gh repo view --json description` per repo instead. Feed the README intro to the model, apply with `gh repo edit --description`, then re-read to verify.
 - **GitHub repo description/topics sync**: mirror what you just wrote into package.json onto the actual GitHub repo page (`gh repo edit --description`). Verify with `gh repo view --json description` after — `gh` edits fail silently in ways that leave stale text.
 
 Checked and already fine, don't bother: alt text on images, debug `console.log`/`debugger` leftovers, GitHub topics (already set fleet-wide as of 2026-09-04).

@@ -1,10 +1,10 @@
 ---
-description: Manage a work queue across conversations — `/work <project> [task]` targets one repo under ~/Documents/Code and starts on it (optionally on one named task); `/work start [filter]` triages and dispatches pending tasks (PDFs in ~/Downloads, roadmap.md items); `/work stop [filter]` shelves this conversation's unfinished tasks back into roadmap.md; `/work dump [text]` ingests pasted brain dumps into roadmaps/wiki then starts working them. Replaces the old /tasks, /stash, and /braindump commands.
+description: Manage a work queue across conversations — `/work <project> [task]` targets one repo under ~/Documents/Code and starts on it (optionally on one named task); `/work start [filter]` triages and dispatches pending tasks (PDFs in ~/Downloads, roadmap.md items); `/work stop [filter]` shelves this conversation's unfinished tasks back into roadmap.md; `/work dump [text]` ingests pasted brain dumps into roadmaps/wiki then starts working them; `/work notes [filter]` executes Apple Notes as tasks, one by one. Replaces the old /tasks, /stash, and /braindump commands.
 ---
 
 **Always run in lean mode**: go straight for the most-likely file via targeted grep/find, batch independent tool calls, no broad exploration, no recap at end. Each fork inherits this lean posture.
 
-Mode: if the first word of "$ARGUMENTS" is `start`, `stop`, or `dump`, that's the mode and the rest is a filter (`start`/`stop`: case-insensitive substring match against filename/task text; empty = all) or the braindump text itself (`dump`). **Anything else → mode is `start` and the whole of "$ARGUMENTS" is the target spec** (see Target resolution) — never ask which mode. Empty "$ARGUMENTS" → `start` with no filter.
+Mode: if the first word of "$ARGUMENTS" is `start`, `stop`, `dump`, or `notes`, that's the mode and the rest is a filter (`start`/`stop`: case-insensitive substring match against filename/task text; empty = all) or the braindump text itself (`dump`). **Anything else → mode is `start` and the whole of "$ARGUMENTS" is the target spec** (see Target resolution) — never ask which mode. Empty "$ARGUMENTS" → `start` with no filter.
 
 **With a filter**: work on that one matched group only — one fork, no parallel blast. Use this to limit scope: `/work epiphany`, `/work start invoice.pdf`, `/work spark`. If a *text* filter matches more than one group, pick the highest-priority match and say so — don't silently expand scope. (An ambiguous *project name* is different: ask, per Target resolution #4.)
 
@@ -77,6 +77,14 @@ Mode: if the first word of "$ARGUMENTS" is `start`, `stop`, or `dump`, that's th
 10. **Confirm (done by each fork for its own group)**: commit the roadmap/README/CLAUDE.md updates for that group's repo — `git diff` each file first and confirm every hunk is yours from this run, stage those paths explicitly (never `git add -A`), and never `git checkout`/`git restore` a file to "tidy" it (that silently discards uncommitted work you can't recover). Then end the fork with one terse summary: changes made, verification results, what got imported into the project doc. This summary arrives as that fork's own completion notification — there is no combined end-of-run summary from the orchestrator.
 
 11. **Wrap up (main thread)**: once every dispatched fork/agent from step 7 has reported in, re-run `~/.claude/scripts/usage.sh` and invoke the `wrapup` skill once. Skip it — and say so in one line — if step 0's gate stopped the run, or if usage is now ≥90%. If no groups were dispatched at all (nothing pending), skip silently.
+
+## notes — bang out Apple Notes as executive functions
+
+1. **Read**: Dump every note headless via `osascript` (name, id, folder, body, modification date). Filter by the rest of "$ARGUMENTS" if given. Skip the Recently Deleted folder.
+2. **Triage**: Each note becomes one or more concrete actions (reply, book, buy, research, code change in a repo under `~/Documents/Code`, calendar event via calendar-ingest). Pure reference notes are skipped, not executed. Order: quickest wins first.
+3. **Execute** one at a time, sequentially, no fan-out (one Haiku subagent max for code work). Follow the CLI-first ladder in `~/CLAUDE.md`. Anything outward-facing (sending messages, email, purchases, posting) gets a one-line confirm first.
+4. **Mark**: After an action is done and verified, prepend `DONE <date>: <what was done>` to that note's body. Blocked items get `BLOCKED: <reason>` and move on. Fully done notes go to a `Done` folder (create if missing); never delete.
+5. **Report**: One line per note: done, blocked, or skipped.
 
 ## stop — shelve unfinished work
 

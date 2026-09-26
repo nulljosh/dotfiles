@@ -1,6 +1,6 @@
 ---
 name: notes-cleanup
-description: Scan Apple Notes.app and tidy it up — merge notes that share a header/title into one, delete empty or junk notes, fix obvious formatting. Use when the user says "clean up my notes", "organize notes", or "/notes-cleanup". Does not file content into project roadmaps (see the ingest skill for that).
+description: Scan Apple Notes.app and tidy it up: merge notes with similar headers into one, delete empty or junk notes, fix spelling and grammar, and add missing context to terse notes. Use when the user says "clean up my notes", "organize notes", or "/notes-cleanup". Does not file content into project roadmaps (see the ingest skill for that).
 ---
 
 # notes-cleanup
@@ -17,10 +17,11 @@ Headless only — read/write Notes.app via `osascript`, never UI-script it (per 
      end repeat
    end tell
    ```
-2. Group by header (first line / `name of n`), case-insensitive, trimmed.
-3. For each group with >1 note: merge bodies into the oldest note (append newer content under a `---` divider), then delete the duplicates. Skip merging notes that live in different folders unless the user says otherwise.
+2. Group by header (first line / `name of n`), case-insensitive, trimmed. Also group *similar* headers (same topic, typos, plurals, "Todo"/"To do", "Joshua Tree ideas"/"JT ideas"); list fuzzy groups for a yes/no before merging.
+3. For each group with >1 note: merge bodies into the oldest note (append newer content under a `---` divider), dedupe repeated lines, then delete the duplicates. Skip merging notes that live in different folders unless the user says otherwise.
 4. Delete notes that are empty or whitespace-only.
-5. Report what was merged/deleted before doing it if the list is long (>10 notes) — this is destructive.
+5. Polish every surviving note: fix spelling, grammar and punctuation; expand shorthand into full sentences; add a one-line context header when the note is cryptic (what it's for, which project under `~/Documents/Code`, date from modification date). Keep the user's meaning and voice, never invent facts, no em dashes. Write back with `set body of note id "..." to "<html>"` (Notes bodies are HTML; keep `<div>`/`<br>` structure, keep checklists and links).
+6. Report what was merged/deleted before doing it if the list is long (>10 notes) — this is destructive.
 
 ## Deleting/merging in Notes.app
 

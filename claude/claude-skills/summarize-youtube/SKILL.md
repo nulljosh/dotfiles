@@ -1,11 +1,20 @@
 ---
 name: summarize-youtube
-description: Summarize a YouTube video from a URL argument by fetching its transcript via yt-dlp. Use when asked to summarize, recap, or "tldr" a YouTube video/link. Optionally implements what the video describes when --implement is passed or requested in the same message — never by default.
+description: Summarize a YouTube video or a whole playlist from a URL argument by fetching transcripts via yt-dlp. Use when asked to summarize, recap, or "tldr" a YouTube video, link, or playlist. Optionally implements what the video describes when --implement is passed or requested in the same message — never by default.
 ---
 
 # Summarize a YouTube video
 
-Invoked as `/summarize-youtube <youtube-url> [--implement]`.
+Invoked as `/summarize-youtube <youtube-url-or-playlist-url> [--implement]`.
+
+## Playlists
+If the URL contains `list=`, expand it first, then run the single-video workflow per video:
+```
+yt-dlp --flat-playlist --print "%(id)s|%(title)s" <playlist-url>
+```
+Summarize each video (short TL;DR + 3-5 bullets each), then finish with one synthesis
+paragraph across the whole playlist. Over 10 videos: do the first 10, list the rest by title,
+and say so. Videos with no captions get one line saying so, not a guess.
 
 ## Workflow
 1. Check `yt-dlp` is available: `which yt-dlp`. If missing, install it

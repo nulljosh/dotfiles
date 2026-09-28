@@ -22,6 +22,11 @@ One version = one specific flaw fixed, rendered, measured, shown. Joshua's eye i
 ## Ledger
 `/Volumes/LaCie/lipsync/face-versions.tsv`: version, date, change, bench total, Joshua's grade, his words. Read it first: it says what's been tried.
 
+## Pick the right tool first
+- Live replies in a browser (landing page, Turing's Mac app): a real-time avatar API, not our pipeline. Simli is under 1 cent a minute (PCM16 16 kHz in, WebRTC video out, `simli-client`); HeyGen LiveAvatar lite about $0.10 a minute. Joshua Tree's worker mints the session token (`/api/avatar/session`, off until SIMLI_API_KEY and SIMLI_FACE_ID are set).
+- One-off hero clips: a lip-sync render (LatentSync free on HF, sync.so lipsync-2 about $2.40 a minute, Higgsfield Speak about $8.40 a minute and failed twice).
+- Inside the kernel (no WebRTC, no GPU): this skill's pipeline, frames the OS already knows how to show.
+
 ## What we learned (don't relearn)
 - Loudness-only mouth picking caps at D: mouth follows volume, not words. Measure mouth shapes and target each sound (v23).
 - Frame-to-frame jumping reads as "photos stapled together" (v25-v26). Keep a continuous base; swap only the mouth (v27 B).

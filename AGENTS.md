@@ -1,1 +1,1 @@
-/Users/joshua/Documents/Code/dotfiles/CLAUDE.md
+CLAUDE.md

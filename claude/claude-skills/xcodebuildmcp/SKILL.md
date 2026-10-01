@@ -15,8 +15,8 @@ re-run in a loop without shelling out to `xcodebuild`/`simctl` by hand.
 - **Generate final App Store screenshots** (specific device sizes, multiple
   locales) → still use the `appstore-screenshots` skill (fastlane snapshot).
   XcodeBuildMCP is for the dev loop, not App Store asset pipelines.
-- Quick one-off screenshot with no MCP tools loaded → the `ios-simulator`
-  skill's raw `xcrun simctl` workflow still works as a fallback.
+- Quick one-off screenshot with no MCP tools loaded → raw
+  `xcrun simctl io booted screenshot` still works as a fallback.
 
 ## Workflow
 1. `ToolSearch` for `mcp__XcodeBuildMCP__` to load the tool schemas (they're

@@ -38,7 +38,8 @@
     "wrap-up": "off",
     "asc-submission-health": "off",
     "asc-shots-pipeline": "off",
-    "pixelmator": "off"
+    "pixelmator": "off",
+    "roadmap-prune": "off"
   },
   "hooks": {
     "UserPromptSubmit": [

@@ -7,7 +7,7 @@ Structure hygiene, not code quality. Work like a lazy senior dev: confirm before
 
 ## Arguments
 
-Optional: a path to one repo. Default: current repo. For a fleet-wide pass, see `fleet-beautify` instead — this skill is single-repo.
+Optional: a path to one repo. Default: current repo. For a fleet-wide pass, see `lint` in fleet-wide mode instead — this skill is single-repo.
 
 ## What to check, in order
 

@@ -1,6 +1,6 @@
 ---
 name: lint
-description: Clean up the codebase — remove dead code, simplify over-complicated logic, fix style inconsistencies, and tidy up anything that's just noise. Use when asked to lint, clean up, or tidy the code, or invoked as /lint.
+description: Clean up code in one repo or fleet-wide across ~/Documents/Code: remove dead code, debug leftovers, junk files, simplify over-complicated logic, fix style noise. Use when asked to lint, clean up, tidy or beautify the code, "the whole codebase", "all my apps", or invoked as /lint or /fleet-beautify.
 ---
 
 Clean up the codebase. Not a bug hunt, not a security audit — just making the code smaller, cleaner, and easier to read. Work like a lazy senior dev: delete more than you add.

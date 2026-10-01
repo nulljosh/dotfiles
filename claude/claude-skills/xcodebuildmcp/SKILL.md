@@ -1,6 +1,6 @@
 ---
 name: xcodebuildmcp
-description: Build, run, debug, and UI-test iOS/macOS apps (echo, brief, nimble, epiphany) via the XcodeBuildMCP server instead of raw xcodebuild/simctl. Use when asked to build, run, fix a build error, or drive the simulator for one of these apps.
+description: Build, run, debug, and UI-test iOS/macOS apps under ~/Documents/Code via the XcodeBuildMCP server instead of raw xcodebuild/simctl. Use when asked to build, run, fix a build error, or drive the simulator for one of them.
 ---
 
 # XcodeBuildMCP

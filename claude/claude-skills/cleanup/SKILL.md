@@ -1,6 +1,6 @@
 ---
 name: cleanup
-description: Free disk space hard — mole deep clean + Xcode/dev cache purge. Use when disk is low, the user asks for a quick cleanup, or invokes /cleanup.
+description: Disk space only, not code or repos. Free disk space hard: mole deep clean + Xcode/dev cache purge. Use when disk is low, the user asks to free space, or invokes /cleanup.
 ---
 
 # /cleanup — reclaim disk space

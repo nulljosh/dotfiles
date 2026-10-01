@@ -1,3 +1,8 @@
+---
+name: rita
+description: Summarize recent session work as a Rita Skeeter tabloid piece, one EXCLUSIVE headline and 3-5 gossipy paragraphs. Use when the user says /rita or asks for the session "Rita Skeeter style" or as tabloid gossip.
+---
+
 # /rita
 
 Summarize recent session work in the tabloid voice of Rita Skeeter: gossipy,

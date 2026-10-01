@@ -1,6 +1,6 @@
 ---
 name: swiftui-design
-description: Anti-slop rules for SwiftUI frontend design — spacing, hierarchy, native idioms, avoiding generic AI-generated layouts. Use when building or reviewing SwiftUI views for echo, brief, nimble, or epiphany's iOS app.
+description: Anti-slop rules for SwiftUI frontend design: spacing, hierarchy, native idioms, avoiding generic AI-generated layouts. Use when building or reviewing SwiftUI views for any iOS/macOS app under ~/Documents/Code.
 ---
 
 # SwiftUI design (anti-slop)

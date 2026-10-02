@@ -14,3 +14,4 @@ total=$(echo "$out" | tail -1 | awk '{print $(NF-1), $NF}')
 [ -f face-versions.tsv ] || printf 'version\tdate\tchange\tbench\tgrade\tjoshua\n' > face-versions.tsv
 printf '%s\t%s\t%s\t%s\t\t\n' "$N" "$(date +%F)" "$WHAT" "$total" >> face-versions.tsv
 echo "sheet: $L/v$N-sheet.png  video: $L/samantha-v$N.mp4"
+python3 "$(dirname "$0")/graph.py" >/dev/null

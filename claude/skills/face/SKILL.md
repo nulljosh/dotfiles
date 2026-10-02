@@ -29,6 +29,12 @@ One version = one specific flaw fixed, rendered, measured, shown. Joshua's eye i
 - One-off hero clips: a lip-sync render (LatentSync free on HF, sync.so lipsync-2 about $2.40 a minute, Higgsfield Speak about $8.40 a minute and failed twice).
 - Inside the kernel (no WebRTC, no GPU): this skill's pipeline, frames the OS already knows how to show.
 
+## Napkin math (2026-10-02, Seedance 2.5 on the Higgsfield API)
+- Rates: about $0.14 a second at 480p, $0.33 at 720p, $0.56 at 1080p. A 5 s meme clip is 70 cents, an 8 s talking clip is $1.12 to $4.50.
+- A movie: 90 minutes is 5,400 s, so one take of every shot is $756 at 480p, $1,780 at 720p, $3,000 at 1080p. Real shots need 3 to 5 takes (we needed 2 to 3 rolls per keeper), so a feature is roughly $4k to $15k in renders.
+- Live replies in the OS: no. One 8 s reply is about $1.12 and takes 5 to 10 minutes to come back, so it cannot be live, and 100 replies a day is $112. Live is a real-time avatar API (Simli, under a cent a minute, WebRTC in the browser over the kernel; Joshua Tree's worker has the `/api/avatar/session` hook stubbed). Pre-rendered frames stay for the kernel itself, which only plays frames fetched over HTTP.
+- 1080p is wasted on the kernel: it draws the face at 300 px from 320 px frames, and 720p already out-resolves a phone. Spend the difference on re-rolls, which is where the quality comes from (same prompt, different take: 65 to 75 on the bench).
+
 ## What we learned (don't relearn)
 - Stitching reads as South Park. The viseme pipeline (face_visemes) pastes a mouth patch onto a base face; Joshua graded it C and called it a South Park character, even once the plan correlated 0.87 with the words (v3, 2026-10-02). A whole-face neural render of the same line was B+ raw (v1) and real-looking with audio (v4). Use the pipeline only where a render per sentence is impossible (inside the kernel, live replies).
 - Per-frame percentile mouth measure inverts on some faces. Marking the darkest 12% of the mouth box per frame always marks the same number of pixels, so counting the rows they span read Joshua's open mouth (dark pixels bunched inside) as closed and his closed mouth (scattered shadows) as open; words scored 0 with the plan backwards. Fixed in face_visemes with one clip-wide dark threshold and dark area as openness.

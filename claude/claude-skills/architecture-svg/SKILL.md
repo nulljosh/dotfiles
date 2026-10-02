@@ -46,6 +46,16 @@ white background, inline styles only, Apple node-and-line look.
 the entry for a repo and edit rather than starting cold. `reference/template.svg` is the raw
 hand-authored shape if you need to do something the renderer can't.
 
+## Agent graphs
+
+Same renderer, for workflows instead of layers: who does what, in what order, and where a
+person decides. Add `"arrows": true` for direction, `kind: "gate"` for the human approval box
+(ink outline, the one bold box), and `"loop": {"from": 5, "to": 0, "label": "next item"}` for a
+dashed back-edge up the right margin. Several cells in one row means those jobs run side by
+side; a chain of steps goes in one cell, never a fake fan-out. Live ones:
+`turing/docs/agent-graph.svg`, `joshuatree/docs/loop-graph.svg`, `epiphany/docs/ship-graph.svg`.
+The graph-run skill draws one per run.
+
 ## Refreshing everything
 
 ```sh

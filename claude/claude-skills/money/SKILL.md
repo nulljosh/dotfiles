@@ -1,7 +1,33 @@
 ---
 name: money
-description: Walk the current project line by line and rate each function by actual user-facing value (high/medium/low/none). Use when the user wants a value audit, wants to find dead/low-value code, or invokes /money.
+description: Lay out the money plan for the current project (price, rail, cost, next step, million/billion/trillion tiers), update its MONEY.md and the GTM.md row, and grill Joshua on anything unknown. `/money audit` runs the old function-by-function value audit instead.
 ---
+
+# /money, the money plan for this project
+
+Default job: say how THIS project makes money, write it down, and ask about what is still a guess. Not a code audit. For the old function audit, run `/money audit [path]` (its steps are at the bottom).
+
+## Steps
+
+1. **Find the project.** Root of the cwd repo. Read its `MONEY.md`, `README.md`, `CLAUDE.md`, `roadmap.md`, and its row in `~/Documents/Code/GTM.md` (grep the name in the app table, the pricing table and the ASC ledger).
+2. **Check the real state, never memory.** App Store price: `asc pricing current --app <ASC id>`. Web rail: grep for Stripe in the repo. Running costs: grep for paid APIs (ElevenLabs, Workers AI, Resend, Anthropic) and any caps on them. Hardware: only for Joshua Tree, see `/jt-monetization`.
+3. **Write the plan** in this shape, short, house voice, no em dashes, no emojis:
+   - **Price and rail**: what a customer pays and where. House rule: every app is free or $1. Stripe $1 on web, App Store $0.99 on iPhone and Mac, paid upfront is a full unlock, no IAP on top, no tips, subscriptions or tiers.
+   - **What is actually sold**: the one thing the dollar pays for. If it is content someone else owns, say so and name the risk.
+   - **Cost to serve**: per-user and monthly worst case, and the cap that bounds it.
+   - **Where we are**: dated lines of what shipped that moves money.
+   - **Next**: the single next money step.
+   - **Million, billion, trillion**: three tiers, each one concrete sentence, no invented user counts or revenue ("no number yet" beats a made-up one).
+4. **Update the files as you go.** Write `MONEY.md` in the repo (create it if missing), fix the project's row in `GTM.md` (price, rail, status, why), commit each by exact path and push. Keep both in sync; the ledger and the repo must not disagree.
+5. **Grill, don't guess.** Anything you could not verify, or any call that is Joshua's (price, what is sold, a new rail, a copyright or privacy risk, a conflict with the $1 rule), becomes a question. Use AskUserQuestion, 1 to 4 questions, one recommended option first, only the ones whose answer changes what you write. If everything is verified and consistent, skip the grill and say so in one line. Never ask what a probe can answer.
+6. **Report** in under 8 lines: price, rail, what is sold, cost cap, next step, what you asked or changed.
+
+## Don'ts
+- Don't change a live price or touch Stripe or App Store Connect without Joshua saying so in chat. Laying out the plan is free; flipping it is not.
+- Don't propose tiers, tips, subscriptions or anything above $1.
+- Don't invent numbers.
+
+## `/money audit [path]` (the old function audit)
 
 Scan the project rooted at the current working directory and produce a value audit. If the user passes a path/glob argument (e.g. `/money src/components`), scope the whole scan to that instead of the full repo — keeps large-repo runs cheap.
 

@@ -29,15 +29,24 @@ def _css(p):
         c = p[n]
         r.append(f".tint-{n}{{fill:{p.get(n + '_fill', c)};fill-opacity:{.2 if n == 'gold' else .15};stroke:{c};stroke-opacity:.6}}"
                  f".ln-{n}{{stroke:{c};stroke-opacity:.6;fill:none}}.f-{n}{{fill:{c}}}.t-{n}{{fill:{c}}}"
-                 f".dash-{n}{{stroke:{c};fill:none;stroke-dasharray:4 3}}")
+                 f".dash-{n}{{stroke:{c};fill:none;stroke-dasharray:4 3}}"
+                 f".st-{n}{{fill:{p.get(n + '_fill', c)};fill-opacity:{.24 if n == 'gold' else .12};stroke:{c};stroke-opacity:.4}}"
+                 f".flow-{n}{{stroke:{c};fill:none;stroke-width:2.2;stroke-linecap:round;stroke-dasharray:.1 15}}"
+                 f".gl-{n}{{flood-color:{c};flood-opacity:.5}}")
+    r.append(f".hollow{{fill:none;stroke:{p['ink']};stroke-width:1.2}}")
     return "".join(r)
 
 def head(w, h):
     return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" '
             f'font-family="-apple-system,BlinkMacSystemFont,\'SF Pro Text\',\'Helvetica Neue\',Helvetica,Arial,sans-serif">'
-            f'<style>{_css(LIGHT)}@media (prefers-color-scheme:dark){{{_css(DARK)}}}</style>'
+            f'<style>{_css(LIGHT)}@media (prefers-color-scheme:dark){{{_css(DARK)}}}'
+            f'[class^=flow-]{{animation:flow 1.4s linear infinite}}@keyframes flow{{to{{stroke-dashoffset:-15.1}}}}'
+            f'.march{{animation:march .9s linear infinite}}@keyframes march{{to{{stroke-dashoffset:-14}}}}'
+            f'@media (prefers-reduced-motion:reduce){{[class^=flow-],.march{{animation:none}}}}</style>'
             f'<defs><filter id="sh" x="-20%" y="-30%" width="140%" height="190%"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="rgb(60,40,20)" flood-opacity=".13"/></filter>'
-            f'<filter id="sh1" x="-10%" y="-20%" width="120%" height="170%"><feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="rgb(60,40,20)" flood-opacity=".12"/></filter></defs>'
+            f'<filter id="sh1" x="-10%" y="-20%" width="120%" height="170%"><feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="rgb(60,40,20)" flood-opacity=".12"/></filter>'
+            + "".join(f'<filter id="gl-{n}" x="-30%" y="-70%" width="160%" height="240%"><feDropShadow dx="0" dy="0" stdDeviation="4" class="gl-{n}"/></filter>' for n in NAMES)
+            + '</defs>'
             f'<rect class="bg" width="{w}" height="{h}"/>')
 
 def card(x, y, w, h, r, cls="glass", shadow="sh"):

@@ -52,7 +52,8 @@ Liquid Glass on the Orchard tokens, defined once in `glass.py`: translucent card
 paper, capsule checks and services, a bright inner edge, one soft warm shadow, SF type. No
 gradients. Dark mode is a media query inside the SVG, so a README `<img>` follows the viewer's
 theme. `fleet.py` draws the whole-codebase map (spec in its docstring; the live one is
-`~/Documents/Code/fleet.svg`, spec at `runs/2026-10-02-fleet-map/fleet.json`). QA a change by
+`~/Documents/Code/fleet.svg`, spec at `runs/2026-10-02-fleet-map/fleet.json`). Edges carry flowing dots (CSS `stroke-dashoffset`, off under `prefers-reduced-motion`, left as a dotted line in renderers that don't animate); the loop edge marches.
+`fleet.py` paints App Store state when the spec has a `status` map (leaf live, gold pending, clay rejected, hollow draft, glow on pending and rejected); `python3 fleet-status.py <fleet.json>` refreshes it from live `asc` calls, one app at a time. QA a change by
 screenshotting the SVG in headless Chrome with `--blink-settings=preferredColorScheme=0` (dark) and `=1` (light).
 
 ## Agent graphs

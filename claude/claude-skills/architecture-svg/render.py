@@ -74,14 +74,23 @@ def main():
         if len(cs) == 1 and len(ncs) == 1 and cs[0] == ncs[0]:
             d = d[:-2] + [f'M{cs[0]} {bot}V{top}']
     o.insert(2, f'<path class="ln" stroke-linejoin="round" d="{"".join(d)}"/>')   # under the cards
-    if spec.get("arrows"):
+    if spec.get("arrows"):   # dots travel each edge; reduced-motion leaves them as a dotted texture
+        k = 0
+        for i in range(len(rows) - 1):
+            y, h, cs = centers[i][:3]
+            ny, _, ncs = centers[i + 1][:3]
+            bot, mid = y + h, (y + h + ny) // 2
+            for c in cs:
+                for t in ncs:
+                    o.insert(3, f'<path class="flow-{acc}" style="animation-delay:-{(k * .37) % 1.4:.2f}s" d="M{c} {bot}V{mid}H{t}V{ny}"/>')
+                    k += 1
         for ny, _, ncs, *_ in centers[1:]:
             o += [f'<path class="tip" d="M{c - 4} {ny - 6}L{c} {ny}L{c + 4} {ny - 6}z"/>' for c in ncs]
     if loop:  # dashed back-edge up the right margin: the "do it again" arrow
         fy, fh, _, _, fr = centers[loop["from"]]
         ty, th, _, _, tr = centers[loop["to"]]
         rx, a, b = W - 22, fy + fh // 2, ty + th // 2
-        o.append(f'<path class="dash-{acc}" d="M{fr} {a}H{rx}V{b}H{tr + 6}"/>')
+        o.append(f'<path class="dash-{acc} march" d="M{fr} {a}H{rx}V{b}H{tr + 6}"/>')
         o.append(f'<path class="f-{acc}" d="M{tr + 6} {b - 4}L{tr} {b}L{tr + 6} {b + 4}z"/>')
         o.append(f'<text class="t-{acc}" x="{rx - 6}" y="{(a + b) // 2}" font-size="10" text-anchor="middle" transform="rotate(-90 {rx - 6} {(a + b) // 2})">{esc(loop.get("label", ""))}</text>')
     o.append('</svg>')

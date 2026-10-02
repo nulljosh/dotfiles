@@ -1,13 +1,14 @@
 ---
-name: face-loop
-description: Iterate Samantha's talking-face animation one version at a time toward A+ (render, benchmark against a real person, contact sheet, send, log Joshua's grade). Use when the user says /face-loop, "next face version", "loop the mouth/animation", "until version 100", or grades a face video ("v32 is a C").
+name: face
+description: Iterate a talking face (Joshua's portfolio face, Samantha) one version at a time toward A+: render, bench against a real person, contact sheet, send, log Joshua's grade. Use when the user says /face, /face-loop, "next face version", "loop the mouth/animation", or grades a face video ("v5 is a B+").
 ---
 
-# face-loop
+# face
 
 One version = one specific flaw fixed, rendered, measured, shown. Joshua's eye is the grade; the benchmark only says where to look.
 
 ## The pieces (Joshua Tree repo; on branch feat/face-blend / PR 241 until merged)
+- Joshua's own face: `/Volumes/LaCie/lipsync/joshua/` (`render.sh` = Seedance 2.5 audio-driven render, `versions.tsv` = his ledger, `voice/` = clones and takes, `align-v2.json` for the v2 voice). Character folder `~/.samantha/characters/joshua/`.
 - `tools/gen/face_visemes.py <lipsync.mp4> <words.json> <speech.wav> <out.mp4>`: builds any sentence from one lip-synced render. Whole-sentence plan (Viterbi), continuous base video, feathered mouth+jaw patch, optical-flow in-betweens, head sway/tilt/nods riding the voice, real blinks (`BLINK_CLIP=` a same-framing clip that still blinks).
 - `tools/bench/face_bench.py [--align words.json] a.mp4 ...`: fluid, smooth, pops, steady, sync, rest, eyes, alive, head, whole, words. Calibrated on a real NASA interview close-up (`/Volumes/LaCie/lipsync/real-close.mp4`, public domain): a real person scores about B-.
 - Assets on the LaCie: `/Volumes/LaCie/lipsync/` (char18/talk.mp4 = v18 lip-synced render, eyes fixed; char16/talk.mp4 = same with blinks; test.wav + test-align.json = a sentence she never rendered).
@@ -23,11 +24,14 @@ One version = one specific flaw fixed, rendered, measured, shown. Joshua's eye i
 `/Volumes/LaCie/lipsync/face-versions.tsv`: version, date, change, bench total, Joshua's grade, his words. Read it first: it says what's been tried.
 
 ## Pick the right tool first
+- Fixed line, hero clip (a landing intro, a portfolio demo): render the whole face to the real audio in one pass. Seedance 2.5 on Higgsfield takes `audio_urls` through the developer API (`bytedance/seedance-2.5/reference-to-video`, portrait as `image_urls`, 480p, about $1.12 for 8 s). The audio must be a public URL (the portfolio site works). Joshua's v4 (2026-10-02) came out as real video, bench words 64 against a real person's 72. `/Volumes/LaCie/lipsync/joshua/render.sh` is the working call.
 - Live replies in a browser (landing page, Turing's Mac app): a real-time avatar API, not our pipeline. Simli is under 1 cent a minute (PCM16 16 kHz in, WebRTC video out, `simli-client`); HeyGen LiveAvatar lite about $0.10 a minute. Joshua Tree's worker mints the session token (`/api/avatar/session`, off until SIMLI_API_KEY and SIMLI_FACE_ID are set).
 - One-off hero clips: a lip-sync render (LatentSync free on HF, sync.so lipsync-2 about $2.40 a minute, Higgsfield Speak about $8.40 a minute and failed twice).
 - Inside the kernel (no WebRTC, no GPU): this skill's pipeline, frames the OS already knows how to show.
 
 ## What we learned (don't relearn)
+- Stitching reads as South Park. The viseme pipeline (face_visemes) pastes a mouth patch onto a base face; Joshua graded it C and called it a South Park character, even once the plan correlated 0.87 with the words (v3, 2026-10-02). A whole-face neural render of the same line was B+ raw (v1) and real-looking with audio (v4). Use the pipeline only where a render per sentence is impossible (inside the kernel, live replies).
+- Per-frame percentile mouth measure inverts on some faces. Marking the darkest 12% of the mouth box per frame always marks the same number of pixels, so counting the rows they span read Joshua's open mouth (dark pixels bunched inside) as closed and his closed mouth (scattered shadows) as open; words scored 0 with the plan backwards. Fixed in face_visemes with one clip-wide dark threshold and dark area as openness.
 - Loudness-only mouth picking caps at D: mouth follows volume, not words. Measure mouth shapes and target each sound (v23).
 - Frame-to-frame jumping reads as "photos stapled together" (v25-v26). Keep a continuous base; swap only the mouth (v27 B).
 - A frozen head with a moving mouth reads as a photo. Real talkers drift ~4% of frame height (v29).

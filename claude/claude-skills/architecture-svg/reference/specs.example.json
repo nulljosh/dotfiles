@@ -22,7 +22,7 @@
  {"kind":"ext","cells":["scripts/deploy.sh","header SVGs"]},
  {"kind":"store","cells":["_site/ + feed.xml"]}]},
 
-{"out":"~/Documents/Code/lec/architecture.svg","title":"LEC Architecture","accent":"#1f5fa8","rows":[
+{"out":"~/Documents/Code/homeroom/architecture.svg","title":"LEC Architecture","accent":"#1f5fa8","rows":[
  {"kind":"client","cells":["App (SwiftUI)|iOS + macOS, one target"]},
  {"kind":"core","cells":["LECKit|API.swift + Models.swift"]},
  {"kind":"ext","cells":["lecss.registerbc.ca|cookie auth (endpoints unverified)"]}]},

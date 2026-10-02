@@ -27,7 +27,7 @@ white background, inline styles only, Apple node-and-line look.
 ```json
 {"out":"~/Documents/Code/<repo>/architecture.svg",
  "title":"<Repo> Architecture",
- "accent":"#1f6fb2",
+ "accent":"clay",
  "rows":[
    {"kind":"client","cells":["Web","iOS","macOS"]},
    {"kind":"core","cells":["worker.js|the module doing the real work"]},
@@ -40,11 +40,20 @@ white background, inline styles only, Apple node-and-line look.
 - `|` splits a cell into stacked lines (label on top, detail under). Text shrinks to fit.
 - `kind` picks the styling: `client` neutral grey, `core`/`store` accent at 15% opacity,
   `ext` small muted chip.
-- `accent`: pick per repo. **Never purple or teal** (house rule).
+- `accent`: `clay` (default), `leaf` or `gold`, the Orchard colours from `nulljosh.github.io/tokens.css`. Old hex values fall back to clay. **Never purple or teal** (house rule).
 
 `reference/specs.example.json` holds the real specs for all 30 repos as of 2026-08-28 — copy
 the entry for a repo and edit rather than starting cold. `reference/template.svg` is the raw
 hand-authored shape if you need to do something the renderer can't.
+
+## Look
+
+Liquid Glass on the Orchard tokens, defined once in `glass.py`: translucent cards over cream
+paper, capsule checks and services, a bright inner edge, one soft warm shadow, SF type. No
+gradients. Dark mode is a media query inside the SVG, so a README `<img>` follows the viewer's
+theme. `fleet.py` draws the whole-codebase map (spec in its docstring; the live one is
+`~/Documents/Code/fleet.svg`, spec at `runs/2026-10-02-fleet-map/fleet.json`). QA a change by
+screenshotting the SVG in headless Chrome with `--blink-settings=preferredColorScheme=0` (dark) and `=1` (light).
 
 ## Agent graphs
 

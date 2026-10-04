@@ -69,6 +69,7 @@ The rename only changes the App Store listing name — not the on-device display
 - **Machine-wide docs**: `~/Documents/Code/CLAUDE.md` reference table row.
 - **Memory**: update the `project_app_renames` entry with the new name, date, what got touched, and the rejected candidates (useful later for trademark/name-release disputes).
 - **GitHub repo**: `gh repo rename <new> --repo nulljosh/<old>` (confirm first — changes the clone URL; then `git remote set-url origin https://github.com/nulljosh/<new>.git`).
+- **Local folder**: `mv ~/Documents/Code/<old> ~/Documents/Code/<new>` in the same pass as the repo rename, never one without the other. Then `grep -rIl "Documents/Code/<old>\|nulljosh/<old>"` across the repo, `~/Documents/Code/CLAUDE.md`, memory and skills and fix every hit, including any live `/loop` prompt and `docs/LOOP-HANDOFF.md`. If the store name is still locked or unconfirmed, do the repo and folder anyway once Joshua has picked the name, and note in the repo's CLAUDE.md what still carries the old name.
 - **Vercel project**: project names rarely need changing (the domain/alias is separate) — confirm before assuming a no-op.
 - **Cloudflare DNS**: only if the subdomain itself contains the old name (`oldname.heyitsmejosh.com`).
 - **Commit + push + deploy.**

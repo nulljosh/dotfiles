@@ -70,13 +70,13 @@
  {"kind":"core","cells":["content.md|single chapter source, shared"]},
  {"kind":"store","cells":["Static site + bundled copy"]}]},
 
-{"out":"~/Documents/Code/healstack/architecture.svg","title":"Healstack Architecture","accent":"#2e7d5b","rows":[
+{"out":"~/Documents/Code/intake/architecture.svg","title":"Healstack Architecture","accent":"#2e7d5b","rows":[
  {"kind":"client","cells":["Web","iOS","macOS"]},
  {"kind":"core","cells":["Dose log + wiki + interaction checker|tolerance / washout tracking"]},
  {"kind":"ext","cells":["functions/|Pages Functions","Supabase auth"]},
  {"kind":"store","cells":["localStorage (offline)|+ CSV export"]}]},
 
-{"out":"~/Documents/Code/lexly/architecture.svg","title":"Lexly Architecture","accent":"#1f6fb2","rows":[
+{"out":"~/Documents/Code/tonchi/architecture.svg","title":"Tonchi Architecture","accent":"#1f6fb2","rows":[
  {"kind":"client","cells":["Web app/","iOS","macOS"]},
  {"kind":"core","cells":["content/ + school/|courses, lessons, quizzes"]},
  {"kind":"ext","cells":["functions/|Pages Functions","Supabase auth"]},

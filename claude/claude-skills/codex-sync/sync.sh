@@ -19,11 +19,13 @@ for l in "$XS"/*; do [ -L "$l" ] && [ ! -e "$l" ] && { rm "$l"; echo "prune $(ba
 # 2. AGENTS.md -> CLAUDE.md, same dir. Codex global AGENTS.md -> ~/CLAUDE.md.
 link_agents() { # $1 = AGENTS.md path, $2 = CLAUDE.md path
   a=$1; c=$2; [ -f "$c" ] || return 0
+  # relative when siblings: an absolute /Users/... link breaks on CI checkouts (node --test dies on it)
+  [ "$(dirname "$a")" = "$(dirname "$c")" ] && c=$(basename "$c")
   if [ -L "$a" ]; then [ "$(readlink "$a")" = "$c" ] || { ln -sfn "$c" "$a"; echo "relink $a"; }
   elif [ -f "$a" ]; then
-    if cmp -s "$a" "$c"; then ln -sfn "$c" "$a"; echo "link $a (was identical copy)"
+    if cmp -s "$a" "$2"; then ln -sfn "$c" "$a"; echo "link $a (was identical copy)"
     elif [ "$FORCE" = "--force" ]; then ln -sfn "$c" "$a"; echo "FORCE link $a"
-    else echo "DRIFT $a differs from $c (rerun with --force to replace)"; fi
+    else echo "DRIFT $a differs from $2 (rerun with --force to replace)"; fi
   else ln -s "$c" "$a"; echo "link $a"; fi
 }
 link_agents "$HOME/AGENTS.md" "$HOME/CLAUDE.md"

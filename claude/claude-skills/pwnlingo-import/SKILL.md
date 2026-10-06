@@ -5,32 +5,27 @@ description: Import real captured Duolingo exercises from pwnlingo's scripts/les
 
 # pwnlingo-import
 
-pwnlingo (~/Documents/Code/pwnlingo) farms Duolingo and logs every exercise it
+pwnlingo (~/Documents/Code/cruise) farms Duolingo and logs every exercise it
 solves to `scripts/lessons.jsonl` (prompt/answer/choices/type per row). Lexly
-(~/Documents/Code/lexly) is our own Duolingo clone with hand-authored course
+(~/Documents/Code/tonchi) is our own Duolingo clone with hand-authored course
 JSON at `content/courses/*.json` + `content/catalog.json`. This skill moves
 real exercise data from the former into the latter.
 
 ## Run it
 
 ```
-node ~/Documents/Code/lexly/scripts/import-pwnlingo-exercises.mjs
-node ~/Documents/Code/lexly/tools/validate-catalog.js
+node ~/Documents/Code/tonchi/scripts/import-pwnlingo-exercises.mjs
+node ~/Documents/Code/tonchi/tools/validate-catalog.js
 ```
 
 The importer:
-- reads `pwnlingo/scripts/lessons.jsonl`
-- keeps only `translate` / `select` / `assist` rows with non-empty
-  prompt+answer+choices (other types — `gapFill`, `completeReverseTranslation`,
-  `character*` — are frequently empty in the source log; not worth cleaning)
-- dedupes by prompt+answer
-- chunks into lessons of 10 / units of 5 lessons, matching Lexly's course shape
-- writes `content/courses/<track>.json` and adds/updates the entry in
-  `content/catalog.json` under the `languages` category
-
-Track code → course mapping lives in the `TRACKS` const at the top of the
-script (currently `tlh`→Klingon, `yi`→Yiddish, `id`→Indonesian). Add a new
-entry there when pwnlingo starts farming a language Lexly doesn't have yet.
+- reads `pwnlingo/scripts/lessons.archive.jsonl` then `lessons.jsonl`
+- maps each row's `course` (pwnlingo track code: ja, ko, hi, ar, fr...) to a Lexly course id
+- match rows become `match` (pairs, or parsed from old "x is y" narration); rows with choices
+  become `translation` (or `cloze` when the prompt has ___); multi-word typed answers become
+  `sentence` with two same-script distractor chips
+- dedupes, caps at 500 per course, skips courses with under 10 drills
+- appends units with ids `pw1..` to the EXISTING hand-written course; a re-run replaces only `pw*` units
 
 ## After running
 

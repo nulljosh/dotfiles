@@ -17,6 +17,7 @@ Headless only — read/write Notes.app via `osascript`, never UI-script it (per 
      end repeat
    end tell
    ```
+1b. Images: `plaintext` shows attachments as `￼`. Export them with `~/.claude/skills/ingest/notes-attachments.sh <dir>` and Read each one before judging a note empty or merging it. Never rewrite the body of a note with attachments (`set body` drops them). To dump all notes, loop `folders` then `notes of f`; `container of n` errors.
 2. Group by header (first line / `name of n`), case-insensitive, trimmed. Also group *similar* headers (same topic, typos, plurals, "Todo"/"To do", "Joshua Tree ideas"/"JT ideas"); list fuzzy groups for a yes/no before merging.
 3. For each group with >1 note: merge bodies into the oldest note (append newer content under a `---` divider), dedupe repeated lines, then delete the duplicates. Skip merging notes that live in different folders unless the user says otherwise.
 4. Delete notes that are empty or whitespace-only.

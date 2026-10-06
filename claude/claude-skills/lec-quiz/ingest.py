@@ -3,7 +3,7 @@
 import json, sys, re
 from pathlib import Path
 
-PACKS = Path.home() / "Documents/Code/lexly/content/courses"
+PACKS = Path.home() / "Documents/Code/tonchi/content/courses"
 
 
 def norm(q):

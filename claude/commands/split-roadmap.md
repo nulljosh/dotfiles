@@ -31,6 +31,8 @@ By task nature — the starting pick before the budget ladder below can downgrad
 
 If a task doesn't obviously fit one of the three, say which two you're weighing and why you picked the one you did — don't default silently.
 
+**`[Local]`: the free fourth lane, any budget.** Items tagged `[Local]` (docs drift, renames, version bumps, README/changelog lines, checkbox ticks, one-file text fixes) never get a Claude agent. Run them inline, one at a time, in the repo: `opencode run -m ollama/qwen3:8b "/no_think <quoted item + file to touch>"`. Then the main session reads the diff and runs the project's own check before committing; reject and requeue if it's wrong, don't hand-fix it (that spends the quota the lane exists to save). qwen3:8b on Ollama emits real tool calls (tested 2026-10-01); llama3.1:8b narrated edits instead of making them, and Qwen on oMLX is chat-only; 16GB RAM fits one ~5GB model at a time, so run `ollama ps` first and never run two. Anything needing more than one file or real judgment is not `[Local]`: retag it Sonnet.
+
 **The budget ladder** (direct standing instruction, so `/loop` can run continuously without ever hard-stopping): before every launch, read the session's own usage-hook line (`session X% · weekly_all Y% · weekly_scoped[Fable] Z%`, present in context each turn) and let it downgrade the picks above:
 - `weekly_all` **< 60%**: no downgrade, use the task-nature pick as-is, 3 agents fine.
 - `weekly_all` **60-80%**: still 3 agents, but only use Opus when the task-nature pick genuinely needs it (not just "would be nice"); Fable stays available for real subtle-risk items.

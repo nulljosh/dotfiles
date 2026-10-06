@@ -33,7 +33,7 @@ for name, app in IDS.items():
         print(f"skip {name}: {r.stderr.strip()[:80] or r.stdout[:80]}"); continue
     kinds = [kind(i["attributes"].get("appVersionState") or i["attributes"].get("appStoreState")) for i in items]
     if kinds:
-        status[name] = max(kinds, key=RANK.get)
+        status[name] = "live" if "live" in kinds else max(kinds, key=RANK.get)
         print(f"{name}: {status[name]}  {[(i['attributes']['platform'], i['attributes']['versionString'], i['attributes'].get('appVersionState')) for i in items]}")
 spec["status"] = status
 json.dump(spec, open(spec_path, "w"), indent=1)

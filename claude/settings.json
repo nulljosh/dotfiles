@@ -7,6 +7,7 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "sonnet",
   "skillOverrides": {
     "asc-apple-ads": "off",
     "asc-aso-audit": "off",
@@ -63,7 +64,9 @@
     "clangd-lsp@claude-plugins-official": false,
     "ponytail@ponytail": true,
     "claude-security@claude-plugins-official": true,
-    "cloudflare@cloudflare": true
+    "cloudflare@cloudflare": true,
+    "stripe@claude-plugins-official": true,
+    "cc-plugin-you-should-know@builtin": true
   },
   "extraKnownMarketplaces": {
     "ponytail": {
@@ -80,12 +83,14 @@
     }
   },
   "effortLevel": "low",
+  "advisorModel": "opus",
   "tui": "fullscreen",
   "voice": {
     "enabled": true,
     "mode": "hold"
   },
   "skipDangerousModePermissionPrompt": true,
+  "skipWorkflowUsageWarning": true,
   "theme": "auto",
   "agentPushNotifEnabled": true,
   "voiceEnabled": true

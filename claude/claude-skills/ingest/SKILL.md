@@ -8,6 +8,7 @@ Pure capture pass: read Notes.app, file everything, delete the source. No code i
 ## Steps
 
 1. **List**: run `~/.claude/skills/ingest/notes-list.sh [folder]` — the folder comes from `$ARGUMENTS` (`/ingest Ideas`), default `Notes`. It prints `<path>\t<noteId>` per note, one plaintext file per note (line 1 = name, rest = body) in a tmp dir.
+1b. **Attachments**: list/plaintext drops images (they show as `￼`). Run `~/.claude/skills/ingest/notes-attachments.sh ~/Documents/Code/notes/attachments/<today>` to export every image (reads NoteStore.sqlite read-only and copies from the Media folder; AppleScript `save attachment` always fails, Notes is sandboxed). Read each PNG and file what it says, citing the PNG path. Link attachments have no file: get them with `get URL of attachment 1 of note "<title>"`. Never delete a note whose attachments weren't exported and read.
 2. **Empty check**: if the list is empty, say so and stop — nothing else to do.
 3. **Classify + file each note** — same three-way split and filing rules as `/work dump` (`~/.claude/commands/work.md` steps 2-3), with its "trivial → banged out and committed" path removed entirely:
    - **task** (actionable, has or implies a target project) → that project's roadmap file under a `## Ingested <today's date>` heading as `- [ ]` lines, reusing that heading if it already exists (create the file with a `# <Repo> Roadmap` header if absent; README.md/CLAUDE.md fallback if no roadmap file exists in that repo)

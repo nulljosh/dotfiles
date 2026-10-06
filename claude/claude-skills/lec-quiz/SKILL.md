@@ -5,7 +5,7 @@ description: Work through LEC / D2L Pre-Calculus 12 quizzes in the user's own lo
 
 # LEC quiz + content capture
 
-Course: Pre-Calculus 12, LECSS Section 53 (Jeremy Ratcliffe), D2L OU 184298 (198889 is the old Dhiman section). The LEC app (~/Documents/Code/lec) is the preferred way in: it signs in, coaches, and logs every submission.
+Course: Pre-Calculus 12, LECSS Section 53 (Jeremy Ratcliffe), D2L OU 184298 (198889 is the old Dhiman section). The LEC app (~/Documents/Code/homeroom) is the preferred way in: it signs in, coaches, and logs every submission.
 Portals: `lecss.registerbc.ca` (enrollment) and `langleysd35.onlinelearningbc.com` (D2L/WCLN, OU 153403).
 
 ## Ground rule: use the user's real Chrome
@@ -57,13 +57,13 @@ Write one file per quiz to `$CLAUDE_JOB_DIR/tmp/` (or `/tmp`) shaped like:
 python3 ~/.claude/skills/lec-quiz/ingest.py <capture.json> [--pack precalc12]
 ```
 
-Merges into `~/Documents/Code/lexly/content/courses/<pack>.json`: creates the unit/lesson if
+Merges into `~/Documents/Code/tonchi/content/courses/<pack>.json`: creates the unit/lesson if
 missing, dedupes by question text, assigns ids in the existing
 `<pack>_u<N>_l<M>_<i>` scheme, types as `mathChoice` when `choices` is present else `math`.
 It prints what it added. Then:
 
 ```
-cd ~/Documents/Code/lexly && git add -A && git commit -m "precalc12: unit N quiz content" && git push
+cd ~/Documents/Code/tonchi && git add -A && git commit -m "precalc12: unit N quiz content" && git push
 ```
 
 The catalog already lists `precalc12` under the School category — no catalog edit needed unless

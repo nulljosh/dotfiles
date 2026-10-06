@@ -33,6 +33,7 @@ The annoying part is a human opening a dashboard and clicking around. So don't m
 | Cloudflare | dash.cloudflare.com/profile/api-tokens |
 | Vercel | vercel.com/account/tokens |
 | Supabase | supabase.com/dashboard/project/_/settings/api |
+| Resend | resend.com/api-keys (Create API key, pick Sending access, name it `<project>-<purpose>`) |
 
 ## Store it where the code reads it
 
@@ -48,3 +49,11 @@ Grep the repo for the var name to see how it's consumed, then store to match:
 - If the key was a tracked blocker, update memory/roadmap.
 
 ponytail: no key-vault abstraction or per-provider scripts — a table + ladder is the whole skill; providers differ too much to unify.
+
+## Wizard notes (proven on Resend, 2026-09-28)
+
+- **Chrome closed or extension "not connected":** `open -a "Google Chrome"`, wait ~25s, retry `tabs_context_mcp`.
+- **Logged-out console:** if it offers "Log in with GitHub/Google" for an EXISTING account, click it; the live provider session finishes the OAuth with no password typed. Never sign up for a new account.
+- **Never read the key into the transcript.** Click the modal's copy button, then pipe the clipboard straight to the store: `pbpaste | tr -d '\n' | npx wrangler secret put NAME` (check `grep -q '^re_'`-style prefix first, print only "ok"). Clear it after: `printf '' | pbcopy`. A test send uses `K="$(pbpaste)" node script` with output passed through `sed 's/re_[A-Za-z0-9_]*/[key]/g'`.
+- **Least privilege:** Resend "Sending access", not Full access; one key per project, named for it.
+- **Prove it:** send a real test to the user's own address through the same code path, not a curl of a different payload.

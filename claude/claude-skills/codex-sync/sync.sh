@@ -9,6 +9,11 @@ mkdir -p "$XS"
 # 1. skills: symlink each Claude skill into Codex (resolve nested symlinks to the real dir)
 for d in "$CS"/*/; do
   n=$(basename "$d"); src=$(cd "$d" && pwd -P); dst="$XS/$n"
+  # Codex already discovers ~/.agents/skills. Do not expose shared skills twice.
+  if [ -f "$HOME/.agents/skills/$n/SKILL.md" ]; then
+    shared_src=$(cd "$HOME/.agents/skills/$n" && pwd -P)
+    if [ "$src" = "$shared_src" ]; then echo "shared skill $n (already discoverable)"; continue; fi
+  fi
   if [ -L "$dst" ]; then [ "$(readlink "$dst")" = "$src" ] || { ln -sfn "$src" "$dst"; echo "relink skill $n"; }
   elif [ -e "$dst" ]; then echo "skip skill $n (real dir in codex)"
   else ln -s "$src" "$dst"; echo "link skill $n"; fi

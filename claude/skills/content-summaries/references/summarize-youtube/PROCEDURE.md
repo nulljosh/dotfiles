@@ -49,3 +49,9 @@ and say so. Videos with no captions get one line saying so, not a guess.
   other change. No separate tooling needed.
 - Without the flag, stop at the summary and note: "pass --implement to apply
   this."
+
+## Many videos / rate limits (learned 2026-10-11)
+- Caption downloads hit HTTP 429 after about 20-60 requests; use `--sleep-requests 4 --sleep-subtitles 6`, one detached job, no parallel jobs, and wait it out.
+- No captions: transcribe the audio locally with `mlx_whisper` (see youtube-playlists skill). Empty or looping output means no speech; report that.
+- Don't summarize long videos from head and tail only; sample evenly across the transcript.
+- A whole Watch Later or large playlist is the youtube-playlists skill's job (sort, summarize to iCloud, clean up).

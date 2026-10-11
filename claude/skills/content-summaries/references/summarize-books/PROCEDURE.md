@@ -6,7 +6,7 @@ model: haiku
 
 # summarize-books
 
-Photographed book chapters in iCloud → `summary.md` per chapter → merged per book → synced to books site → badges added → committed and pushed.
+Photographed book chapters in iCloud → `summary.md` + `chapter.pdf` (full pages) per chapter → merged per book (`-summary.md` and full `<slug>.pdf`) → synced to books site → badges added → committed and pushed.
 
 ## Usage
 ```
@@ -30,9 +30,12 @@ Photographed book chapters in iCloud → `summary.md` per chapter → merged per
 4. Write a thorough `summary.md`: chapter heading (`# Chapter N: Title`), section-by-section breakdown, key definitions/concepts, examples/tables (markdown), key takeaways. For a page with a photo/illustration/diagram (not just text), add a one-sentence description inline or under a small "Photos in this chapter" list (e.g. "Photo: Jobs waving to a crowd at the iPad 2 launch, March 2011") — text description only, never save/embed the image.
 5. Write to `<chapter_folder>/summary.md`.
 6. **Validate before anything downstream runs**: file must have a `#` heading, be >1500 chars, and be ≥250 chars per source image in that chapter. Fail → don't write it, note the failure, move on. This bar exists because the previous 300-char-flat check caused real data loss on 2026-08-17: a budget-starved run wrote four ~700-byte stubs for AI in Business ch 11-14, they passed, and step 7 deleted the source HEICs — those chapters are gone, unrecoverable without re-photographing. Deleting originals is irreversible, so the gate must be stricter than "did it write something": a genuinely short chapter still clears 250 chars/image, a token-starved stub won't.
-7. Only after a successful write, delete the source HEICs (and any JPGs converted from them, not pre-existing original JPGs): `rm <chapter_folder>/*.HEIC`.
+7. **Build the chapter PDF (full pages, not a summary).** Every page image goes into `<chapter_folder>/chapter.pdf`, in filename order, upright, at readable quality (separate from the shrunk Read copies): `find "$dir" -maxdepth 1 -iname "*.HEIC" -print0 | sort -z | while IFS= read -r -d '' f; do sips -Z 2200 -r -90 -s format jpeg -s formatOptions 80 "$f" --out "$scratch/$(basename "${f%.*}").jpg"; done` then `magick "$scratch"/*.jpg "$dir/chapter.pdf"` (`img2pdf` also fine). Page count of the PDF must equal the source image count (`mdls -name kMDItemNumberOfPages` or `magick identify`), else don't proceed.
+8. Only after the summary AND `chapter.pdf` both validate, delete the source HEICs (and any JPGs converted from them, not pre-existing original JPGs): `rm <chapter_folder>/*.HEIC`. The PDF is now the permanent full copy of the chapter.
 
 **3. Merge into book summary.** Concatenate all `chapter_dir/summary.md` (sorted) into `<book_folder>/<slug>-summary.md`, chapters separated by `---`. Slug = book name lowercased, non-alphanumeric → `-`, trimmed.
+
+**3b. Merge the full book PDF.** Join every `chapter_dir/chapter.pdf` (sorted the same way as the summaries) into `<book_folder>/<slug>.pdf`: `magick`/`pdfunite chapter1.pdf chapter2.pdf ... <slug>.pdf` (`pdfunite` from poppler if installed, else `python3 -c` with `pypdf`). That file is the entire book; the summary is just the readable layer on top. Keep the chapter PDFs so a new chapter only needs a re-merge. Stays in iCloud, never committed to the repo.
 
 **4. Sync to Supabase (auth required since 2026-08-19).** Summaries are private, per-account rows in the shared spark project (`tjsxsqlxjmanwvmywwvw`, table `bookrank_summaries`, owner-only RLS) — no longer committed, `summaries/` is gitignored and history purged, the repo is a staging dir only. Owner: trommatic@icloud.com.
 ```bash

@@ -1,6 +1,6 @@
 ---
 name: ai-service-credits
-description: Check AI-service balances or prepare a requested prepaid credit top-up.
+description: Check AI-service balances (ElevenLabs, Higgsfield API dollars and Higgsfield app credits) or prepare a prepaid top-up. Use for /credits, /topup, "higgsfield balance", "top up higgsfield", "how many credits".
 ---
 
 # Ai Service Credits

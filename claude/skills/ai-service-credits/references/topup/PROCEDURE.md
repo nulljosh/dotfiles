@@ -5,6 +5,8 @@ description: Top up a prepaid AI service (Higgsfield developer API balance, Higg
 
 # topup
 
+**Default: the Higgsfield API account** (open.higgsfield.ai/billing, Add funds, $5 minimum, presets up to $1,000, card already on file). It is pay as you go with no plan. Never send Joshua to higgsfield.ai pricing; every option there is a subscription, and he refuses plans. Free money on the API page: $15 for verifying a business email.
+
 Claude never pays. It gets Joshua to the Pay button with the balance checked and the amount picked, then verifies after he clicks.
 
 ## Which account

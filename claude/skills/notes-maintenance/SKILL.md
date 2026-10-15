@@ -1,6 +1,6 @@
 ---
 name: notes-maintenance
-description: Tidy Apple Notes, file notes into project roadmaps and maintain personal journal entries.
+description: Tidy or consolidate Apple Notes while preserving screenshots and links, file notes into project roadmaps, and maintain personal journal entries.
 ---
 
 # Notes Maintenance

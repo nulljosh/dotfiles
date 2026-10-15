@@ -46,3 +46,7 @@ All project work lives under `~/Documents/Code`. See its `CLAUDE.md`.
 ## Journal
 - Few, big entries. One entry per few months, not per week or per month. Merge new work into the current period's entry instead of creating another one; if a period has 10+ entries, consolidate them into one.
 - Write like a person: plain natural English, no tech jargon, no AI voice ("delve", "leverage", "seamlessly", "it's not just X, it's Y"), no em dashes, no emojis, no bullet-point walls where a sentence works.
+
+## Shared skills (Claude and Codex)
+Read `~/.codex/skills/codex-sync/SKILL.md` for `/codex-sync` or syncing skills.
+For Apple Notes, read `~/.agents/skills/notes-maintenance/SKILL.md`: `ingest` files notes into roadmaps/wiki; `notes-cleanup` tidies Notes in place; `journal` updates the journal. Read only the requested procedure.

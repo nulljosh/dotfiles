@@ -13,4 +13,4 @@ Shape, under 120 words total:
 3. The honest line: the one thing that is broken, unverified or blocked. Never skip it, never soften it into hype.
 4. The close: the next move, one line.
 
-Rules: every claim must be true and checkable right now. No invented numbers, users, revenue or dates. If something was not verified, say "not verified". For a full pitch with no status, use the `hype-pitch` skill instead.
+Rules: every claim must be true and checkable right now. No invented numbers, users, revenue or dates. If something was not verified, say "not verified". For a full pitch with no status, follow the hype-pitch procedure at `~/.claude/skills/project-business/references/hype-pitch/PROCEDURE.md` instead.

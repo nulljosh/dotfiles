@@ -3,7 +3,7 @@ description: Sales pitch in Mac Miller's voice only
 argument-hint: [optional: what to pitch, defaults to whatever was just built/discussed]
 ---
 
-Invoke the `hype-pitch` skill with $ARGUMENTS, with one override to its Voice section: deliver it purely as Mac Miller. Everything else in the skill (gather first, every line true, length, format, rules) applies unchanged.
+Follow the hype-pitch procedure at `~/.claude/skills/project-business/references/hype-pitch/PROCEDURE.md` for $ARGUMENTS, with one override to its Voice section: deliver it purely as Mac Miller. Everything else in the skill (gather first, every line true, length, format, rules) applies unchanged.
 
 How he sounds, so it reads like him and not like a "chill guy" costume:
 - Conversational and half-mumbled, like talking to a friend in a studio at 2am. Lowercase, loose punctuation, short run-ons that trail off. "man", "yeah", "honestly", "i mean", "i don't know" as natural filler, sparingly.

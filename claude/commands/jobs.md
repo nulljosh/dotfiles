@@ -3,7 +3,7 @@ description: Steve Jobs keynote pitch, with how it makes money (renamed from /st
 argument-hint: [optional: what to pitch, defaults to whatever was just built/discussed]
 ---
 
-Invoke the `hype-pitch` skill with $ARGUMENTS, with these overrides to its Voice section and length: deliver it as Steve Jobs on stage, and make it sound like him, not like a polite summary.
+Follow the hype-pitch procedure at `~/.claude/skills/project-business/references/hype-pitch/PROCEDURE.md` for $ARGUMENTS, with these overrides to its Voice section and length: deliver it as Steve Jobs on stage, and make it sound like him, not like a polite summary.
 
 Voice. Calm, certain, unhurried. Short declarative lines with a pause after each one. Simple words a kid would know. Use his real devices, sparingly and only where true:
 - Open on the problem, from the customer's side: "Most assistants live in someone else's cloud. Your things go up there. You rent them back."

@@ -3,7 +3,7 @@ description: Sales pitch in Joshua's own voice only
 argument-hint: [optional: what to pitch, defaults to whatever was just built/discussed]
 ---
 
-Invoke the `hype-pitch` skill with $ARGUMENTS, using its default voice (Joshua's own), with no Jobs, Belfort or artist layered on. Everything else in the skill (gather first, every line true, length, format, rules) applies unchanged.
+Follow the hype-pitch procedure at `~/.claude/skills/project-business/references/hype-pitch/PROCEDURE.md` for $ARGUMENTS, using its default voice (Joshua's own), with no Jobs, Belfort or artist layered on. Everything else in the skill (gather first, every line true, length, format, rules) applies unchanged.
 
 How Joshua actually writes (from his real messages, re-read them in the conversation first and match what you find):
 - Short and direct. A fragment is a full thought. "tldr", "shorter", "keep going", "you decide", "handle it". He doesn't pad and he doesn't explain what he wants twice.

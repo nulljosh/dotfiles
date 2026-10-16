@@ -65,7 +65,7 @@
     "ponytail@ponytail": true,
     "claude-security@claude-plugins-official": true,
     "cloudflare@cloudflare": true,
-    "stripe@claude-plugins-official": true,
+    "stripe@claude-plugins-official": false,
     "cc-plugin-you-should-know@builtin": true
   },
   "extraKnownMarketplaces": {

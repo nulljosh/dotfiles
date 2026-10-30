@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>dotfiles. The same shell on every Mac.</title>
+<title>dotfiles. One shell for every Mac.</title>
 <meta name="description" content="Shell and terminal config for macOS: zsh, fish, Ghostty and a Catppuccin Starship prompt. One clone, five symlinks, Intel and Apple silicon.">
 <meta name="theme-color" content="#eff1f5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#11111b" media="(prefers-color-scheme: dark)">
@@ -11,13 +11,14 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="dotfiles">
-<meta property="og:title" content="dotfiles. The same shell on every Mac.">
+<meta property="og:title" content="dotfiles. One shell for every Mac.">
 <meta property="og:description" content="zsh, fish, Ghostty and Starship. One clone, five symlinks.">
 <meta property="og:url" content="https://dotfiles.jaybulb.com/">
 <meta name="twitter:card" content="summary">
-<link rel="stylesheet" href="tokens.css">
-<link rel="stylesheet" href="landing.css">
-<script src="landing.js" defer></script>
+<link rel="stylesheet" href="tokens.css?v=4">
+<link rel="stylesheet" href="landing.css?v=4">
+<script src="landing.js?v=4" defer></script>
+<script src="hero-term.js?v=4" defer></script>
 </head>
 <body>
 
@@ -34,9 +35,13 @@
 
 <main id="top">
 <section class="hero" id="hero">
+  <div class="hero-bg" aria-hidden="true">
+    <div class="art"></div>
+    <div class="tty"><div class="tty-lines"></div></div>
+  </div>
   <div class="wrap center hero-copy">
     <p class="label">dotfiles &middot; shell and terminal config for macOS</p>
-    <h1>Same shell, every Mac<span class="dot">.</span></h1>
+    <h1>One shell for every Mac<span class="dot">.</span></h1>
     <p class="lead">zsh, fish, Ghostty and a Starship prompt in one repo. One clone, five symlinks, nothing to babysit.</p>
     <div class="cta">
       <a class="btn btn-solid" href="#install">Install</a>
@@ -44,34 +49,7 @@
     </div>
     <p class="fine">Intel and Apple silicon. MIT licensed.</p>
   </div>
-
-  <div class="demo-wrap reveal" id="demo">
-    <div class="stage">
-      <div class="art stage-art" aria-hidden="true"></div>
-      <figure class="win" aria-label="A Ghostty window running install.sh under the Starship prompt">
-        <div class="win-bar" aria-hidden="true"><i></i><i></i><i></i><span>fish ~/Documents/Code/dotfiles</span></div>
-<pre><span class="ps"><b class="u">joshua</b><b class="t">13:31</b><b class="d">~/D/Code/dotfiles</b><b class="g">main</b></span><span class="chev">&#x276F;</span> ./install.sh
-<span class="ok">linked:</span> ~/.config/fish/config.fish
-<span class="warn">backup:</span> ~/.zshrc <span class="dim">-&gt;</span> ~/.zshrc.bak
-<span class="ok">linked:</span> ~/.zshrc
-<span class="ok">linked:</span> ~/.config/ghostty/config
-<span class="ok">linked:</span> ~/.config/starship.toml
-<span class="ok">linked:</span> ~/.config/starship-terminal.toml
-<span class="dim">done. secrets files are NOT managed by this repo.</span>
-
-<span class="ps"><b class="u">joshua</b><b class="t">13:31</b><b class="d">~/D/Code/dotfiles</b><b class="g">main</b></span><span class="chev">&#x276F;</span> ll
-<span class="dim">drwxr-xr-x</span>  <span class="dir">fish</span>
-<span class="dim">drwxr-xr-x</span>  <span class="dir">ghostty</span>
-<span class="dim">drwxr-xr-x</span>  <span class="dir">starship</span>
-<span class="dim">drwxr-xr-x</span>  <span class="dir">zsh</span>
-<span class="dim">.rwxr-xr-x</span>  install.sh
-<span class="dim">.rw-r--r--</span>  README.md
-
-<span class="ps"><b class="u">joshua</b><b class="t">13:32</b><b class="d">~/D/Code/dotfiles</b><b class="g">main</b></span><span class="chev">&#x276F;</span> <span class="cur"></span></pre>
-      </figure>
-    </div>
-    <p class="demo-hint">The real prompt and the real installer, drawn in HTML.</p>
-  </div>
+  <i class="powerline" aria-hidden="true"></i>
 </section>
 
 <section class="band" id="features">
@@ -161,7 +139,7 @@ truncate_to_repo = <span class="v">true</span></pre></figure>
 
 <footer class="foot" id="footer">
   <div class="foot-top">
-    <div class="foot-brand"><img src="icon.svg" alt="" width="40" height="40"><b>dotfiles</b><p>The same shell on every Mac.</p></div>
+    <div class="foot-brand"><img src="icon.svg" alt="" width="40" height="40"><b><i class="dot">.</i>dotfiles</b><p>One shell for every Mac.</p></div>
     <nav class="foot-cols" aria-label="Footer">
       <div><p class="label">dotfiles</p><a href="#features">Configs</a><a href="#install">Install</a><a href="brand">Brand kit</a></div>
       <div><p class="label">Source</p><a href="https://github.com/nulljosh/dotfiles">GitHub</a><a href="https://github.com/nulljosh/dotfiles/blob/main/install.sh">install.sh</a><a href="https://github.com/nulljosh/dotfiles/blob/main/LICENSE">License</a></div>
@@ -171,6 +149,6 @@ truncate_to_repo = <span class="v">true</span></pre></figure>
   <div class="glyph-band" aria-hidden="true"><canvas class="glyph-canvas"></canvas></div>
   <p class="legal">&copy; 2026 Joshua Trommel &middot; MIT License</p>
 </footer>
-<script src="footer-band.js" defer></script>
+<script src="footer-band.js?v=4" defer></script>
 </body>
 </html>

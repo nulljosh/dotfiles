@@ -49,7 +49,7 @@ as a true circle 14% larger. Proportional, in the spirit of San Francisco. Built
 
 ## Voice
 
-Short, plain, concrete. Say what it does in the fewest words: "Same shell, every Mac." No emojis.
+Short, plain, concrete. Say what it does in the fewest words: "One shell for every Mac." One sentence, no commas, ends on the dot. No emojis.
 
 ## Files
 

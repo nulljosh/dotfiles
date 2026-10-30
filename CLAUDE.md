@@ -19,4 +19,13 @@ macOS shell and terminal config, installed as symlinks by `install.sh`.
 - `ghostty/config` -> `~/.config/ghostty/config`
 - `starship/starship.toml`, `starship/starship-terminal.toml` -> `~/.config/`
 - `landing/` -> https://dotfiles.jaybulb.com (Cloudflare Worker, `./deploy.sh`; needs `npx wrangler login`)
+- `brand/tokens.css` -> copied into `landing/` by `deploy.sh`; edit the brand copy, never `landing/tokens.css`
 - `scripts/gen_font.py` -> `landing/fonts/DotfilesSans-*.woff2` (needs fonttools, brotli)
+- `scripts/dither.py` -> `landing/art/*.png` (needs Pillow)
+
+## Site rules
+
+- Colours are Catppuccin: Latte page, Mocha page in dark mode, Mocha band and terminals in both. No other palette.
+- Headlines are one sentence, no commas, ending on the green dot.
+- Bump the `?v=` query on CSS and JS links in `landing/*.html` whenever those files change.
+- Art must be public domain; credit it in an HTML comment and in `scripts/dither.py`.

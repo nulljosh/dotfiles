@@ -44,8 +44,11 @@ as a true circle 14% larger. Proportional, in the spirit of San Francisco. Built
 
 - **Powerline stripe**: the four segments as one hard-stopped bar (`--powerline`), under the nav.
 - **Dot field**: a 14 px grid of 1.7 px dots in a segment colour, faded by a mask.
-- **Glyph band**: the repo's things (dot, prompt, fish, ghost, star, branch, folder) drawn as a halftone in segment colours.
+- **Glyph band**: the repo's things (dot, prompt, cursor, fish, ghost, star, branch, folder) as a halftone in segment colours, drifting left, the cursor blinking.
 - **Frame**: a 4 px blue rule down both window edges on wide screens.
+- **Engravings**: public domain art dithered to 1 bit (Atkinson), tinted a segment colour and cut into scanlines.
+  Janus in the hero (one config, two shells, two chips), Velazquez's Forge of Vulcan over the configs band.
+- **Hero terminal**: a full-bleed Mocha terminal that types the real setup under CRT scanlines.
 
 ## Voice
 

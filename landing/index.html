@@ -15,10 +15,10 @@
 <meta property="og:description" content="zsh, fish, Ghostty and Starship. One clone, five symlinks.">
 <meta property="og:url" content="https://dotfiles.jaybulb.com/">
 <meta name="twitter:card" content="summary">
-<link rel="stylesheet" href="tokens.css?v=4">
-<link rel="stylesheet" href="landing.css?v=4">
-<script src="landing.js?v=4" defer></script>
-<script src="hero-term.js?v=4" defer></script>
+<link rel="stylesheet" href="tokens.css?v=6">
+<link rel="stylesheet" href="landing.css?v=6">
+<script src="landing.js?v=6" defer></script>
+<script src="hero-term.js?v=6" defer></script>
 </head>
 <body>
 
@@ -35,8 +35,11 @@
 
 <main id="top">
 <section class="hero" id="hero">
+  <!-- Art, dithered by scripts/dither.py: the Bust of Janus (Vatican Museums) and Diego Velazquez, The Forge of Vulcan
+       (1630, Museo del Prado), both public domain via Wikimedia Commons. Janus looks both ways: one config, two shells. -->
   <div class="hero-bg" aria-hidden="true">
     <div class="art"></div>
+    <div class="engr janus" style="--img: url(art/janus.png)"></div>
     <div class="tty"><div class="tty-lines"></div></div>
   </div>
   <div class="wrap center hero-copy">
@@ -55,6 +58,7 @@
 <section class="band" id="features">
   <div class="band-head">
     <div class="art" aria-hidden="true"></div>
+    <div class="engr vulcan" style="--img: url(art/vulcan.png)" aria-hidden="true"></div>
     <div class="band-copy reveal">
       <p class="label">Four files, one setup</p>
       <h2>Your terminal, in a repo</h2>
@@ -149,6 +153,6 @@ truncate_to_repo = <span class="v">true</span></pre></figure>
   <div class="glyph-band" aria-hidden="true"><canvas class="glyph-canvas"></canvas></div>
   <p class="legal">&copy; 2026 Joshua Trommel &middot; MIT License</p>
 </footer>
-<script src="footer-band.js?v=4" defer></script>
+<script src="footer-band.js?v=6" defer></script>
 </body>
 </html>

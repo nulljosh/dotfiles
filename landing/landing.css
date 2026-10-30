@@ -5,6 +5,7 @@
 :root {
   /* film grain: white fractal noise, laid over every band surface */
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .28 0 0 0 -.06'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --scan: repeating-linear-gradient(to bottom, #000 0 2px, transparent 2px 4px);   /* scanlines for the engravings */
   --dots: radial-gradient(circle, var(--dot-c, var(--seg-blue)) 1.7px, transparent 2px) 0 0 / 14px 14px;
 }
 /* Dot field: the icon's dot grid, faded by a per-element mask so each crop reads differently */
@@ -53,6 +54,19 @@ h3 { font-size: 28px; line-height: 32px; font-weight: 600; letter-spacing: -.02e
 .hero::after { content: ""; position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(to bottom, color-mix(in srgb, var(--band) 94%, transparent) 0%, color-mix(in srgb, var(--band) 86%, transparent) 50%, color-mix(in srgb, var(--band) 30%, transparent) 74%, transparent 90%); }
 .hero-copy { position: relative; z-index: 2; }
+/* CRT scanlines over the whole hero terminal */
+.hero-bg::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(to bottom, rgba(17, 17, 27, .38) 0 1px, transparent 1px 3px); pointer-events: none; }
+
+/* Engravings: a dithered artwork (art/*.png, a 1-bit mask) tinted with a segment colour and cut into scanlines,
+   faded at the edges so copy can sit on it. Layers intersect: the art, the scanlines, the fade. */
+.engr { position: absolute; inset: 0; pointer-events: none; color: var(--eng-c, var(--seg-blue)); }
+.engr::before { content: ""; position: absolute; inset: 0; background: currentColor; opacity: var(--eng-o, .5);
+  -webkit-mask: var(--img) var(--eng-pos, center) / var(--eng-size, cover) no-repeat, var(--scan), var(--eng-fade, radial-gradient(ellipse at 50% 45%, #000 30%, transparent 75%));
+  -webkit-mask-composite: source-in, source-in;
+  mask: var(--img) var(--eng-pos, center) / var(--eng-size, cover) no-repeat, var(--scan), var(--eng-fade, radial-gradient(ellipse at 50% 45%, #000 30%, transparent 75%));
+  mask-composite: intersect; }
+.janus { --eng-c: var(--seg-mauve); --eng-o: .42; --eng-size: auto 108%; --eng-pos: center 20%; --eng-fade: radial-gradient(ellipse 46% 60% at 50% 34%, #000 35%, transparent 100%); }
+.vulcan { --eng-c: var(--seg-peach); --eng-o: .5; --eng-fade: radial-gradient(ellipse 70% 80% at 50% 50%, #000 30%, transparent 100%); }
 .hero .label, .hero .lead, .hero .fine { color: var(--band-sub); }
 .hero .dot { color: var(--seg-green); }
 .hero .btn-solid { background: var(--seg-blue); color: var(--term-crust); }
@@ -92,7 +106,7 @@ h3 { font-size: 28px; line-height: 32px; font-weight: 600; letter-spacing: -.02e
 /* The band: dot field beside the section head, then the four configs as ruled rows */
 .band { margin: var(--sp-8) clamp(0px, 3vw, 44px) 0; background: var(--grain), var(--band); color: var(--band-text); overflow: hidden; }
 .band .label { color: var(--band-sub); }
-.band-head { position: relative; text-align: center; padding: var(--sp-9) var(--sp-5); }
+.band-head { position: relative; text-align: center; padding: calc(var(--sp-9) * 1.6) var(--sp-5); overflow: hidden; }
 .band-head .art { position: absolute; inset: 0; background: none; --fade: radial-gradient(ellipse at 50% 50%, #000 10%, transparent 72%); }
 .band-copy { position: relative; }
 .band-copy h2 { font-size: clamp(48px, 8vw, 128px); line-height: .95; }

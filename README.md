@@ -29,7 +29,11 @@ brew install --cask font-jetbrains-mono-nerd-font ghostty
 
 ## Site
 
-`landing/` is the site, a Cloudflare Worker serving static files. `./deploy.sh` publishes it; `scripts/gen_font.py` rebuilds Dotfiles Sans, Inter (OFL) with every dot drawn as a circle.
+https://dotfiles.jaybulb.com is a Cloudflare Worker serving `landing/`. `./deploy.sh` copies the brand files in and publishes it (needs `npx wrangler login` once).
+
+- `brand/` - the brand kit: `tokens.css` (the single source for colour, type and space), `mark.svg`, `BRAND.md`. Live at `/brand`.
+- `scripts/gen_font.py` - builds Dotfiles Sans: Inter (OFL) with every dot redrawn as a circle.
+- `scripts/dither.py` - dithers the public domain art (Janus, Velazquez's Forge of Vulcan) into the masks in `landing/art/`.
 
 ## Secrets
 

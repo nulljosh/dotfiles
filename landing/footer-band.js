@@ -1,7 +1,8 @@
 // Footer band: the things in this repo as glyphs (the dot, the prompt and its cursor, fish, Ghostty's ghost,
 // Starship's star, a git branch, a folder), rasterised once per size and theme and redrawn as a halftone: one dot per
 // grid cell, sized by how much of the glyph covers it, in the four prompt segment colours from the page's theme.
-// It lives a little: the cursor blinks, a slow swell runs along the row, and the faint field twinkles.
+// It lives a little: the row drifts left in a seamless loop, the cursor blinks, a slow swell runs along it, and the
+// faint field twinkles.
 // Still under reduced motion; the loop only runs while the band is on screen.
 (function () {
   var band = document.querySelector('.glyph-band'), canvas = band && band.querySelector('canvas');
@@ -43,7 +44,7 @@
 
   GLYPHS[2].blink = true;   // the cursor
 
-  var c, w, h, dots = [], pitch, x0, step;
+  var c, w, h, dots = [], pitch, period, step, SPEED = 0.036;   // px per ms
 
   // Sample the glyph mask once per size and theme into a flat list of dots.
   function build() {
@@ -54,30 +55,32 @@
     c = canvas.getContext('2d');
     c.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // Lay the glyphs out in one centred row, repeating the set until the band is full.
-    var size = h * 0.72, n = Math.max(GLYPHS.length, Math.ceil(w / (size * 1.3)) + 1);
-    pitch = size * 1.3; x0 = (w - (n - 1) * pitch) / 2;
-    var mask = document.createElement('canvas'); mask.width = w; mask.height = h;
+    // Lay the glyphs out in a strip one full set wider than the band, so it can scroll and wrap without a seam.
+    // The pitch is a whole number of grid steps, so the dot grid repeats exactly with the set.
+    step = Math.max(6, Math.round(h / 26));
+    var size = h * 0.72;
+    pitch = Math.round(size * 1.3 / step) * step; period = GLYPHS.length * pitch;
+    var sw = Math.ceil((w + period) / step) * step, n = Math.ceil(sw / pitch) + 1;
+    var mask = document.createElement('canvas'); mask.width = sw; mask.height = h;
     var m = mask.getContext('2d');
     for (var i = 0; i < n; i++) {
       var g = document.createElement('canvas'); g.width = g.height = 100;   // own layer, so a glyph's cut-outs stay inside it
       var gc = g.getContext('2d'); gc.fillStyle = '#fff'; GLYPHS[i % GLYPHS.length](gc);
-      m.save(); m.translate(x0 + i * pitch - size / 2, (h - size) / 2); m.scale(size / 100, size / 100);
+      m.save(); m.translate(i * pitch + (pitch - size) / 2, (h - size) / 2); m.scale(size / 100, size / 100);
       m.drawImage(g, 0, 0); m.restore();
     }
-    var px = m.getImageData(0, 0, w, h).data;
+    var px = m.getImageData(0, 0, sw, h).data;
     var css = getComputedStyle(document.documentElement), dark = matchMedia('(prefers-color-scheme: dark)').matches;
     var FALLBACK = dark ? ['#89b4fa', '#fab387', '#cba6f7', '#a6e3a1'] : ['#1e66f5', '#fe640b', '#8839ef', '#40a02b'];   // if tokens.css is stale
     var inks = ['--btn', '--ink-peach', '--ink-mauve', '--dot'].map(function (v, i) { return css.getPropertyValue(v).trim() || FALLBACK[i]; });
     var faint = getComputedStyle(band).color;
 
     // Halftone: sample the mask at each cell centre; covered cells get a big dot, the rest a faint one.
-    step = Math.max(6, Math.round(h / 26));
     var r = step * 0.46;
     dots = [];
     for (var y = step / 2; y < h; y += step) {
-      for (var x = step / 2; x < w; x += step) {
-        var a = px[(Math.floor(y) * w + Math.floor(x)) * 4 + 3] / 255, gi = Math.round((x - x0) / pitch);
+      for (var x = step / 2; x < sw; x += step) {
+        var a = px[(Math.floor(y) * sw + Math.floor(x)) * 4 + 3] / 255, gi = Math.floor(x / pitch);
         if (a > 0.05) dots.push({ x: x, y: y, r: r * Math.max(0.35, a), ink: inks[((gi % 4) + 4) % 4], blink: !!GLYPHS[((gi % GLYPHS.length) + GLYPHS.length) % GLYPHS.length].blink });
         else dots.push({ x: x, y: y, r: r * 0.32, ink: faint, faint: true, ph: Math.random() * 6.283 });
       }
@@ -88,19 +91,20 @@
   // One frame at time t (ms): the cursor on for 550 ms and off for 550, a swell every 7 s, sparse twinkles.
   function frame(t) {
     c.clearRect(0, 0, w, h);
-    var on = still || Math.floor(t / 550) % 2 === 0;
+    var on = still || Math.floor(t / 550) % 2 === 0, off = still ? 0 : (t * SPEED) % period;
     var sweep = ((t / 7000) % 1) * (w + 4 * pitch) - 2 * pitch, sigma = pitch * 0.5;
     for (var i = 0; i < dots.length; i++) {
-      var d = dots[i], rad = d.r;
+      var d = dots[i], rad = d.r, x = d.x - off;
+      if (x < -step || x > w + step) continue;
       if (d.faint) {
         var tw = still ? 0 : Math.pow(Math.max(0, Math.sin(t * 0.0009 + d.ph)), 16);
         c.globalAlpha = 0.22 + 0.55 * tw; rad *= 1 + 0.7 * tw;
       } else {
         if (d.blink && !on) { c.globalAlpha = 0.22; rad = d.r * 0.35; }
-        else { c.globalAlpha = 1; if (!still) { var k = (d.x - sweep) / sigma; rad *= 1 + 0.22 * Math.exp(-k * k / 2); } }
+        else { c.globalAlpha = 1; if (!still) { var k = (x - sweep) / sigma; rad *= 1 + 0.22 * Math.exp(-k * k / 2); } }
       }
       c.fillStyle = d.ink;
-      c.beginPath(); c.arc(d.x, d.y, rad, 0, 6.283); c.fill();
+      c.beginPath(); c.arc(x, d.y, rad, 0, 6.283); c.fill();
     }
     c.globalAlpha = 1;
   }

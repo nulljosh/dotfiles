@@ -39,6 +39,14 @@ https://dotfiles.jaybulb.com is a Cloudflare Worker serving `landing/`. `./deplo
 
 API keys go in `~/.config/zsh/secrets.zsh` and `~/.config/fish/secrets.fish`. Both are sourced if present and never committed.
 
+## Roadmap
+
+- [ ] Social card: an `og:image` PNG (mark, headline, powerline stripe) and an `apple-touch-icon`.
+- [ ] Brand kit: downloadable PNG sizes of the icon (16 to 1024) next to the SVGs.
+- [ ] Hero: real-browser QA of the new terminal layout and rolling scanlines on mobile Safari.
+- [ ] atuin: install fails from source on macOS 13 Intel (`googletest` formula unavailable); retry or drop it from the brew line.
+- [ ] Verify a fresh clone on Apple silicon end to end (`install.sh`, Ghostty opening fish with the Starship prompt).
+
 ## License
 
 MIT 2026 Joshua Trommel

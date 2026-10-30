@@ -46,16 +46,19 @@ h3 { font-size: 28px; line-height: 32px; font-weight: 600; letter-spacing: -.02e
 /* the thin frame down both edges of the window */
 @media (min-width: 900px) { body::after { content: ""; position: fixed; inset: 0; border-inline: 4px solid var(--frame); pointer-events: none; z-index: 30; } }
 
-/* The hero: a full-bleed Mocha terminal that starts under the nav glass and types the setup behind the copy.
-   The newest line sits at the bottom in the clear; older lines scroll up under the fade behind the headline. */
-.hero { position: relative; margin-top: -56px; padding: calc(56px + var(--sp-9)) 0 0; min-height: min(94vh, 920px); background: var(--grain), var(--band); color: var(--band-text); overflow: hidden; }
+/* The hero: copy on top, and under it a full-bleed Mocha terminal that types the setup. The terminal fills whatever
+   height the copy leaves; the newest line sits at the bottom and older lines scroll up into a fade, never under the copy. */
+.hero { position: relative; display: flex; flex-direction: column; margin-top: -56px; padding: calc(56px + var(--sp-8)) 0 0; min-height: min(100svh, 960px); background: var(--grain), var(--band); color: var(--band-text); overflow: hidden; }
 .hero-bg { position: absolute; inset: 0; }
 .hero-bg .art { position: absolute; inset: 0; background: none; --dot-c: var(--seg-blue); --fade: radial-gradient(ellipse at 50% 28%, #000, transparent 68%); }
-.hero::after { content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(to bottom, color-mix(in srgb, var(--band) 94%, transparent) 0%, color-mix(in srgb, var(--band) 86%, transparent) 50%, color-mix(in srgb, var(--band) 30%, transparent) 74%, transparent 90%); }
 .hero-copy { position: relative; z-index: 2; }
-/* CRT scanlines over the whole hero terminal */
-.hero-bg::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(to bottom, rgba(17, 17, 27, .38) 0 1px, transparent 1px 3px); pointer-events: none; }
+/* CRT scanlines over the hero art and the terminal. They creep down one line pitch at a time, and a faint bright band
+   rolls top to bottom over the whole hero, like an old monitor. Both are transforms, so they cost no repaints. */
+.hero-bg::after, .tty::after { content: ""; position: absolute; inset: -3px 0 0; background: repeating-linear-gradient(to bottom, rgba(17, 17, 27, .3) 0 1px, transparent 1px 3px); pointer-events: none; animation: scan-creep 1.4s linear infinite; }
+.hero::before { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; animation: scan-roll 9s linear infinite;
+  background: linear-gradient(to bottom, transparent 42%, rgba(205, 214, 244, .035) 49%, rgba(205, 214, 244, .06) 50%, transparent 58%); }
+@keyframes scan-creep { to { transform: translateY(3px); } }
+@keyframes scan-roll { from { transform: translateY(-60%); } to { transform: translateY(60%); } }
 
 /* Engravings: a dithered artwork (art/*.png, a 1-bit mask) tinted with a segment colour and cut into scanlines,
    faded at the edges so copy can sit on it. Layers intersect: the art, the scanlines, the fade. */
@@ -65,7 +68,7 @@ h3 { font-size: 28px; line-height: 32px; font-weight: 600; letter-spacing: -.02e
   -webkit-mask-composite: source-in, source-in;
   mask: var(--img) var(--eng-pos, center) / var(--eng-size, cover) no-repeat, var(--scan), var(--eng-fade, radial-gradient(ellipse at 50% 45%, #000 30%, transparent 75%));
   mask-composite: intersect; }
-.janus { --eng-c: var(--seg-mauve); --eng-o: .42; --eng-size: auto 108%; --eng-pos: center 20%; --eng-fade: radial-gradient(ellipse 46% 60% at 50% 34%, #000 35%, transparent 100%); }
+.janus { --eng-c: var(--seg-mauve); --eng-o: .3; --eng-size: auto 108%; --eng-pos: center 20%; --eng-fade: radial-gradient(ellipse 46% 60% at 50% 34%, #000 35%, transparent 100%); }
 .vulcan { --eng-c: var(--seg-peach); --eng-o: .5; --eng-fade: radial-gradient(ellipse 70% 80% at 50% 50%, #000 30%, transparent 100%); }
 .hero .label, .hero .lead, .hero .fine { color: var(--band-sub); }
 .hero .dot { color: var(--seg-green); }
@@ -79,7 +82,8 @@ h3 { font-size: 28px; line-height: 32px; font-weight: 600; letter-spacing: -.02e
 .fine { margin-top: var(--sp-3); font-size: var(--size-footnote); line-height: 16px; color: var(--sub); }
 
 /* The terminal itself: no chrome, just Mocha text in a centred column, anchored to the bottom */
-.tty { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; padding: 0 var(--sp-5) var(--sp-7); }
+.tty { position: relative; z-index: 1; flex: 1 0 calc(9 * 22px + var(--sp-7)); min-height: 0; margin-top: var(--sp-7); display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; padding: 0 var(--sp-5) var(--sp-7);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 55%); mask-image: linear-gradient(to bottom, transparent, #000 55%); }
 .tty-lines { width: 100%; max-width: 880px; margin: 0 auto; font: 14px/22px var(--mono); color: var(--term-fg); transition: opacity .5s ease; }
 .tty-lines.fade { opacity: 0; }
 .tty .ln { white-space: pre; overflow: hidden; text-overflow: clip; min-height: 22px; }
@@ -188,8 +192,8 @@ h3 { font-size: 28px; line-height: 32px; font-weight: 600; letter-spacing: -.02e
   .nav-brand { grid-column: 1; }
   .nav-end { grid-column: 2; }
   .wrap { padding: 0 var(--sp-4); }
-  .hero { padding-top: calc(56px + var(--sp-8)); min-height: 780px; }
-  .tty { padding: 0 var(--sp-4) var(--sp-6); }
+  .hero { padding-top: calc(56px + var(--sp-7)); }
+  .tty { flex-basis: calc(12 * 19px + var(--sp-6)); margin-top: var(--sp-6); padding: 0 var(--sp-4) var(--sp-6); }
   .tty-lines { font-size: 11.5px; line-height: 19px; }
   .tty .ln { min-height: 19px; }
   .term pre { padding-right: 0; padding-top: 44px; font-size: 12px; line-height: 20px; }
@@ -198,6 +202,7 @@ h3 { font-size: 28px; line-height: 32px; font-weight: 600; letter-spacing: -.02e
   html { scroll-behavior: auto; }
   .js .reveal { opacity: 1; transform: none; transition: none; }
   .btn { transition: none; }
-  .tty .cur { animation: none; }
+  .tty .cur, .hero::before, .hero-bg::after, .tty::after { animation: none; }
+  .hero::before { display: none; }
   .tty-lines { transition: none; }
 }

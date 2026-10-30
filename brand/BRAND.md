@@ -48,7 +48,8 @@ as a true circle 14% larger. Proportional, in the spirit of San Francisco. Built
 - **Frame**: a 4 px blue rule down both window edges on wide screens.
 - **Engravings**: public domain art dithered to 1 bit (Atkinson), tinted a segment colour and cut into scanlines.
   Janus in the hero (one config, two shells, two chips), Velazquez's Forge of Vulcan over the configs band.
-- **Hero terminal**: a full-bleed Mocha terminal that types the real setup under CRT scanlines.
+- **Hero terminal**: a full-bleed Mocha terminal under the copy that types the real setup under CRT scanlines.
+  Older lines scroll up into a fade; text never runs behind the headline or the buttons.
 
 ## Voice
 

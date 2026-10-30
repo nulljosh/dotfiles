@@ -9,8 +9,8 @@
 <meta name="theme-color" content="#11111b" media="(prefers-color-scheme: dark)">
 <link rel="canonical" href="https://dotfiles.jaybulb.com/brand">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="tokens.css?v=6">
-<link rel="stylesheet" href="landing.css?v=6">
+<link rel="stylesheet" href="tokens.css?v=7">
+<link rel="stylesheet" href="landing.css?v=7">
 <style>
   .kit { max-width: var(--wrap); margin: 0 auto; padding: var(--sp-8) var(--sp-5) var(--sp-9); display: grid; gap: var(--sp-9); }
   .kit section { display: grid; gap: var(--sp-5); }
@@ -37,6 +37,15 @@
   .field { position: relative; height: 200px; border-radius: 4px; }
   .field.art::before { --fade: linear-gradient(90deg, #000, transparent); }
   .rules { display: grid; gap: var(--sp-3); padding-left: 1.2em; color: var(--sub); }
+  .motifs { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--sp-4); }
+  .motif { position: relative; overflow: hidden; min-height: 280px; border-radius: 4px; background: var(--band); color: var(--band-sub); display: flex; align-items: flex-end; padding: var(--sp-5); }
+  .motif small { position: relative; z-index: 2; font-size: var(--size-footnote); }
+  .motif .engr { --eng-size: auto 100%; --eng-pos: center; --eng-fade: radial-gradient(ellipse 60% 70% at 50% 45%, #000 40%, transparent 100%); }
+  .motif .art { position: absolute; inset: 0; background: none; --dot-c: var(--seg-blue); --fade: radial-gradient(ellipse at 50% 40%, #000, transparent 70%); }
+  .prompt-demo { background: var(--term-bg); color: var(--term-fg); border-radius: 4px; padding: var(--sp-5); font: 15px/24px var(--mono); overflow-x: auto; white-space: nowrap; }
+  .voice { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--sp-4); }
+  .voice p { border-top: 1px solid var(--line); padding-top: var(--sp-4); font-size: 22px; line-height: 30px; letter-spacing: -.01em; }
+  .voice small { display: block; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; color: var(--sub); margin-bottom: var(--sp-2); }
 </style>
 </head>
 <body>
@@ -111,9 +120,25 @@
 
   <section id="motifs">
     <p class="label">Motifs</p>
-    <h2>Stripe, field, glyphs</h2>
-    <p class="note">The powerline stripe runs under the nav. The dot field sits behind panels in a segment colour. The glyph band closes every page.</p>
-    <div class="field art" aria-hidden="true"></div>
+    <h2>Stripe, field, glyphs, engravings</h2>
+    <p class="note">The powerline stripe runs under the nav. The dot field sits behind panels in a segment colour. Public domain engravings, dithered to one bit, carry a segment ink under scanlines. The glyph band closes every page.</p>
+    <div class="stripe" aria-hidden="true"></div>
+    <div class="motifs">
+      <div class="motif"><div class="art" aria-hidden="true"></div><small>Dot field, blue</small></div>
+      <div class="motif"><div class="engr janus" style="--img: url(art/janus.png)" aria-hidden="true"></div><small>Janus, mauve: one config, two shells</small></div>
+      <div class="motif"><div class="engr vulcan" style="--img: url(art/vulcan.png)" aria-hidden="true"></div><small>The Forge of Vulcan, peach: where configs are made</small></div>
+    </div>
+    <p class="prompt-demo" aria-label="The Starship prompt"><span class="ps"><b class="u">joshua</b><b class="t">09:41</b><b class="d">~/D/Code/dotfiles</b><b class="g">main</b></span><span class="chev">&#x276F;</span></p>
+  </section>
+
+  <section id="voice">
+    <p class="label">Voice</p>
+    <h2>Say it in one line</h2>
+    <div class="voice">
+      <p><small>Headline</small>One sentence, no commas, ends on the dot.</p>
+      <p><small>Body</small>Say what it does in the fewest plain words.</p>
+      <p><small>Never</small>Emojis, exclamation marks, hype.</p>
+    </div>
   </section>
 </main>
 
@@ -121,6 +146,6 @@
   <div class="glyph-band" aria-hidden="true"><canvas class="glyph-canvas"></canvas></div>
   <p class="legal">&copy; 2026 Joshua Trommel &middot; MIT License &middot; Dotfiles Sans under the SIL OFL 1.1</p>
 </footer>
-<script src="footer-band.js?v=6" defer></script>
+<script src="footer-band.js?v=7" defer></script>
 </body>
 </html>

@@ -15,6 +15,7 @@ set -q HOMEBREW_PREFIX; and fish_add_path $HOMEBREW_PREFIX/opt/ruby/bin
 fish_add_path $HOME/.rbenv/shims
 fish_add_path $HOME/.bun/bin
 fish_add_path $HOME/.local/bin
+fish_add_path $HOME/.local/bin
 fish_add_path $HOME/bin
 
 # === Environment ===
@@ -44,12 +45,16 @@ type -q atuin; and atuin init fish | source
 type -q fzf; and fzf --fish | source
 
 # === Aliases ===
-alias ls "eza --icons"
-alias ll "eza -la --icons"
-alias la "eza -a --icons"
-alias lt "eza --tree --icons"
-alias cat "bat"
-alias find "fd"
+if type -q eza
+    alias ls "eza --icons"
+    alias ll "eza -la --icons"
+    alias la "eza -a --icons"
+    alias lt "eza --tree --icons"
+else
+    alias ll "ls -laG"
+end
+type -q bat; and alias cat "bat"
+type -q fd; and alias find "fd"
 alias claude "CLAUDE_CODE_DISABLE_NONESSENTIAL_NOTIFICATIONS=1 command claude --dangerously-skip-permissions"
 alias c "CLAUDE_CODE_DISABLE_NONESSENTIAL_NOTIFICATIONS=1 command claude --dangerously-skip-permissions"
 

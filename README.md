@@ -27,6 +27,8 @@ brew install --cask font-jetbrains-mono-nerd-font ghostty
 
 `install.sh` symlinks each file into place and backs up anything it replaces as `*.bak`. Missing tools are skipped, not errors.
 
+On an older Intel Mac Homebrew has no bottles and builds fish and starship from source (hours, via llvm and rust). Use the official release builds instead: `fish.app` into `~/Applications` with its `fish` linked into `~/.local/bin`, and the starship, bat, fd, zoxide and fzf release binaries into `~/.local/bin`. Both shells and Ghostty put `~/.local/bin` on PATH.
+
 ## Site
 
 https://dotfiles.jaybulb.com is a Cloudflare Worker serving `landing/`. `./deploy.sh` copies the brand files in and publishes it (needs `npx wrangler login` once).
@@ -44,7 +46,7 @@ API keys go in `~/.config/zsh/secrets.zsh` and `~/.config/fish/secrets.fish`. Bo
 - [ ] Social card: an `og:image` PNG (mark, headline, powerline stripe) and an `apple-touch-icon`.
 - [ ] Brand kit: downloadable PNG sizes of the icon (16 to 1024) next to the SVGs.
 - [ ] Hero: real-browser QA of the new terminal layout and rolling scanlines on mobile Safari.
-- [ ] atuin: install fails from source on macOS 13 Intel (`googletest` formula unavailable); retry or drop it from the brew line.
+- [ ] atuin and eza on macOS 13 Intel: no bottles or macOS release builds; install with `cargo install` once Rust is set up.
 - [ ] Verify a fresh clone on Apple silicon end to end (`install.sh`, Ghostty opening fish with the Starship prompt).
 
 ## License

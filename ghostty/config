@@ -3,5 +3,5 @@ font-family = JetBrainsMono Nerd Font
 font-size = 14
 background-opacity = 0.92
 # Login zsh puts Homebrew on PATH (works on Apple Silicon and Intel)
-command = /bin/zsh -lc "exec fish"
+command = /bin/zsh -lc "export PATH=$HOME/.local/bin:$PATH; command -v fish >/dev/null && exec fish; exec zsh -l"
 window-save-state = never

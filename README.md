@@ -2,41 +2,32 @@
 
 # dotfiles
 
-![version](https://img.shields.io/badge/version-v1.0.0-blue)
+Shell and terminal config for macOS (Apple Silicon or Intel).
 
-Shell and terminal config for macOS (Apple Silicon).
 ![architecture](architecture.svg)
 
-## Features
+## What's here
 
-- **fish** - Fish shell config (aliases, abbreviations, tool init)
-- **zsh** - Zsh config (PATH, aliases, completions, tool init)
-- **ghostty** - Ghostty terminal (JetBrainsMono Nerd Font, fish shell)
-- **starship** - Starship prompt (Catppuccin Mocha, Powerline glyphs)
+- `zsh/.zshrc` - PATH, aliases, completions, tool init
+- `fish/config.fish` - same setup for fish, plus git abbreviations
+- `ghostty/config` - Ghostty terminal (JetBrainsMono Nerd Font, launches fish)
+- `starship/` - Starship prompt (Catppuccin Mocha powerline, plus a plain variant for Terminal.app)
 
-## Run
+## Install
 
 ```bash
 git clone https://github.com/nulljosh/dotfiles.git ~/Documents/Code/dotfiles
 cd ~/Documents/Code/dotfiles
-chmod +x install.sh
+brew install fish starship eza bat fd fzf zoxide atuin fnm
+brew install --cask font-jetbrains-mono-nerd-font ghostty
 ./install.sh
 ```
 
-Prerequisites: [Homebrew](https://brew.sh); fish, starship, eza, bat, fd, fzf, zoxide, atuin, fnm (all via brew); [JetBrainsMono Nerd Font](https://www.nerdfonts.com/); [Ghostty](https://ghostty.org).
-Secrets (API keys) are stored in `~/.config/fish/secrets.fish` and `~/.config/zsh/secrets.zsh`, which are not tracked.
+`install.sh` symlinks each file into place and backs up anything it replaces as `*.bak`. Missing tools are skipped, not errors.
 
-## Roadmap
+## Secrets
 
-- [ ] Add a bootstrap script to install Homebrew and required packages.
-- [ ] Add OS and shell version checks before running install.
-- [ ] Add a pre-commit check to ensure secrets files are excluded.
-
-## Changelog
-
-- v1.0.0: Added fish shell config with aliases, abbreviations, and tool init.
-- v1.0.0: Added zsh config with PATH, aliases, completions, and tool init.
-- v1.0.0: Added Ghostty and Starship configs plus the install.sh symlink installer.
+API keys go in `~/.config/zsh/secrets.zsh` and `~/.config/fish/secrets.fish`. Both are sourced if present and never committed.
 
 ## License
 

@@ -1,8 +1,14 @@
 # === PATH ===
 set -g fish_greeting
 
-fish_add_path /opt/homebrew/bin
-fish_add_path /opt/homebrew/opt/ruby/bin
+# Homebrew (Apple Silicon or Intel)
+for brew in /opt/homebrew/bin/brew /usr/local/bin/brew
+    if test -x $brew
+        $brew shellenv fish | source
+        break
+    end
+end
+set -q HOMEBREW_PREFIX; and fish_add_path $HOMEBREW_PREFIX/opt/ruby/bin
 fish_add_path $HOME/.rbenv/shims
 fish_add_path $HOME/.bun/bin
 fish_add_path $HOME/.local/bin
@@ -15,7 +21,7 @@ if test -f ~/.config/fish/secrets.fish
 end
 
 # === fnm (Node version manager) ===
-fnm env --shell fish | source
+type -q fnm; and fnm env --use-on-cd --shell fish | source
 
 # === Starship prompt ===
 if test "$TERM_PROGRAM" = "Apple_Terminal"
@@ -23,16 +29,16 @@ if test "$TERM_PROGRAM" = "Apple_Terminal"
 else
     set -gx STARSHIP_CONFIG $HOME/.config/starship.toml
 end
-starship init fish | source
+type -q starship; and starship init fish | source
 
 # === Zoxide ===
-zoxide init fish | source
+type -q zoxide; and zoxide init fish | source
 
 # === Atuin ===
-atuin init fish | source
+type -q atuin; and atuin init fish | source
 
 # === fzf ===
-fzf --fish | source
+type -q fzf; and fzf --fish | source
 
 # === Aliases ===
 alias ls "eza --icons"

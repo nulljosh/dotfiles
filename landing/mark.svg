@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 100" width="160" height="100">
+  <!-- The dotfiles mark: three powerline chevrons (blue, peach, mauve) running into the green dot. A prompt, waiting. -->
+  <path fill="#89b4fa" d="M0 10h22l30 40-30 40H0l30-40z"/>
+  <path fill="#fab387" d="M30 10h22l30 40-30 40H30l30-40z"/>
+  <path fill="#cba6f7" d="M60 10h22l30 40-30 40H60l30-40z"/>
+  <circle fill="#a6e3a1" cx="134" cy="78" r="13"/>
+</svg>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>dotfiles brand kit</title>
+<meta name="description" content="The dotfiles mark, colours, type and motifs. Catppuccin, Dotfiles Sans and the dot.">
+<meta name="theme-color" content="#eff1f5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#11111b" media="(prefers-color-scheme: dark)">
+<link rel="canonical" href="https://dotfiles.jaybulb.com/brand">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="landing.css">
+<style>
+  .kit { max-width: var(--wrap); margin: 0 auto; padding: var(--sp-8) var(--sp-5) var(--sp-9); display: grid; gap: var(--sp-9); }
+  .kit section { display: grid; gap: var(--sp-5); }
+  .kit h2 { font-size: clamp(40px, 5vw, 72px); }
+  .kit .note { color: var(--sub); max-width: 640px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--sp-4); }
+  .tile { border: 1px solid var(--line); border-radius: 4px; padding: var(--sp-6); display: grid; place-items: center; gap: var(--sp-4); min-height: 240px; }
+  .tile.dark { background: var(--band); border-color: transparent; color: var(--band-sub); }
+  .tile small { font-size: var(--size-footnote); color: var(--sub); }
+  .tile.dark small { color: var(--band-sub); }
+  .tile a { color: var(--accent); font-size: 15px; }
+  .tile.dark a { color: var(--seg-blue); }
+  .swatches { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--sp-4); }
+  .sw { border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .sw i { display: block; height: 96px; }
+  .sw p { padding: var(--sp-3) var(--sp-4); font-size: 15px; line-height: 20px; }
+  .sw code { background: none; padding: 0; color: var(--sub); }
+  .stripe { height: 12px; background: var(--powerline); border-radius: var(--r-sq); }
+  .spec { font-size: clamp(56px, 9vw, 128px); line-height: 1; font-weight: 700; letter-spacing: -.045em; }
+  .weights { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--sp-4); }
+  .weights p { font-size: 32px; line-height: 40px; letter-spacing: -.02em; border-top: 1px solid var(--line); padding-top: var(--sp-4); }
+  .weights small { display: block; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); font-weight: 600; }
+  .dots-demo { font-size: clamp(40px, 6vw, 80px); font-weight: 700; letter-spacing: -.03em; line-height: 1.1; }
+  .field { position: relative; height: 200px; border-radius: 4px; }
+  .field.art::before { --fade: linear-gradient(90deg, #000, transparent); }
+  .rules { display: grid; gap: var(--sp-3); padding-left: 1.2em; color: var(--sub); }
+</style>
+</head>
+<body>
+
+<header class="nav" aria-label="Site">
+  <nav class="nav-links" aria-label="Main">
+    <a href="./#features">Configs</a>
+    <a href="./#install">Install</a>
+  </nav>
+  <a class="nav-brand" href="./" aria-label="dotfiles home"><img src="icon.svg" alt="" width="28" height="28"><span><i class="dot">.</i>dotfiles</span></a>
+  <div class="nav-end">
+    <a class="btn btn-solid" href="https://github.com/nulljosh/dotfiles/tree/main/brand">Source</a>
+  </div>
+</header>
+
+<main class="kit">
+  <section>
+    <p class="label">Brand kit</p>
+    <h1>The prompt is the brand<span class="dot">.</span></h1>
+    <p class="note">Everything here comes from what the terminal already shows: the Starship powerline and the dot. One source of truth lives in <code>brand/tokens.css</code>.</p>
+  </section>
+
+  <section id="mark">
+    <p class="label">Mark</p>
+    <h2>Three chevrons and a dot</h2>
+    <div class="tiles">
+      <div class="tile dark"><img src="icon.svg" alt="The dotfiles icon" width="160" height="160"><small>App tile, Mocha base</small><a href="icon.svg" download>icon.svg</a></div>
+      <div class="tile"><img src="mark.svg" alt="The dotfiles mark" width="200" height="125"><small>Mark, on Latte</small><a href="mark.svg" download>mark.svg</a></div>
+      <div class="tile dark"><img src="mark.svg" alt="The dotfiles mark on Mocha" width="200" height="125"><small>Mark, on Mocha</small><a href="mark.svg" download>mark.svg</a></div>
+    </div>
+    <ul class="rules">
+      <li>Keep the chevrons in segment order: blue, peach, mauve, then the green dot.</li>
+      <li>Never recolour the mark to a single ink.</li>
+      <li>The dot stands alone after the wordmark and at the end of headlines.</li>
+    </ul>
+  </section>
+
+  <section id="colour">
+    <p class="label">Colour</p>
+    <h2>Catppuccin, both ways</h2>
+    <p class="note">Latte for light pages, Mocha for dark pages and for every terminal and band. Blue does the work; green is only the dot.</p>
+    <div class="stripe" aria-hidden="true"></div>
+    <div class="swatches">
+      <div class="sw"><i style="background:#89b4fa"></i><p>Blue<br><code>#89b4fa</code></p></div>
+      <div class="sw"><i style="background:#fab387"></i><p>Peach<br><code>#fab387</code></p></div>
+      <div class="sw"><i style="background:#cba6f7"></i><p>Mauve<br><code>#cba6f7</code></p></div>
+      <div class="sw"><i style="background:#a6e3a1"></i><p>Green, the dot<br><code>#a6e3a1</code></p></div>
+    </div>
+    <div class="swatches">
+      <div class="sw"><i style="background:#eff1f5"></i><p>Latte page<br><code>#eff1f5</code></p></div>
+      <div class="sw"><i style="background:#4c4f69"></i><p>Latte text<br><code>#4c4f69</code></p></div>
+      <div class="sw"><i style="background:#1e66f5"></i><p>Latte button<br><code>#1e66f5</code></p></div>
+      <div class="sw"><i style="background:#11111b"></i><p>Mocha page<br><code>#11111b</code></p></div>
+      <div class="sw"><i style="background:#1e1e2e"></i><p>Mocha band<br><code>#1e1e2e</code></p></div>
+      <div class="sw"><i style="background:#cdd6f4"></i><p>Mocha text<br><code>#cdd6f4</code></p></div>
+    </div>
+  </section>
+
+  <section id="type">
+    <p class="label">Type</p>
+    <h2>Dotfiles Sans</h2>
+    <p class="note">Inter (SIL OFL 1.1), renamed, with every dot redrawn as a true circle 14% larger. Proportional spacing, in the spirit of San Francisco.</p>
+    <p class="spec">Aa Gg 01 ij.</p>
+    <p class="dots-demo">i j . : ; ! ? &hellip;</p>
+    <div class="weights">
+      <p style="font-weight:400"><small>Regular 400</small>Same shell, every Mac.</p>
+      <p style="font-weight:500"><small>Medium 500</small>Same shell, every Mac.</p>
+      <p style="font-weight:600"><small>Semibold 600</small>Same shell, every Mac.</p>
+      <p style="font-weight:700"><small>Bold 700</small>Same shell, every Mac.</p>
+    </div>
+  </section>
+
+  <section id="motifs">
+    <p class="label">Motifs</p>
+    <h2>Stripe, field, glyphs</h2>
+    <p class="note">The powerline stripe runs under the nav. The dot field sits behind panels in a segment colour. The glyph band closes every page.</p>
+    <div class="field art" aria-hidden="true"></div>
+  </section>
+</main>
+
+<footer class="foot" id="footer">
+  <div class="glyph-band" aria-hidden="true"><canvas class="glyph-canvas"></canvas></div>
+  <p class="legal">&copy; 2026 Joshua Trommel &middot; MIT License &middot; Dotfiles Sans under the SIL OFL 1.1</p>
+</footer>
+<script src="footer-band.js" defer></script>
+</body>
+</html>

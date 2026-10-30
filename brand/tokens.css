@@ -1,0 +1,79 @@
+/* dotfiles design tokens. One source for the site and the brand kit; deploy.sh copies this file into landing/.
+   The palette is the prompt's: Catppuccin, Latte by day and Mocha by night. The four powerline segments
+   (blue, peach, mauve, green) are the brand colours; blue does the work, green is the dot. */
+@font-face { font-family: "Dotfiles Sans"; src: url("fonts/DotfilesSans-Regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Dotfiles Sans"; src: url("fonts/DotfilesSans-Medium.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Dotfiles Sans"; src: url("fonts/DotfilesSans-Semibold.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Dotfiles Sans"; src: url("fonts/DotfilesSans-Bold.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+
+:root {
+  /* the four segments, as Starship draws them (Mocha). Used on the band, which is Mocha in both themes. */
+  --seg-blue: #89b4fa;
+  --seg-peach: #fab387;
+  --seg-mauve: #cba6f7;
+  --seg-green: #a6e3a1;
+  --seg-yellow: #f9e2af;
+  --seg-red: #f38ba8;
+
+  /* page colour: Catppuccin Latte */
+  --accent: #1d58d8;          /* links: Latte blue taken one step deeper for AA (5.4:1 on --bg) */
+  --btn: #1e66f5;             /* Latte blue, white label 4.9:1 */
+  --btn-fg: #ffffff;
+  --frame: #1e66f5;           /* the thin frame down the window edges */
+  --dot: #40a02b;             /* the dot: Latte green, decorative only */
+  --ink-peach: #fe640b;       /* decorative only */
+  --ink-mauve: #8839ef;
+  --ring: color-mix(in srgb, var(--btn) 30%, transparent);
+  --bg: #eff1f5;              /* base */
+  --surface: #e6e9ef;         /* mantle */
+  --line: #ccd0da;            /* surface0 */
+  --text: #4c4f69;            /* text */
+  --sub: #5c5f77;             /* subtext1, 5.5:1 */
+
+  /* the band and every terminal: Catppuccin Mocha, in both themes */
+  --band: #1e1e2e;            /* base */
+  --band-raised: #262637;     /* base lifted one step, for panels on the band */
+  --band-text: #cdd6f4;
+  --band-sub: #bac2de;        /* subtext1, 9.3:1 */
+  --band-line: rgba(205, 214, 244, .14);
+  --term-bg: #181825;         /* mantle */
+  --term-fg: #cdd6f4;
+  --term-dim: #7f849c;        /* overlay1 */
+  --term-crust: #11111b;
+
+  /* type */
+  --font: "Dotfiles Sans", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, monospace;
+  --size-body: 17px;
+  --size-footnote: 13px;
+
+  /* space: the 8 point grid */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 64px; --sp-9: 96px;
+  --wrap: 1120px;
+
+  /* shape */
+  --r-sq: 2px;
+  --r-icon: 22.5%;
+  --motion: .2s ease;
+
+  /* the powerline: the four segments as one hard-stopped stripe */
+  --powerline: linear-gradient(90deg, var(--seg-blue) 0 25%, var(--seg-peach) 25% 50%, var(--seg-mauve) 50% 75%, var(--seg-green) 75%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* page colour: Catppuccin Mocha */
+    --accent: #89b4fa;        /* 8.9:1 on --bg */
+    --btn: #89b4fa;
+    --btn-fg: #11111b;        /* crust label, 8.9:1 */
+    --frame: #89b4fa;
+    --dot: #a6e3a1;
+    --ink-peach: #fab387;
+    --ink-mauve: #cba6f7;
+    --bg: #11111b;            /* crust */
+    --surface: #181825;       /* mantle */
+    --line: #313244;          /* surface0 */
+    --text: #cdd6f4;
+    --sub: #a6adc8;           /* subtext0, 8.4:1 */
+  }
+}

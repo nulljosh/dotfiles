@@ -1,6 +1,7 @@
 // Footer band: the things in this repo as glyphs (the dot, the prompt, fish, Ghostty's ghost, Starship's star,
 // a git branch, a folder), each rasterised once and redrawn as a halftone: one dot per grid cell, sized by how much
-// of the glyph covers it. A faint dot field runs under the whole band. Plain 2D canvas, drawn once per size and theme.
+// of the glyph covers it, in the four prompt segment colours (blue, peach, mauve, green) taken from the page's theme.
+// A faint dot field runs under the whole band. Plain 2D canvas, drawn once per size and theme.
 (function () {
   var band = document.querySelector('.glyph-band'), canvas = band && band.querySelector('canvas');
   if (!canvas) return;
@@ -57,14 +58,17 @@
       m.drawImage(g, 0, 0); m.restore();
     }
     var px = m.getImageData(0, 0, w, h).data;
+    var css = getComputedStyle(document.documentElement), inks = ['--btn', '--ink-peach', '--ink-mauve', '--dot'].map(function (v) { return css.getPropertyValue(v).trim(); });
+    var faint = getComputedStyle(band).color;
 
     // Halftone: sample the mask at each cell centre; covered cells get a big dot, the rest a faint one.
     var step = Math.max(6, Math.round(h / 26)), r = step * 0.46;
-    c.fillStyle = getComputedStyle(band).color;
     for (var y = step / 2; y < h; y += step) {
       for (var x = step / 2; x < w; x += step) {
         var a = px[(Math.floor(y) * w + Math.floor(x)) * 4 + 3] / 255;
-        c.globalAlpha = a > 0.05 ? 1 : 0.16;
+        var on = a > 0.05;
+        c.fillStyle = on ? inks[((Math.round((x - x0) / pitch) % inks.length) + inks.length) % inks.length] : faint;
+        c.globalAlpha = on ? 1 : 0.22;
         c.beginPath(); c.arc(x, y, a > 0.05 ? r * Math.max(0.35, a) : r * 0.32, 0, 7); c.fill();
       }
     }
@@ -75,5 +79,5 @@
   function redraw() { cancelAnimationFrame(raf); raf = requestAnimationFrame(draw); }
   window.addEventListener('resize', redraw);
   if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw);
-  redraw();
+  draw();   // straight away, not on a frame: a background tab or a snapshot may never paint one
 })();

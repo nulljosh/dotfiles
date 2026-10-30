@@ -1,0 +1,66 @@
+/* dotfiles design tokens, after the Hermes system: 8 point grid, one radius set, one accent.
+   The accent is the green of the icon dots and the prompt arrow, taken deep enough for AA on paper; the prompt colours are the real Starship palette. */
+@font-face { font-family: "Dotfiles Sans"; src: url("fonts/DotfilesSans-Regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Dotfiles Sans"; src: url("fonts/DotfilesSans-Medium.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Dotfiles Sans"; src: url("fonts/DotfilesSans-Semibold.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Dotfiles Sans"; src: url("fonts/DotfilesSans-Bold.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+
+:root {
+  /* colour */
+  --accent: #157a43;          /* links and actions; deep green, AA on paper */
+  --btn: #157a43;
+  --frame: #157a43;           /* the thin frame down the window edges */
+  --band: #0f6337;            /* full-bleed sections */
+  --band-sub: #d2f2dd;        /* secondary text on the band, AA */
+  --band-art: #8fdcaa;        /* the dot field on the band */
+  --band-line: rgba(255, 255, 255, .22);
+  --ring: color-mix(in srgb, var(--accent) 30%, transparent);
+  --bg: #fdfdfd;
+  --surface: #f2f6f3;
+  --line: #d9e3dc;
+  --text: #1a1a1a;
+  --sub: #56635b;
+
+  /* the terminal: Catppuccin Mocha, as in starship/starship.toml */
+  --term-bg: #1e1e2e;
+  --term-fg: #cdd6f4;
+  --term-dim: #7f849c;
+  --term-line: #313244;
+  --ctp-blue: #89b4fa;
+  --ctp-peach: #fab387;
+  --ctp-mauve: #cba6f7;
+  --ctp-green: #a6e3a1;
+  --ctp-yellow: #f9e2af;
+  --ctp-crust: #11111b;
+
+  /* type */
+  --font: "Dotfiles Sans", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, monospace;
+  --size-body: 17px;
+  --size-footnote: 13px;
+
+  /* space: the 8 point grid */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 64px; --sp-9: 96px;
+  --wrap: 1120px;
+
+  /* shape */
+  --r-sq: 2px;
+  --r-icon: 22.5%;
+  --motion: .2s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --accent: #7fe0a3;
+    --btn: #1b8a4d;
+    --frame: #1b8a4d;
+    --band: #0d5530;
+    --band-sub: #c9efd6;
+    --band-art: #5fc488;
+    --bg: #0a110d;            /* green black */
+    --surface: #121c16;
+    --line: #233529;
+    --text: #f2f2f5;
+    --sub: #a3b5a9;
+  }
+}

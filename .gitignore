@@ -2,3 +2,5 @@ secrets.fish
 secrets.zsh
 .DS_Store
 *.bak
+.wrangler/
+node_modules/

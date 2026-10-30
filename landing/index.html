@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>dotfiles. The same shell on every Mac.</title>
+<meta name="description" content="Shell and terminal config for macOS: zsh, fish, Ghostty and a Catppuccin Starship prompt. One clone, five symlinks, Intel and Apple silicon.">
+<meta name="theme-color" content="#fdfdfd" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a110d" media="(prefers-color-scheme: dark)">
+<link rel="canonical" href="https://dotfiles.jaybulb.com/">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="dotfiles">
+<meta property="og:title" content="dotfiles. The same shell on every Mac.">
+<meta property="og:description" content="zsh, fish, Ghostty and Starship. One clone, five symlinks.">
+<meta property="og:url" content="https://dotfiles.jaybulb.com/">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="landing.css">
+<script src="landing.js" defer></script>
+</head>
+<body>
+
+<header class="nav" aria-label="Site">
+  <nav class="nav-links" aria-label="Main">
+    <a href="#features">Configs</a>
+    <a href="#install">Install</a>
+  </nav>
+  <a class="nav-brand" href="#top" aria-label="dotfiles home"><img src="icon.svg" alt="" width="28" height="28"><span><i class="dot">.</i>dotfiles</span></a>
+  <div class="nav-end">
+    <a class="btn btn-solid" href="https://github.com/nulljosh/dotfiles">GitHub</a>
+  </div>
+</header>
+
+<main id="top">
+<section class="hero" id="hero">
+  <div class="wrap center hero-copy">
+    <p class="label">dotfiles &middot; shell and terminal config for macOS</p>
+    <h1>Same shell, every Mac<span class="dot">.</span></h1>
+    <p class="lead">zsh, fish, Ghostty and a Starship prompt in one repo. One clone, five symlinks, nothing to babysit.</p>
+    <div class="cta">
+      <a class="btn btn-solid" href="#install">Install</a>
+      <a class="btn btn-ghost" href="https://github.com/nulljosh/dotfiles">View the source</a>
+    </div>
+    <p class="fine">Intel and Apple silicon. MIT licensed.</p>
+  </div>
+
+  <div class="demo-wrap reveal" id="demo">
+    <div class="stage">
+      <div class="art stage-art" aria-hidden="true"></div>
+      <figure class="win" aria-label="A Ghostty window running install.sh under the Starship prompt">
+        <div class="win-bar" aria-hidden="true"><i></i><i></i><i></i><span>fish ~/Documents/Code/dotfiles</span></div>
+<pre><span class="ps"><b class="u">joshua</b><b class="t">13:31</b><b class="d">~/D/Code/dotfiles</b><b class="g">main</b></span><span class="chev">&#x276F;</span> ./install.sh
+<span class="ok">linked:</span> ~/.config/fish/config.fish
+<span class="warn">backup:</span> ~/.zshrc <span class="dim">-&gt;</span> ~/.zshrc.bak
+<span class="ok">linked:</span> ~/.zshrc
+<span class="ok">linked:</span> ~/.config/ghostty/config
+<span class="ok">linked:</span> ~/.config/starship.toml
+<span class="ok">linked:</span> ~/.config/starship-terminal.toml
+<span class="dim">done. secrets files are NOT managed by this repo.</span>
+
+<span class="ps"><b class="u">joshua</b><b class="t">13:31</b><b class="d">~/D/Code/dotfiles</b><b class="g">main</b></span><span class="chev">&#x276F;</span> ll
+<span class="dim">drwxr-xr-x</span>  <span class="dir">fish</span>
+<span class="dim">drwxr-xr-x</span>  <span class="dir">ghostty</span>
+<span class="dim">drwxr-xr-x</span>  <span class="dir">starship</span>
+<span class="dim">drwxr-xr-x</span>  <span class="dir">zsh</span>
+<span class="dim">.rwxr-xr-x</span>  install.sh
+<span class="dim">.rw-r--r--</span>  README.md
+
+<span class="ps"><b class="u">joshua</b><b class="t">13:32</b><b class="d">~/D/Code/dotfiles</b><b class="g">main</b></span><span class="chev">&#x276F;</span> <span class="cur"></span></pre>
+      </figure>
+    </div>
+    <p class="demo-hint">The real prompt and the real installer, drawn in HTML.</p>
+  </div>
+</section>
+
+<section class="band" id="features">
+  <div class="band-head">
+    <div class="art" aria-hidden="true"></div>
+    <div class="band-copy reveal">
+      <p class="label">Four files, one setup</p>
+      <h2>Your terminal, in a repo</h2>
+      <p>Every config lives in git and is symlinked into place. Edit it live and the change is already in the repo.</p>
+    </div>
+  </div>
+  <div class="frows">
+    <article class="frow reveal">
+      <div class="art">
+        <figure class="snip"><figcaption>zsh/.zshrc</figcaption>
+<pre><span class="c"># === Homebrew (Apple Silicon or Intel) ===</span>
+<span class="k">for</span> brew <span class="k">in</span> /opt/homebrew/bin/brew /usr/local/bin/brew; <span class="k">do</span>
+  [[ -x <span class="v">$brew</span> ]] &amp;&amp; <span class="k">eval</span> <span class="s">"$($brew shellenv)"</span> &amp;&amp; <span class="k">break</span>
+<span class="k">done</span></pre></figure>
+      </div>
+      <div><p class="label">zsh</p><h3>The shell macOS ships with</h3><p>PATH, completions, fnm, fzf, zoxide and atuin. Tools you have not installed are skipped instead of erroring.</p></div>
+    </article>
+    <article class="frow reveal">
+      <div class="art">
+        <figure class="snip"><figcaption>fish/config.fish</figcaption>
+<pre><span class="k">abbr</span> -a gs <span class="s">"git status"</span>
+<span class="k">abbr</span> -a gd <span class="s">"git diff"</span>
+<span class="k">abbr</span> -a gl <span class="s">"git log --oneline -20"</span>
+<span class="k">alias</span> ll <span class="s">"eza -la --icons"</span>
+<span class="k">type</span> -q zoxide; <span class="k">and</span> zoxide init fish | <span class="k">source</span></pre></figure>
+      </div>
+      <div><p class="label">fish</p><h3>The shell you actually type in</h3><p>The same tools as zsh, plus git abbreviations that expand as you type. <code>gs</code> becomes <code>git status</code>.</p></div>
+    </article>
+    <article class="frow reveal">
+      <div class="art">
+        <figure class="snip"><figcaption>ghostty/config</figcaption>
+<pre>font-family = <span class="s">JetBrainsMono Nerd Font</span>
+font-size = <span class="v">14</span>
+background-opacity = <span class="v">0.92</span>
+<span class="c"># Login zsh puts Homebrew on PATH</span>
+command = <span class="s">/bin/zsh -lc "exec fish"</span></pre></figure>
+      </div>
+      <div><p class="label">Ghostty</p><h3>A fast, native terminal</h3><p>JetBrains Mono with Nerd Font glyphs, slightly translucent, and it opens straight into fish.</p></div>
+    </article>
+    <article class="frow reveal">
+      <div class="art">
+        <figure class="snip"><figcaption>starship/starship.toml</figcaption>
+<pre>[directory]
+format = <span class="s">"[ 󰋜 $path ]($style)"</span>
+style = <span class="s">"bg:#89b4fa fg:#1e1e2e bold"</span>
+truncation_length = <span class="v">3</span>
+truncate_to_repo = <span class="v">true</span></pre></figure>
+      </div>
+      <div><p class="label">Starship</p><h3>A prompt that says where you are</h3><p>Catppuccin Mocha powerline: user, time, folder, branch and language version. A plain variant takes over in Terminal.app.</p></div>
+    </article>
+  </div>
+  <div class="cells">
+    <article class="cell reveal"><p class="label">Portable</p><h3>Intel and Apple silicon</h3><p>Homebrew is found at <code>/opt/homebrew</code> or <code>/usr/local</code>. No paths to edit.</p></article>
+    <article class="cell reveal"><p class="label">Safe</p><h3>Backs up first</h3><p>Anything already in the way is moved to <code>.bak</code> before the link goes in.</p></article>
+    <article class="cell reveal"><p class="label">Private</p><h3>Secrets stay local</h3><p>API keys live in <code>secrets.zsh</code> and <code>secrets.fish</code>, sourced if present, never committed.</p></article>
+  </div>
+</section>
+
+<section class="sec" id="install">
+  <div class="wrap center">
+    <p class="label reveal">Install</p>
+    <h2 class="reveal">Three commands</h2>
+    <p class="body reveal">Clone it, install the tools, link the files. Run it again any time; it only replaces links.</p>
+    <div class="stage install-stage reveal">
+      <div class="art stage-art" aria-hidden="true"></div>
+      <figure class="term">
+        <button class="copy" type="button" data-target="install-cmds">Copy</button>
+<pre id="install-cmds"><span class="dim">$ </span>git clone https://github.com/nulljosh/dotfiles.git ~/Documents/Code/dotfiles
+<span class="dim">$ </span>brew install fish starship eza bat fd fzf zoxide atuin fnm
+<span class="dim">$ </span>~/Documents/Code/dotfiles/install.sh</pre>
+        <figcaption>Fonts and Ghostty: <code>brew install --cask font-jetbrains-mono-nerd-font ghostty</code></figcaption>
+      </figure>
+    </div>
+    <div class="steps">
+      <article class="reveal"><p class="num">01</p><h3>Clone</h3><p>Anywhere you like. The installer links from wherever the repo sits.</p></article>
+      <article class="reveal"><p class="num">02</p><h3>Install the tools</h3><p>All from Homebrew. Skip any you do not want; the configs check before they use one.</p></article>
+      <article class="reveal"><p class="num">03</p><h3>Link</h3><p><code>install.sh</code> symlinks five files and backs up whatever was there.</p></article>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="foot" id="footer">
+  <div class="foot-top">
+    <div class="foot-brand"><img src="icon.svg" alt="" width="40" height="40"><b>dotfiles</b><p>The same shell on every Mac.</p></div>
+    <nav class="foot-cols" aria-label="Footer">
+      <div><p class="label">dotfiles</p><a href="#features">Configs</a><a href="#install">Install</a></div>
+      <div><p class="label">Source</p><a href="https://github.com/nulljosh/dotfiles">GitHub</a><a href="https://github.com/nulljosh/dotfiles/blob/main/install.sh">install.sh</a><a href="https://github.com/nulljosh/dotfiles/blob/main/LICENSE">License</a></div>
+      <div><p class="label">More</p><a href="mailto:trommatic@icloud.com?subject=dotfiles">Feedback</a><a href="https://jaybulb.com">More projects</a><a href="#top">Back to top</a></div>
+    </nav>
+  </div>
+  <div class="glyph-band" aria-hidden="true"><canvas class="glyph-canvas"></canvas></div>
+  <p class="legal">&copy; 2026 Joshua Trommel &middot; MIT License</p>
+</footer>
+<script src="footer-band.js" defer></script>
+</body>
+</html>

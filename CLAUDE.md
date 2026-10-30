@@ -18,3 +18,5 @@ macOS shell and terminal config, installed as symlinks by `install.sh`.
 - `fish/config.fish` -> `~/.config/fish/config.fish`
 - `ghostty/config` -> `~/.config/ghostty/config`
 - `starship/starship.toml`, `starship/starship-terminal.toml` -> `~/.config/`
+- `landing/` -> https://dotfiles.jaybulb.com (Cloudflare Worker, `./deploy.sh`; needs `npx wrangler login`)
+- `scripts/gen_font.py` -> `landing/fonts/DotfilesSans-*.woff2` (needs fonttools, brotli)

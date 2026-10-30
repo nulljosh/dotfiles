@@ -4,6 +4,8 @@
 
 Shell and terminal config for macOS (Apple Silicon or Intel).
 
+Site: https://dotfiles.jaybulb.com
+
 ![architecture](architecture.svg)
 
 ## What's here
@@ -24,6 +26,10 @@ brew install --cask font-jetbrains-mono-nerd-font ghostty
 ```
 
 `install.sh` symlinks each file into place and backs up anything it replaces as `*.bak`. Missing tools are skipped, not errors.
+
+## Site
+
+`landing/` is the site, a Cloudflare Worker serving static files. `./deploy.sh` publishes it; `scripts/gen_font.py` rebuilds Dotfiles Sans, Inter (OFL) with every dot drawn as a circle.
 
 ## Secrets
 

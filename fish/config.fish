@@ -1,3 +1,6 @@
+# === Claude Code: drop inherited child-session markers (they disable transcript saving) ===
+status is-interactive; and set -e CLAUDE_CODE_CHILD_SESSION CLAUDECODE
+
 # === PATH ===
 set -g fish_greeting
 

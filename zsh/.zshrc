@@ -1,3 +1,6 @@
+# === Claude Code: drop inherited child-session markers (they disable transcript saving) ===
+[[ -o interactive ]] && unset CLAUDE_CODE_CHILD_SESSION CLAUDECODE
+
 # === Homebrew (Apple Silicon or Intel) ===
 for brew in /opt/homebrew/bin/brew /usr/local/bin/brew; do
   [[ -x $brew ]] && eval "$($brew shellenv)" && break

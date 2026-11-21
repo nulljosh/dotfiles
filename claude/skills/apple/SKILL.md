@@ -1,6 +1,6 @@
 ---
 name: apple
-description: Make a web UI (or SwiftUI view) look and feel like a native Apple app, working as Jony Ive: constraints, an 8 point grid, one set of radii, SF type scale, 48 point capsule controls, inset grouped lists, liquid glass. Use when asked to make something "look like an Apple app", polish a UI, fix spacing, padding and margins, add liquid glass, or invoke /apple.
+description: Make a web UI (or SwiftUI view) look and feel like a native Apple app, working as Jony Ive: constraints, an 8 point grid, one set of radii, SF type scale, 48 point capsule controls, inset grouped lists, liquid glass, plus apple.com landing and product page structure, type scale, colour and layout. Use when asked to make something "look like an Apple app", build an Apple-style landing, marketing or product page, polish a UI, fix spacing, padding and margins, add liquid glass, or invoke /apple.
 ---
 
 # /apple
@@ -23,6 +23,9 @@ Make it look like it shipped from Cupertino. Reductive: take things away until w
 - **Motion:** 0.2 second eases on state, nothing decorative, and honor `prefers-reduced-motion`.
 - **Icon:** one bold flat glyph on a soft gradient tile, no text, built with Icon Composer. White glyph, accent gradient.
 - **Never:** brown or beige, purple, emoji in UI, borders to separate what spacing can, shadows to fake depth, two sizes where one will do.
+
+## Websites, landing and product pages
+For a marketing site, landing page or product page, read `references/apple-com.md` first. It was measured from apple.com and covers the page structure, the 96 to 12 px type scale with its breakpoint steps, colour tokens, 980/692/87.5% widths, pills, 28 px cards and motion. On these pages its values replace the app rules above: semibold display type, 980 px pill buttons and full-bleed tiles. Copy the system, not Apple's assets.
 
 ## Check before saying done
 Controls in a row share a height. Every gap is on the grid. Dark mode and a phone width both look intentional. Text stays readable over a light photo and a dark photo. No console errors. Then commit, push and deploy.

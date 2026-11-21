@@ -86,15 +86,10 @@ def split(job, setup_re, teardown_re):
     wait = max(0.0, secs(c, s)) if c else 0.0
     steps = [st for st in (job.get("steps") or [])
              if st.get("started_at") and st.get("completed_at") and st.get("conclusion") != "skipped"]
-    # Leading setup-looking steps and trailing teardown-looking steps are overhead;
-    # everything between them is the job's real work.
-    i = 0
-    while i < len(steps) and setup_re.search(steps[i]["name"]):
-        i += 1
-    j = len(steps)
-    while j > i and (teardown_re.search(steps[j - 1]["name"]) or setup_re.search(steps[j - 1]["name"])):
-        j -= 1
-    running = sum(max(0.0, secs(ts(st["started_at"]), ts(st["completed_at"]))) for st in steps[i:j])
+    # Any step whose name looks like setup or teardown is overhead wherever it sits (joshuatree runs a
+    # check before its apt installs); the rest is the job's real work.
+    work = [st for st in steps if not (setup_re.search(st["name"]) or teardown_re.search(st["name"]))]
+    running = sum(max(0.0, secs(ts(st["started_at"]), ts(st["completed_at"]))) for st in work)
     running = min(running, total)
     return {"wait": wait, "setup": total - running, "run": running, "total": total,
             "completed": e, "labels": ",".join(sorted(job.get("labels") or [])) or "?"}

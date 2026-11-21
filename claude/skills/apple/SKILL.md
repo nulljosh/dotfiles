@@ -8,7 +8,7 @@ description: Make a web UI (or SwiftUI view) look and feel like a native Apple a
 Make it look like it shipped from Cupertino. Reductive: take things away until what is left is obviously right. Every value comes from a constraint, never from the eye.
 
 ## The loop (until it looks like an Apple app)
-1. Screenshot the real page: desktop light, desktop dark, a 390 wide phone. Look at it. Send the screenshots to Joshua as you go (SendUserFile), not at the end.
+1. Screenshot the real page: desktop light, desktop dark, a 390 wide phone. Look at it. Send the screenshots to Joshua as you go (SendUserFile), not at the end. Read each shot yourself before sending it: curl the local page for a 200 first, since a server started in the wrong folder screenshots a 404.
 2. List what is off: misaligned controls, mixed radii, unequal gaps, crowded text, anything decorative.
 3. Fix it with the rules below, rebuild, screenshot again. Stop when nothing is off.
 

@@ -1,0 +1,151 @@
+#!/bin/bash
+set -euo pipefail
+
+usage() {
+    cat >&2 <<EOF
+Usage: inputctl <command> [args]
+
+Commands:
+  trackpad speed [1-10]      Get or set trackpad tracking speed
+  mouse speed [1-10]         Get or set mouse tracking speed
+  scroll natural [on|off]    Get or set natural scrolling direction
+  key-repeat [rate]          Get or set key repeat rate (lower = faster)
+  keyboard list              List enabled input sources
+EOF
+    exit 2
+}
+
+cmd_trackpad_speed() {
+    local value="${1:-}"
+    if [[ -z "$value" ]]; then
+        defaults read .GlobalPreferences com.apple.trackpad.scaling 2>/dev/null \
+            || echo "Error: could not read trackpad speed" >&2
+    else
+        if ! [[ "$value" =~ ^[0-9]+(\.[0-9]+)?$ ]] || \
+           (( $(echo "$value > 10" | bc -l) )) || \
+           (( $(echo "$value < 1" | bc -l) )); then
+            echo "Error: speed must be a number between 1 and 10" >&2
+            exit 1
+        fi
+        defaults write .GlobalPreferences com.apple.trackpad.scaling -float "$value"
+        echo "Trackpad speed set to $value" >&2
+    fi
+}
+
+cmd_mouse_speed() {
+    local value="${1:-}"
+    if [[ -z "$value" ]]; then
+        defaults read .GlobalPreferences com.apple.mouse.scaling 2>/dev/null \
+            || echo "Error: could not read mouse speed" >&2
+    else
+        if ! [[ "$value" =~ ^[0-9]+(\.[0-9]+)?$ ]] || \
+           (( $(echo "$value > 10" | bc -l) )) || \
+           (( $(echo "$value < 1" | bc -l) )); then
+            echo "Error: speed must be a number between 1 and 10" >&2
+            exit 1
+        fi
+        defaults write .GlobalPreferences com.apple.mouse.scaling -float "$value"
+        echo "Mouse speed set to $value" >&2
+    fi
+}
+
+cmd_scroll_natural() {
+    local value="${1:-}"
+    if [[ -z "$value" ]]; then
+        local current
+        current=$(defaults read .GlobalPreferences com.apple.swipescrolldirection 2>/dev/null || echo "unknown")
+        if [[ "$current" == "1" ]]; then
+            echo "on"
+        elif [[ "$current" == "0" ]]; then
+            echo "off"
+        else
+            echo "$current"
+        fi
+    else
+        case "$value" in
+            on|1)
+                defaults write .GlobalPreferences com.apple.swipescrolldirection -bool true
+                echo "Natural scrolling: on" >&2
+                ;;
+            off|0)
+                defaults write .GlobalPreferences com.apple.swipescrolldirection -bool false
+                echo "Natural scrolling: off" >&2
+                ;;
+            *)
+                echo "Error: value must be 'on' or 'off'" >&2
+                exit 1
+                ;;
+        esac
+    fi
+}
+
+cmd_key_repeat() {
+    local value="${1:-}"
+    if [[ -z "$value" ]]; then
+        defaults read .GlobalPreferences KeyRepeat 2>/dev/null \
+            || echo "Error: could not read key repeat rate" >&2
+    else
+        if ! [[ "$value" =~ ^[0-9]+$ ]]; then
+            echo "Error: rate must be a positive integer (lower = faster, typical range 1-15)" >&2
+            exit 1
+        fi
+        defaults write .GlobalPreferences KeyRepeat -int "$value"
+        echo "Key repeat rate set to $value" >&2
+    fi
+}
+
+cmd_keyboard_list() {
+    defaults read com.apple.HIToolbox AppleEnabledInputSources 2>/dev/null || {
+        echo "Error: could not read input sources" >&2
+        exit 1
+    }
+}
+
+[[ $# -eq 0 ]] && usage
+
+case "$1" in
+    trackpad)
+        shift
+        sub="${1:-}"; [[ -z "$sub" ]] && { echo "Error: subcommand required (speed)" >&2; usage; }
+        shift
+        case "$sub" in
+            speed) cmd_trackpad_speed "$@" ;;
+            *) echo "Error: unknown trackpad subcommand '$sub'" >&2; usage ;;
+        esac
+        ;;
+    mouse)
+        shift
+        sub="${1:-}"; [[ -z "$sub" ]] && { echo "Error: subcommand required (speed)" >&2; usage; }
+        shift
+        case "$sub" in
+            speed) cmd_mouse_speed "$@" ;;
+            *) echo "Error: unknown mouse subcommand '$sub'" >&2; usage ;;
+        esac
+        ;;
+    scroll)
+        shift
+        sub="${1:-}"; [[ -z "$sub" ]] && { echo "Error: subcommand required (natural)" >&2; usage; }
+        shift
+        case "$sub" in
+            natural) cmd_scroll_natural "$@" ;;
+            *) echo "Error: unknown scroll subcommand '$sub'" >&2; usage ;;
+        esac
+        ;;
+    key-repeat)
+        shift
+        cmd_key_repeat "$@"
+        ;;
+    keyboard)
+        shift
+        sub="${1:-}"; [[ -z "$sub" ]] && { echo "Error: subcommand required (list)" >&2; usage; }
+        shift
+        case "$sub" in
+            list) cmd_keyboard_list ;;
+            *) echo "Error: unknown keyboard subcommand '$sub'" >&2; usage ;;
+        esac
+        ;;
+    -h|--help) usage ;;
+    *) echo "Error: unknown command '$1'" >&2; usage ;;
+esac
+
+exit 0

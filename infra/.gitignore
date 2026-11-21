@@ -1,0 +1,20 @@
+# Rust
+target/
+Cargo.lock
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Go
+/bin/
+
+# General
+.DS_Store
+*.o
+*.so
+*.dylib

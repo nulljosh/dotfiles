@@ -1,0 +1,3 @@
+FROM qwen3.5:4b
+# Claude Code's tool instructions overflow Ollama's default context, so the model never calls tools.
+PARAMETER num_ctx 32768

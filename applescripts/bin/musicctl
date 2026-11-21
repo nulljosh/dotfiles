@@ -1,0 +1,276 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cmd="${1:-}"
+shift || true
+join_args() { local IFS=' '; echo "$*"; }
+query="$(join_args "$@")"
+ensure_music() {
+  if ! pgrep -x Music >/dev/null 2>&1; then
+    open -a Music
+    sleep 2
+  fi
+}
+run_as() { osascript - "$@"; }
+case "$cmd" in
+  play)
+    ensure_music
+    q="$query"
+    result=$(Q="$q" osascript <<'APPLESCRIPT'
+on run
+  set q to system attribute "Q"
+  tell application "Music"
+    activate
+    try
+      set matches to (every track of playlist "Library" whose (name contains q or artist contains q or album contains q))
+      if (count of matches) > 0 then
+        set t to item 1 of matches
+        play t
+        return "Playing: " & name of t & " by " & artist of t
+      else
+        return "NOT_IN_LIBRARY"
+      end if
+    on error errMsg
+      return "ERROR: " & errMsg
+    end try
+  end tell
+end run
+APPLESCRIPT
+)
+    if [[ "$result" == "NOT_IN_LIBRARY" ]]; then
+      python3 - <<'PY'
+import json, urllib.parse, urllib.request, os, subprocess, sys
+q = os.environ['Q']
+url = 'https://itunes.apple.com/search?term=' + urllib.parse.quote(q) + '&media=music&entity=song&limit=1'
+with urllib.request.urlopen(url, timeout=20) as r:
+    data = json.load(r)
+res = data.get('results', [])
+if not res:
+    print('Could not find that in Apple Music.')
+    sys.exit(1)
+item = res[0]
+track = item.get('trackName','Unknown')
+artist = item.get('artistName','Unknown')
+track_url = (item.get('trackViewUrl') or '').replace('https://', 'music://')
+if track_url:
+    subprocess.run(['open', track_url], check=False)
+print(f'Opening in Apple Music: {track} by {artist}')
+PY
+    else
+      printf '%s\n' "$result"
+    fi
+    ;;
+  pause)
+    ensure_music
+    osascript -e 'tell application "Music" to pause'
+    echo 'Paused.'
+    ;;
+  resume|unpause)
+    ensure_music
+    osascript -e 'tell application "Music" to play'
+    echo 'Resumed.'
+    ;;
+  next|skip)
+    ensure_music
+    osascript -e 'tell application "Music" to next track'
+    sleep 1
+    osascript -e 'tell application "Music" to set t to current track' -e 'tell application "Music" to return "Skipped to: " & name of t & " by " & artist of t'
+    ;;
+  prev|back)
+    ensure_music
+    osascript -e 'tell application "Music" to previous track'
+    sleep 1
+    osascript -e 'tell application "Music" to set t to current track' -e 'tell application "Music" to return "Now: " & name of t & " by " & artist of t'
+    ;;
+  now)
+    ensure_music
+    osascript -e 'tell application "Music" to set t to current track' -e 'tell application "Music" to return "Now playing: " & name of t & " by " & artist of t & " — " & album of t'
+    ;;
+  vol)
+    ensure_music
+    if [[ -n "$query" ]]; then
+      [[ "$query" =~ ^[0-9]+$ ]] || { echo "Usage: musicctl vol [0-100]"; exit 2; }
+      osascript -e "tell application \"Music\" to set sound volume to $query"
+    fi
+    osascript -e 'tell application "Music" to return "Volume: " & sound volume'
+    ;;
+  shuffle)
+    ensure_music
+    if [[ "$query" == "on" ]]; then osascript -e 'tell application "Music" to set shuffle enabled to true'; fi
+    if [[ "$query" == "off" ]]; then osascript -e 'tell application "Music" to set shuffle enabled to false'; fi
+    osascript -e 'tell application "Music" to return "Shuffle: " & shuffle enabled'
+    ;;
+  dj-start)
+    touch "$HOME/Documents/Code/applescripts/logs/dj.enabled"
+    echo "Auto-DJ armed."
+    ;;
+  dj-stop)
+    rm -f "$HOME/Documents/Code/applescripts/logs/dj.enabled"
+    echo "Auto-DJ stopped."
+    ;;
+  dj-status)
+    if [[ -f "$HOME/Documents/Code/applescripts/logs/dj.enabled" ]]; then echo 'Auto-DJ: enabled'; else echo 'Auto-DJ: disabled'; fi
+    ;;
+  playlist)
+    sub="${1:-}"
+    shift || true
+    case "$sub" in
+      list)
+        ensure_music
+        osascript -e 'tell application "Music" to get name of every user playlist'
+        ;;
+      play)
+        ensure_music
+        pl="$(join_args "$@")"
+        osascript -e "tell application \"Music\" to play playlist \"$pl\""
+        echo "Playing playlist: $pl"
+        ;;
+      create)
+        ensure_music
+        pl="$(join_args "$@")"
+        osascript -e "tell application \"Music\" to make new playlist with properties {name:\"$pl\"}"
+        echo "Created playlist: $pl"
+        ;;
+      add)
+        ensure_music
+        # Add current track to named playlist
+        pl="$(join_args "$@")"
+        osascript -e "tell application \"Music\"
+          set t to current track
+          duplicate t to playlist \"$pl\"
+          return \"Added \" & name of t & \" to \" & \"$pl\"
+        end tell"
+        ;;
+      *)
+        echo "Usage: musicctl playlist {list|play|create|add} [name]"
+        exit 2
+        ;;
+    esac
+    ;;
+  queue)
+    ensure_music
+    if [[ -z "$query" ]]; then
+      # Show up-next (no direct API, show current + player state)
+      osascript -e 'tell application "Music"
+        set t to current track
+        return "Current: " & name of t & " by " & artist of t & " | Position: " & (player position as integer) & "s / " & (duration of t as integer) & "s"
+      end tell'
+    else
+      # Queue a track by searching and playing next
+      Q="$query" osascript <<'APPLESCRIPT'
+on run
+  set q to system attribute "Q"
+  tell application "Music"
+    set matches to (every track of playlist "Library" whose (name contains q or artist contains q))
+    if (count of matches) > 0 then
+      set t to item 1 of matches
+      play t with once
+      return "Queued: " & name of t & " by " & artist of t
+    else
+      return "No match found for: " & q
+    end if
+  end tell
+end run
+APPLESCRIPT
+    fi
+    ;;
+  rate)
+    ensure_music
+    if [[ -z "$query" ]] || ! [[ "$query" =~ ^[1-5]$ ]]; then
+      echo "Usage: musicctl rate <1-5>"
+      exit 2
+    fi
+    stars=$((query * 20))
+    osascript -e "tell application \"Music\" to set rating of current track to $stars"
+    osascript -e 'tell application "Music" to return "Rated " & name of current track & ": " & (rating of current track) / 20 & " stars"'
+    ;;
+  love)
+    ensure_music
+    osascript -e 'tell application "Music"
+      set t to current track
+      set loved of t to not (loved of t)
+      if loved of t then
+        return "Loved: " & name of t
+      else
+        return "Unloved: " & name of t
+      end if
+    end tell'
+    ;;
+  dislike)
+    ensure_music
+    osascript -e 'tell application "Music"
+      set t to current track
+      set disliked of t to not (disliked of t)
+      if disliked of t then
+        return "Disliked: " & name of t
+      else
+        return "Un-disliked: " & name of t
+      end if
+    end tell'
+    ;;
+  lyrics)
+    ensure_music
+    osascript -e 'tell application "Music"
+      set t to current track
+      try
+        set l to lyrics of t
+        if l is "" then return "No lyrics available for: " & name of t
+        return l
+      on error
+        return "No lyrics available."
+      end try
+    end tell'
+    ;;
+  history)
+    ensure_music
+    osascript -e 'tell application "Music"
+      set output to ""
+      set recent to (every track of playlist "Library" whose played date is not missing value)
+      set recent to items 1 thru (min of {10, count of recent}) of recent
+      repeat with t in recent
+        set output to output & name of t & " - " & artist of t & " (" & played date of t & ")" & linefeed
+      end repeat
+      return output
+    end tell' 2>/dev/null || echo "Could not retrieve history."
+    ;;
+  search)
+    ensure_music
+    if [[ -z "$query" ]]; then echo "Usage: musicctl search <query>"; exit 2; fi
+    Q="$query" osascript <<'APPLESCRIPT'
+on run
+  set q to system attribute "Q"
+  tell application "Music"
+    set matches to (every track of playlist "Library" whose (name contains q or artist contains q or album contains q))
+    set output to ""
+    set lim to min of {20, count of matches}
+    repeat with i from 1 to lim
+      set t to item i of matches
+      set output to output & name of t & " - " & artist of t & " (" & album of t & ")" & linefeed
+    end repeat
+    if lim = 0 then return "No results for: " & q
+    return output
+  end tell
+end run
+APPLESCRIPT
+    ;;
+  stats)
+    ensure_music
+    osascript -e 'tell application "Music"
+      set lib to playlist "Library"
+      set tc to count of tracks of lib
+      set output to "Library: " & tc & " tracks" & linefeed
+      try
+        set totalTime to 0
+        repeat with t in (every track of lib)
+          set totalTime to totalTime + (duration of t)
+        end repeat
+        set hrs to (totalTime / 3600) as integer
+        set output to output & "Total duration: " & hrs & " hours"
+      end try
+      return output
+    end tell'
+    ;;
+  *)
+    echo "Usage: musicctl {play|pause|resume|next|prev|now|vol|shuffle|dj-start|dj-stop|dj-status|playlist|queue|rate|love|dislike|lyrics|history|search|stats} [query]"
+    exit 2
+    ;;
+esac

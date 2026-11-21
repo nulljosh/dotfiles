@@ -18,6 +18,12 @@ macOS shell and terminal config, installed as symlinks by `install.sh`.
 - `fish/config.fish` -> `~/.config/fish/config.fish`
 - `ghostty/config` -> `~/.config/ghostty/config`
 - `starship/starship.toml`, `starship/starship-terminal.toml` -> `~/.config/`
+- `claude/` -> `~/.claude/` (settings, hooks, scripts, commands) and `~/CLAUDE.md`; `claude/claude-skills/` -> `~/.claude/skills/` (links into `claude/skills/`), `claude/skills/` -> `~/.agents/skills/`
+- `codex/skills/` -> `~/.codex/skills/`
+- `git/`, `zsh/.zprofile`, `zsh/.zshenv`, `fish/functions`, `fish/conf.d`, `cmux/` -> their usual homes (see `install.sh`)
+- `bin/icat`, `bin/peek` -> `~/.local/bin/`
+- `applescripts/`, `infra/`, `scaffold/`, `sketchybar/`, `vibe/`, `local-ai-stack/`, `docs/`: tools and notes, not linked
+- Moved here from `labs/dotfiles` on 2026-11-21. This repo is the only copy.
 - `landing/` -> https://dotfiles.jaybulb.com (Cloudflare Worker, `./deploy.sh`; needs `npx wrangler login`)
 - `brand/tokens.css` -> copied into `landing/` by `deploy.sh`; edit the brand copy, never `landing/tokens.css`
 - `scripts/gen_font.py` -> `landing/fonts/DotfilesSans-*.woff2` (needs fonttools, brotli)

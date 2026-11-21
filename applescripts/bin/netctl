@@ -1,0 +1,95 @@
+#!/bin/bash
+# netctl -- Network utilities
+# Usage: netctl <command> [args]
+
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: netctl <command> [args]
+
+Commands:
+  ip                      Local and public IP addresses
+  dns                     Current DNS servers
+  ping <host>             Ping host 5 times
+  speed                   Download speed test (curl-based)
+  ports                   Listening TCP ports
+  flush                   Flush DNS cache (requires sudo)
+  proxy on <host:port>    Set system HTTP proxy for Wi-Fi
+  proxy off               Disable system HTTP proxy for Wi-Fi
+EOF
+  exit 2
+}
+
+[[ $# -lt 1 ]] && usage
+
+cmd="$1"
+shift
+
+case "$cmd" in
+  ip)
+    local_ip=$(ipconfig getifaddr en0 2>/dev/null || echo "unavailable")
+    public_ip=$(curl -s --max-time 5 ifconfig.me 2>/dev/null || echo "unavailable")
+    echo "Local:  $local_ip"
+    echo "Public: $public_ip"
+    ;;
+
+  dns)
+    scutil --dns | grep nameserver | head -5
+    ;;
+
+  ping)
+    [[ $# -lt 1 ]] && { echo "Usage: netctl ping <host>"; exit 1; }
+    ping -c 5 "$1"
+    ;;
+
+  speed)
+    echo "Testing download speed (10MB from Cloudflare CDN)..."
+    speed_bytes=$(curl -so /dev/null -w '%{speed_download}' "https://speed.cloudflare.com/__down?bytes=10000000" 2>/dev/null)
+    speed_mbps=$(echo "scale=2; $speed_bytes * 8 / 1000000" | bc 2>/dev/null)
+    echo "Download: ${speed_mbps} Mbps"
+    ;;
+
+  ports)
+    lsof -iTCP -sTCP:LISTEN -nP
+    ;;
+
+  flush)
+    echo "Running: sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder"
+    echo "(Requires sudo password)"
+    sudo dscacheutil -flushcache
+    sudo killall -HUP mDNSResponder
+    echo "DNS cache flushed."
+    ;;
+
+  proxy)
+    subCmd="${1:-}"
+    case "$subCmd" in
+      on)
+        [[ $# -lt 2 ]] && { echo "Usage: netctl proxy on <host:port>"; exit 1; }
+        hostport="$2"
+        host="${hostport%%:*}"
+        port="${hostport##*:}"
+        networksetup -setwebproxy "Wi-Fi" "$host" "$port"
+        networksetup -setsecurewebproxy "Wi-Fi" "$host" "$port"
+        echo "HTTP/HTTPS proxy set to $host:$port on Wi-Fi"
+        ;;
+      off)
+        networksetup -setwebproxystate "Wi-Fi" off
+        networksetup -setsecurewebproxystate "Wi-Fi" off
+        echo "Proxy disabled on Wi-Fi"
+        ;;
+      *)
+        echo "Usage: netctl proxy [on <host:port>|off]"
+        exit 1
+        ;;
+    esac
+    ;;
+
+  *)
+    echo "Unknown command: $cmd"
+    usage
+    ;;
+esac
+
+exit 0

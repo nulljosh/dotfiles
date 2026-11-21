@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="24" fill="#0c0c0c"/>
+  <rect x="20" y="20" width="160" height="160" rx="12" fill="#1a1a1a" stroke="#333" stroke-width="1"/>
+  <rect x="20" y="20" width="160" height="24" rx="12" fill="#222"/>
+  <circle cx="36" cy="32" r="4" fill="#ff5f57"/>
+  <circle cx="50" cy="32" r="4" fill="#febc2e"/>
+  <circle cx="64" cy="32" r="4" fill="#28c840"/>
+  <text x="32" y="66" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#28c840">kv></text>
+  <text x="60" y="66" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#4a9eff"> SET</text>
+  <text x="88" y="66" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#ccc"> user:1 josh</text>
+  <text x="32" y="82" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#28c840">OK</text>
+  <text x="32" y="100" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#28c840">kv></text>
+  <text x="60" y="100" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#4a9eff"> GET</text>
+  <text x="88" y="100" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#ccc"> user:1</text>
+  <text x="32" y="116" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#febc2e">"josh"</text>
+  <text x="32" y="134" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#28c840">kv></text>
+  <text x="60" y="134" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#4a9eff"> DEL</text>
+  <text x="88" y="134" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#ccc"> user:1</text>
+  <text x="32" y="150" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#28c840">OK</text>
+  <text x="32" y="168" font-family="SF Mono, Menlo, monospace" font-size="9" fill="#555">WAL: 3 entries | compacted</text>
+</svg>

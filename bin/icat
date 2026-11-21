@@ -1,0 +1,33 @@
+#!/usr/bin/env python3
+"""Show PNG images inline in Ghostty (or kitty) with the kitty graphics protocol. No dependencies.
+
+    icat shot.png [more.png ...]
+
+Non-PNG files are converted with sips first. Width defaults to the terminal; set ICAT_COLS to cap it.
+"""
+import base64, os, shutil, subprocess, sys, tempfile
+
+def png_bytes(path):
+    if path.lower().endswith(".png"):
+        return open(path, "rb").read()
+    tmp = tempfile.NamedTemporaryFile(suffix=".png", delete=False).name
+    subprocess.run(["sips", "-s", "format", "png", path, "--out", tmp], capture_output=True, check=True)
+    return open(tmp, "rb").read()
+
+def show(path):
+    data = base64.standard_b64encode(png_bytes(path))
+    cols = int(os.environ.get("ICAT_COLS", min(shutil.get_terminal_size().columns, 100)))
+    out = sys.stdout.buffer
+    first = True
+    while data:
+        chunk, data = data[:4096], data[4096:]
+        more = 1 if data else 0
+        head = f"a=T,f=100,c={cols},m={more}" if first else f"m={more}"
+        out.write(b"\x1b_G" + head.encode() + b";" + chunk + b"\x1b\\")
+        first = False
+    out.write(b"\n")
+    out.flush()
+
+for p in sys.argv[1:] or sys.exit(__doc__):
+    print(os.path.basename(p))
+    show(p)

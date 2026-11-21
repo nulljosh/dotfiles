@@ -1,0 +1,15 @@
+#!/bin/sh
+# peek IMAGE...: show screenshots in full colour.
+# Inside Ghostty, cmux or kitty it draws them inline (kitty graphics protocol, via icat).
+# Anywhere else (an agent's shell, Apple Terminal) it pops a window in cmux or Ghostty that closes on any key.
+here="$(cd "$(dirname "$0")" && pwd)"
+abs() { for f in "$@"; do printf '%s ' "$(cd "$(dirname "$f")" && pwd)/$(basename "$f")"; done; }
+inline() { [ -t 1 ] && { [ "$TERM_PROGRAM" = ghostty ] || [ -n "$CMUX_WORKSPACE_ID$CMUX_SOCKET_PATH" ] || [ "$TERM" = xterm-kitty ]; }; }
+if inline; then exec "$here/icat" "$@"; fi
+files="$(abs "$@")"
+cmd="$here/icat $files; printf '\n(any key closes)'; read -rn1 _"
+if [ -d /Applications/cmux.app ] && [ -n "$CMUX_WORKSPACE_ID$CMUX_SOCKET_PATH" ]; then
+  open -na cmux.app --args -e /bin/sh -c "$cmd"
+else
+  open -na Ghostty.app --args --title=peek -e /bin/sh -c "$cmd"
+fi

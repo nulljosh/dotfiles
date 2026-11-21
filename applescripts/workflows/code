@@ -1,0 +1,7 @@
+# Coding setup
+app open Terminal
+app open Safari
+win left Terminal
+win right Safari
+sys caffeine on
+focus on Code

@@ -1,0 +1,197 @@
+#!/bin/bash
+# macctl -- macOS system controls via AppleScript and native CLI
+# Usage: macctl <command> [args]
+
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: macctl <command> [args]
+
+Commands:
+  dark              Toggle dark/light mode
+  dark on|off       Set dark mode explicitly
+  volume [0-100]    Get or set system volume
+  brightness [0-100] Get or set screen brightness
+  lock              Lock the display
+  sleep             Put display to sleep
+  caffeine [mins]   Prevent sleep (default: indefinite, Ctrl-C to stop)
+  caffeine off      Kill any running caffeinate
+  battery           Show battery percentage and status
+  wifi              Show current WiFi network
+  wifi on|off       Toggle WiFi
+  bluetooth on|off  Toggle Bluetooth
+  uptime            Show system uptime
+  ram               Show RAM usage
+  cpu               Show CPU usage
+  temp              Show CPU temperature
+  display           Show display info
+  trash             Show Trash size
+  hostname [name]   Get or set hostname
+EOF
+  exit 2
+}
+
+[[ $# -lt 1 ]] && usage
+
+cmd="$1"
+shift
+
+case "$cmd" in
+  dark)
+    if [[ $# -eq 0 ]]; then
+      osascript -e 'tell application "System Events" to tell appearance preferences to set dark mode to not dark mode'
+      current=$(osascript -e 'tell application "System Events" to tell appearance preferences to return dark mode')
+      echo "Dark mode: $current"
+    else
+      case "$1" in
+        on)  osascript -e 'tell application "System Events" to tell appearance preferences to set dark mode to true'; echo "Dark mode: on" ;;
+        off) osascript -e 'tell application "System Events" to tell appearance preferences to set dark mode to false'; echo "Dark mode: off" ;;
+        *)   echo "Usage: macctl dark [on|off]"; exit 1 ;;
+      esac
+    fi
+    ;;
+
+  volume)
+    if [[ $# -eq 0 ]]; then
+      osascript -e 'output volume of (get volume settings)'
+    else
+      vol="$1"
+      if [[ "$vol" =~ ^[0-9]+$ ]] && [[ "$vol" -ge 0 ]] && [[ "$vol" -le 100 ]]; then
+        osascript -e "set volume output volume $vol"
+        echo "Volume: $vol"
+      else
+        echo "Usage: macctl volume [0-100]"; exit 1
+      fi
+    fi
+    ;;
+
+  brightness)
+    if [[ $# -eq 0 ]]; then
+      # Get brightness via AppleScript
+      osascript -e 'tell application "System Events" to tell process "Control Center" to value of slider 1 of group 1 of window "Control Center"' 2>/dev/null || {
+        # Fallback: use brightness command if available
+        if command -v brightness &>/dev/null; then
+          brightness -l 2>/dev/null | grep "display" | head -1 | awk '{printf "%.0f\n", $NF * 100}'
+        else
+          echo "Install brightness: brew install brightness"
+        fi
+      }
+    else
+      val="$1"
+      if [[ "$val" =~ ^[0-9]+$ ]] && [[ "$val" -ge 0 ]] && [[ "$val" -le 100 ]]; then
+        if command -v brightness &>/dev/null; then
+          brightness $(echo "scale=2; $val / 100" | bc)
+          echo "Brightness: $val%"
+        else
+          echo "Install brightness: brew install brightness"
+          exit 1
+        fi
+      else
+        echo "Usage: macctl brightness [0-100]"; exit 1
+      fi
+    fi
+    ;;
+
+  lock)
+    osascript -e 'tell application "System Events" to keystroke "q" using {command down, control down}'
+    echo "Display locked."
+    ;;
+
+  sleep)
+    pmset displaysleepnow
+    ;;
+
+  caffeine)
+    if [[ $# -eq 0 ]]; then
+      echo "Preventing sleep (Ctrl-C to stop)..."
+      caffeinate -d
+    elif [[ "$1" == "off" ]]; then
+      pkill caffeinate 2>/dev/null && echo "Caffeinate stopped." || echo "No caffeinate running."
+    elif [[ "$1" =~ ^[0-9]+$ ]]; then
+      echo "Preventing sleep for $1 minutes..."
+      caffeinate -d -t $(( $1 * 60 )) &
+      echo "PID: $!"
+    else
+      echo "Usage: macctl caffeine [minutes|off]"; exit 1
+    fi
+    ;;
+
+  battery)
+    pmset -g batt | tail -1 | sed 's/.*[[:space:]]//'
+    pmset -g batt
+    ;;
+
+  wifi)
+    if [[ $# -eq 0 ]]; then
+      networksetup -getairportnetwork en0 2>/dev/null || ipconfig getifaddr en0 2>/dev/null || echo "WiFi info unavailable"
+    else
+      case "$1" in
+        on)  networksetup -setairportpower en0 on; echo "WiFi on" ;;
+        off) networksetup -setairportpower en0 off; echo "WiFi off" ;;
+        *)   echo "Usage: macctl wifi [on|off]"; exit 1 ;;
+      esac
+    fi
+    ;;
+
+  bluetooth)
+    case "${1:-}" in
+      on)  blueutil --power 1 2>/dev/null && echo "Bluetooth on" || echo "Install blueutil: brew install blueutil" ;;
+      off) blueutil --power 0 2>/dev/null && echo "Bluetooth off" || echo "Install blueutil: brew install blueutil" ;;
+      *)   blueutil --power 2>/dev/null || echo "Install blueutil: brew install blueutil" ;;
+    esac
+    ;;
+
+  uptime)
+    uptime
+    ;;
+
+  ram)
+    vm_stat | awk '
+      /Pages free/ {free=$3}
+      /Pages active/ {active=$3}
+      /Pages inactive/ {inactive=$3}
+      /Pages wired/ {wired=$3}
+      END {
+        used=(active+wired)*4096/1048576
+        total=(free+active+inactive+wired)*4096/1048576
+        printf "RAM: %.0f MB used / %.0f MB total\n", used, total
+      }'
+    ;;
+
+  cpu)
+    top -l 1 -n 0 -s 0 | grep "CPU usage" | sed 's/CPU usage: //'
+    ;;
+
+  temp)
+    if command -v osx-cpu-temp &>/dev/null; then
+      osx-cpu-temp
+    else
+      sudo powermetrics --samplers smc -i1 -n1 2>/dev/null | grep -i "die temp" || echo "Install osx-cpu-temp: brew install osx-cpu-temp"
+    fi
+    ;;
+
+  display)
+    system_profiler SPDisplaysDataType 2>/dev/null | grep -E "Resolution|Display Type|Name" | sed 's/^ *//'
+    ;;
+
+  trash)
+    du -sh ~/.Trash 2>/dev/null | awk '{print "Trash: " $1}'
+    ;;
+
+  hostname)
+    if [[ $# -eq 0 ]]; then
+      hostname
+    else
+      sudo scutil --set HostName "$1"
+      sudo scutil --set LocalHostName "$1"
+      sudo scutil --set ComputerName "$1"
+      echo "Hostname set to: $1"
+    fi
+    ;;
+
+  *)
+    echo "Unknown command: $cmd"
+    usage
+    ;;
+esac

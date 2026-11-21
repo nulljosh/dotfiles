@@ -1,0 +1,21 @@
+#!/bin/bash
+# Block a commit that pushes a hand or agent written file past ~5,000 tokens (bytes/4).
+# ponytail: ratchet, files already over the limit in HEAD pass, so the 200+ old big files never block a commit.
+# Skip once: SKIP_TOKEN_CHECK=1 git commit ...  Change the limit: TOKEN_LIMIT=8000.
+[ -n "$SKIP_TOKEN_CHECK" ] && exit 0
+LIMIT=${TOKEN_LIMIT:-5000}
+fail=0
+while IFS=$'\t' read -r added _ path; do
+  [ "$added" = "-" ] && continue # binary
+  case "$path" in
+    *.lock|*.lockb|*-lock.json|*-lock.yaml|*Package.resolved|*.pbxproj|*.min.*|*.map|*.svg|*.json|*.jsonl|*.csv|*.tsv|*.xcstrings) continue ;;
+    dist/*|*/dist/*|build/*|*/build/*|vendor/*|*/vendor/*|node_modules/*|*/node_modules/*) continue ;;
+  esac
+  size=$(git cat-file -s ":$path" 2>/dev/null) || continue
+  [ $((size / 4)) -le "$LIMIT" ] && continue
+  old=$(git cat-file -s "HEAD:$path" 2>/dev/null || echo 0)
+  [ $((old / 4)) -gt "$LIMIT" ] && continue
+  echo "pre-commit: $path is ~$((size / 4)) tokens, limit $LIMIT. Split it, or SKIP_TOKEN_CHECK=1 to commit anyway." >&2
+  fail=1
+done < <(git diff --cached --numstat --diff-filter=AM)
+exit $fail

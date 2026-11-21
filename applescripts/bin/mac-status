@@ -1,0 +1,42 @@
+#!/bin/bash
+set -euo pipefail
+
+# Battery
+batt=$(pmset -g batt | grep -o '[0-9]*%' | head -1 || echo "N/A")
+charging=$(pmset -g batt | grep -o 'charging\|discharging\|charged' | head -1 || echo "N/A")
+
+# WiFi
+wifi=$(networksetup -getairportnetwork en0 2>/dev/null | sed 's/Current Wi-Fi Network: //' || echo "N/A")
+
+# Volume
+vol=$(osascript -e 'output volume of (get volume settings)' 2>/dev/null || echo "N/A")
+
+printf "Battery: %s (%s)  |  WiFi: %s  |  Vol: %s\n" "$batt" "$charging" "$wifi" "$vol"
+
+# Dark mode
+dark=$(osascript -e 'tell application "System Events" to tell appearance preferences to return dark mode' 2>/dev/null || echo "N/A")
+
+# Caffeine
+if pgrep -x caffeinate >/dev/null 2>&1; then caff="on"; else caff="off"; fi
+
+printf "Dark: %s  |  Caffeine: %s\n" "$dark" "$caff"
+
+# Music
+music=$(osascript -e '
+tell application "Music"
+  if not running then return "Not running"
+  try
+    set t to current track
+    set s to player state as text
+    return name of t & " - " & artist of t & " (" & s & ")"
+  on error
+    return "Idle"
+  end try
+end tell' 2>/dev/null || echo "N/A")
+printf "Music: %s\n" "$music"
+
+# Windows + displays + uptime
+apps=$(osascript -e 'tell application "System Events" to count of (every application process whose background only is false)' 2>/dev/null || echo "?")
+displays=$(system_profiler SPDisplaysDataType 2>/dev/null | grep -c "Resolution" || echo "?")
+up=$(uptime | sed 's/.*up //' | sed 's/,.*//')
+printf "Windows: %s apps  |  Displays: %s  |  Uptime: %s\n" "$apps" "$displays" "$up"

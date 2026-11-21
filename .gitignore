@@ -4,3 +4,10 @@ secrets.zsh
 *.bak
 .wrangler/
 node_modules/
+.env
+.env.local
+.env.*.local
+.env.production
+claude/claude-skills/mail/
+__pycache__/
+*.pyc

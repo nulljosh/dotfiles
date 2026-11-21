@@ -1,0 +1,8 @@
+#!/bin/bash
+# Journal posts redeploy on commit. Wiki Inbox stub writer removed 2026-10-31 (recreated an impostor iCloud vault folder; nothing read the stubs).
+REPO=$(basename "$(git rev-parse --show-toplevel)")
+
+if [ "$REPO" = "journal" ] && git show --name-only --pretty=format: HEAD | grep -q '^_posts/'; then
+  TOPLEVEL=$(git rev-parse --show-toplevel)
+  ( cd "$TOPLEVEL" && ./scripts/deploy.sh >/tmp/journal-deploy.log 2>&1 & )
+fi

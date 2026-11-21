@@ -1,0 +1,78 @@
+#!/bin/bash
+set -euo pipefail
+
+usage() {
+    cat >&2 <<EOF
+Usage: keyctl <command> [args]
+
+Commands:
+  get <service>              Retrieve password for service
+  set <service> <account>    Store password for service/account (reads from stdin or prompts)
+  list                       List all keychain services
+  delete <service>           Delete keychain item for service
+EOF
+    exit 2
+}
+
+cmd_get() {
+    local service="${1:-}"
+    [[ -z "$service" ]] && { echo "Error: service required" >&2; usage; }
+
+    local password
+    password=$(security find-generic-password -s "$service" -w 2>/dev/null) || {
+        echo "Error: no keychain item found for service '$service'" >&2
+        exit 1
+    }
+    echo "$password"
+}
+
+cmd_set() {
+    local service="${1:-}"
+    local account="${2:-}"
+    [[ -z "$service" ]] && { echo "Error: service required" >&2; usage; }
+    [[ -z "$account" ]] && { echo "Error: account required" >&2; usage; }
+
+    local password
+    if [ -t 0 ]; then
+        read -r -s -p "Password: " password
+        echo >&2
+    else
+        read -r password
+    fi
+
+    [[ -z "$password" ]] && { echo "Error: password cannot be empty" >&2; exit 1; }
+
+    security add-generic-password -s "$service" -a "$account" -w "$password" -U
+    echo "Stored keychain item for service '$service'" >&2
+}
+
+cmd_list() {
+    security dump-keychain 2>/dev/null \
+        | grep '"svce"' \
+        | sed 's/.*<blob>="//;s/"//' \
+        | sort -u
+}
+
+cmd_delete() {
+    local service="${1:-}"
+    [[ -z "$service" ]] && { echo "Error: service required" >&2; usage; }
+
+    security delete-generic-password -s "$service" 2>/dev/null || {
+        echo "Error: no keychain item found for service '$service'" >&2
+        exit 1
+    }
+    echo "Deleted keychain item for service '$service'" >&2
+}
+
+[[ $# -eq 0 ]] && usage
+
+case "$1" in
+    get)    shift; cmd_get "$@" ;;
+    set)    shift; cmd_set "$@" ;;
+    list)   cmd_list ;;
+    delete) shift; cmd_delete "$@" ;;
+    -h|--help) usage ;;
+    *) echo "Error: unknown command '$1'" >&2; usage ;;
+esac
+
+exit 0

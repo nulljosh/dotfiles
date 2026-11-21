@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+VERSION="2.0.0"
+
+# Resolve script directory
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")")" && pwd)"
+
+# Alias -> tool mapping (populate after declare to avoid nounset issues)
+declare -A ALIASES
+ALIASES[music]=musicctl
+ALIASES[app]=appctl
+ALIASES[win]=winctl
+ALIASES[sys]=macctl
+ALIASES[clip]=clipctl
+ALIASES[find]=finderctl
+ALIASES[note]=notectl
+ALIASES[cal]=calctl
+ALIASES[rem]=reminderctl
+ALIASES[safari]=safarictl
+ALIASES[screen]=screenctl
+ALIASES[say]=sayctl
+ALIASES[focus]=focusctl
+ALIASES[mail]=mailctl
+ALIASES[contact]=contactctl
+ALIASES[disk]=diskctl
+ALIASES[net]=netctl
+ALIASES[proc]=procctl
+ALIASES[key]=keyctl
+ALIASES[input]=inputctl
+
+# Discover available tools by scanning bin/*ctl
+discover_tools() {
+  find "$SCRIPT_DIR" -maxdepth 1 \( -name '*ctl' \) \( -type f -o -type l \) 2>/dev/null \
+    | xargs -I{} basename {} | sort
+}
+
+cmd="${1:-}"
+
+case "$cmd" in
+  help|--help|-h|"")
+    echo "mac v${VERSION} -- unified macOS CLI dispatcher"
+    echo ""
+    echo "Usage: mac <command> [args...]"
+    echo ""
+    echo "Discovered tools:"
+    while IFS= read -r tool; do
+      echo "  $tool"
+    done < <(discover_tools)
+    echo ""
+    echo "Aliases:"
+    for alias_key in $(echo "${!ALIASES[@]}" | tr ' ' '\n' | sort); do
+      target="${ALIASES[$alias_key]}"
+      echo "  mac $alias_key -> $target"
+    done
+    echo ""
+    echo "Built-in commands: help, version, status"
+    exit 0
+    ;;
+  version|--version|-v)
+    echo "mac v${VERSION}"
+    exit 0
+    ;;
+  status)
+    exec "$SCRIPT_DIR/mac-status" "$@"
+    ;;
+  context)
+    exec "$SCRIPT_DIR/mac-context" "$@"
+    ;;
+esac
+
+shift
+
+# Resolve alias or direct tool name
+tool=""
+if [[ -n "${ALIASES[$cmd]+x}" ]]; then
+  tool="${ALIASES[$cmd]}"
+else
+  # Direct tool name (e.g. `mac musicctl play`)
+  tool="$cmd"
+fi
+
+tool_path="$SCRIPT_DIR/$tool"
+
+if [[ ! -x "$tool_path" ]]; then
+  echo "mac: unknown command '$cmd'" >&2
+  echo "Run 'mac help' to see available commands." >&2
+  exit 2
+fi
+
+exec "$tool_path" "$@"

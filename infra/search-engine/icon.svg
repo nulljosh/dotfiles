@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="24" fill="#0c0c0c"/>
+  <rect x="20" y="20" width="160" height="160" rx="12" fill="#1a1a1a" stroke="#333" stroke-width="1"/>
+  <rect x="20" y="20" width="160" height="24" rx="12" fill="#222"/>
+  <circle cx="36" cy="32" r="4" fill="#ff5f57"/>
+  <circle cx="50" cy="32" r="4" fill="#febc2e"/>
+  <circle cx="64" cy="32" r="4" fill="#28c840"/>
+  <text x="32" y="66" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#28c840">$</text>
+  <text x="44" y="66" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#ccc"> search "rust async"</text>
+  <text x="32" y="84" font-family="SF Mono, Menlo, monospace" font-size="9" fill="#888">BM25 | 3 results (0.02s)</text>
+  <text x="32" y="102" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#4a9eff">1.</text>
+  <text x="48" y="102" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#ccc"> tokio.rs</text>
+  <text x="130" y="102" font-family="SF Mono, Menlo, monospace" font-size="9" fill="#febc2e">0.94</text>
+  <text x="32" y="120" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#4a9eff">2.</text>
+  <text x="48" y="120" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#ccc"> futures.md</text>
+  <text x="130" y="120" font-family="SF Mono, Menlo, monospace" font-size="9" fill="#febc2e">0.87</text>
+  <text x="32" y="138" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#4a9eff">3.</text>
+  <text x="48" y="138" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#ccc"> poll.rs</text>
+  <text x="130" y="138" font-family="SF Mono, Menlo, monospace" font-size="9" fill="#febc2e">0.71</text>
+  <text x="32" y="158" font-family="SF Mono, Menlo, monospace" font-size="9" fill="#555">index: 1,204 docs | 8,391 terms</text>
+</svg>

@@ -1,0 +1,109 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(supabase *)",
+      "Bash(asc web api-keys create *)",
+      "Bash(rm \"/Users/joshua/Library/Mobile Documents/com~apple~CloudDocs/Documents/Misc/Books/*\")",
+      "Bash(rm -f \"/Users/joshua/Library/Mobile Documents/com~apple~CloudDocs/Documents/Misc/Books/*\")",
+      "Bash(env -u CLOUDFLARE_API_TOKEN npx wrangler deploy *)",
+      "Bash(env -u CLOUDFLARE_API_TOKEN npx wrangler deploy)",
+      "Bash(env -u CLOUDFLARE_API_TOKEN npx wrangler d1 execute *)",
+      "Bash(env -u CLOUDFLARE_API_TOKEN npx wrangler pages deploy *)",
+      "Bash(gh repo create nulljosh/*)",
+      "Bash(/Users/joshua/Documents/Code/vault/secretary/sms.sh *)",
+      "Bash(asc web review reply *)",
+      "Bash(asc review submit *)",
+      "Bash(asc review submissions-submit *)",
+      "Bash(asc publish appstore *)"
+    ],
+    "defaultMode": "auto"
+  },
+  "model": "sonnet",
+  "skillOverrides": {
+    "asc-apple-ads": "off",
+    "asc-aso-audit": "off",
+    "asc-build-lifecycle": "off",
+    "asc-crash-triage": "off",
+    "asc-id-resolver": "off",
+    "asc-localize-metadata": "off",
+    "asc-notarization": "off",
+    "asc-ppp-pricing": "off",
+    "asc-revenuecat-catalog-sync": "off",
+    "asc-screenshot-resize": "off",
+    "asc-subscription-localization": "off",
+    "asc-wall-submit": "off",
+    "cloudflare": "off",
+    "cloudflare-email-service": "off",
+    "agents-sdk": "off",
+    "durable-objects": "off",
+    "workers-best-practices": "off",
+    "pentest": "off",
+    "turnstile-spin": "off",
+    "web-perf": "off",
+    "xcode-cleanup": "off",
+    "fewer-permission-prompts": "off",
+    "security-review": "off",
+    "review": "off",
+    "audit": "off",
+    "cloudflare-one": "off",
+    "cloudflare-one-migrations": "off",
+    "wrap-up": "off",
+    "asc-submission-health": "off",
+    "asc-shots-pipeline": "off",
+    "pixelmator": "off",
+    "roadmap-prune": "off"
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/usage-context.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash \"/Users/joshua/.claude/plugins/cache/ponytail/ponytail/4.8.1/hooks/ponytail-statusline.sh\""
+  },
+  "enabledPlugins": {
+    "vercel@claude-plugins-official": false,
+    "swift-lsp@claude-plugins-official": true,
+    "clangd-lsp@claude-plugins-official": false,
+    "ponytail@ponytail": true,
+    "claude-security@claude-plugins-official": true,
+    "cloudflare@cloudflare": true,
+    "stripe@claude-plugins-official": false,
+    "cc-plugin-you-should-know@builtin": false
+  },
+  "extraKnownMarketplaces": {
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
+      }
+    },
+    "cloudflare": {
+      "source": {
+        "source": "github",
+        "repo": "cloudflare/skills"
+      }
+    }
+  },
+  "effortLevel": "low",
+  "advisorModel": "opus",
+  "tui": "fullscreen",
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  },
+  "skipDangerousModePermissionPrompt": true,
+  "skipWorkflowUsageWarning": true,
+  "theme": "auto",
+  "agentPushNotifEnabled": true,
+  "voiceEnabled": true,
+  "feedbackDrafts": "off"
+}

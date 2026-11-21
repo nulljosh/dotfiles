@@ -1,0 +1,95 @@
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+:root {
+  /* Portfolio palette (light) */
+  --bg-primary: #fafafa;
+  --bg-secondary: #f5f5f5;
+  --text-primary: #000;
+  --text-secondary: rgba(0, 0, 0, 0.5);
+  --border: rgba(0, 0, 0, 0.1);
+  --link: #000;
+
+  /* Semantic colors */
+  --success: #34c759;
+  --warning: #ff9500;
+  --error: #ff3b30;
+
+  /* Typography -- system stack, no external fonts */
+  --font-primary: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+
+  /* Font Sizes */
+  --text-xs: 0.6875rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 1.875rem;
+  --text-3xl: 2.25rem;
+
+  /* Spacing (4px base grid) */
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Border Radius -- minimal */
+  --radius-sm: 2px;
+  --radius: 4px;
+  --radius-lg: 6px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-base: 0.4s ease-out;
+  --transition-spring: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/*
+ * DARK MODE: [data-theme="dark"] and @media (prefers-color-scheme: dark) below
+ * MUST stay in sync. If you change a dark variable, update BOTH blocks.
+ */
+[data-theme="dark"] {
+  --bg-primary: #111;
+  --bg-secondary: #1a1a1a;
+  --text-primary: #e8e8e8;
+  --text-secondary: rgba(255, 255, 255, 0.5);
+  --border: rgba(255, 255, 255, 0.1);
+  --link: #e8e8e8;
+
+  --success: #30d158;
+  --warning: #ff9f0a;
+  --error: #ff453a;
+}
+
+/* Auto-detect system dark mode before JS loads -- values must match [data-theme="dark"] above */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme]) {
+    --bg-primary: #111;
+    --bg-secondary: #1a1a1a;
+    --text-primary: #e8e8e8;
+    --text-secondary: rgba(255, 255, 255, 0.5);
+    --border: rgba(255, 255, 255, 0.1);
+    --link: #e8e8e8;
+    --success: #30d158;
+    --warning: #ff9f0a;
+    --error: #ff453a;
+  }
+}
+
+body {
+  font-family: var(--font-primary);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  font-weight: 400;
+  transition: background 0.4s ease-out, color 0.4s ease-out;
+}

@@ -1,0 +1,82 @@
+#!/bin/bash
+# diskctl -- Storage management utilities
+# Usage: diskctl <command> [args]
+
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: diskctl <command> [args]
+
+Commands:
+  usage              Disk space summary for /
+  largest [path]     Top 10 largest files in path (default: ~/)
+  cleanup            Clear caches: ~/Library/Caches, Homebrew, npm, pip
+  volumes            Mounted volumes with sizes
+  snapshot           Create APFS local snapshot
+EOF
+  exit 2
+}
+
+[[ $# -lt 1 ]] && usage
+
+cmd="$1"
+shift
+
+case "$cmd" in
+  usage)
+    df -h /
+    ;;
+
+  largest)
+    target="${1:-$HOME}"
+    echo "Top 10 largest files in $target:"
+    find "$target" -type f -exec du -h {} + 2>/dev/null | sort -rh | head -10
+    ;;
+
+  cleanup)
+    echo "==> Measuring cache sizes before cleanup..."
+    before=0
+    if [[ -d "$HOME/Library/Caches" ]]; then
+      before=$(du -sk "$HOME/Library/Caches" 2>/dev/null | awk '{print $1}')
+    fi
+
+    echo "==> Clearing ~/Library/Caches..."
+    find "$HOME/Library/Caches" -mindepth 1 -maxdepth 1 -exec rm -rf {} + 2>/dev/null || true
+
+    echo "==> Running brew cleanup --prune=all..."
+    brew cleanup --prune=all 2>/dev/null || echo "  brew not found, skipping"
+
+    echo "==> Running npm cache clean --force..."
+    npm cache clean --force 2>/dev/null || echo "  npm not found, skipping"
+
+    echo "==> Running pip cache purge..."
+    pip cache purge 2>/dev/null || echo "  pip not found, skipping"
+
+    after=0
+    if [[ -d "$HOME/Library/Caches" ]]; then
+      after=$(du -sk "$HOME/Library/Caches" 2>/dev/null | awk '{print $1}')
+    fi
+
+    freed=$(( (before - after) / 1024 ))
+    echo "==> Done. Approx ${freed}MB freed from ~/Library/Caches."
+    ;;
+
+  volumes)
+    df -h | grep -E "^(/dev|/Volumes|Filesystem)" | grep -v "^Filesystem"
+    df -h / | tail -1
+    ;;
+
+  snapshot)
+    echo "Creating APFS local snapshot..."
+    tmutil localsnapshot /
+    echo "Snapshot created."
+    ;;
+
+  *)
+    echo "Unknown command: $cmd"
+    usage
+    ;;
+esac
+
+exit 0

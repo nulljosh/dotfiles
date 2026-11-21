@@ -1,0 +1,191 @@
+---
+name: ship
+description: Full release pipeline — version bump, screenshots, git push, TestFlight upload, ASC What to Test, Vercel deploy. Run from any app repo root.
+---
+
+# /ship
+
+Automated release pipeline. Run from the repo root. Args: `patch` (default) | `minor` | `major` | `--no-screenshots` | `--no-testflight` | `--no-deploy`.
+
+## Step 0 — Read config
+
+Read `.ship.json` from the current repo root. If missing, auto-detect:
+- `project.yml` or `*.xcodeproj` anywhere → `"platforms": ["ios"]`
+- `package.json` + (`vercel.json` or `next.config.*`) → add `"web"` to platforms
+- Both present → `["ios", "web"]`
+
+Minimum `.ship.json` shape:
+```json
+{
+  "appId": "ASC_APP_ID",
+  "bundleId": "com.example.app",
+  "scheme": "AppScheme",
+  "platforms": ["ios"],
+  "simulator": "iPhone 11 Pro Max",
+  "iosDir": "ios",
+  "xcodeProject": "ios/App.xcodeproj",
+  "exportOptions": "ios/.asc/artifacts/ExportOptions.plist",
+  "archivePath": "ios/.asc/artifacts/App.xcarchive",
+  "ipaPath": "ios/.asc/artifacts/App.ipa",
+  "screenshots": {
+    "main": "public/screenshots/screenshot-situation-new.png"
+  }
+}
+```
+
+## Step 1 — Changelog
+
+```bash
+# Get commits since last tag (fall back to last 15 commits if no tags)
+LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+if [ -n "$LAST_TAG" ]; then
+  git log "$LAST_TAG"..HEAD --oneline
+else
+  git log --oneline -15
+fi
+```
+
+Summarise into 3–5 bullet points. This becomes "What to Test" in TestFlight.
+
+## Step 2 — Bump version
+
+Determine bump type from args (default: patch).
+
+**iOS** (if `"ios"` in platforms):
+```bash
+cd <iosDir>
+asc xcode version bump --type patch   # or minor/major
+asc xcode version view --output json  # capture NEW_VERSION + NEW_BUILD_NUM
+cd ..
+```
+
+**Web** (if `"web"` in platforms):
+- Edit `package.json` `"version"` field to match NEW_VERSION using Edit tool.
+
+**Both** — update README.md badges:
+- `![ios](https://img.shields.io/badge/iOS-vNEW_VERSION-blue)`
+- `![web](https://img.shields.io/badge/web-vNEW_VERSION-blue)`
+- `![macos](...)` if macOS target exists
+
+Update CLAUDE.md and ios/CLAUDE.md and macos/CLAUDE.md header version lines.
+
+## Step 3 — Screenshots (skip with `--no-screenshots`)
+
+Only runs if `"ios"` in platforms and `screenshots` map is non-empty.
+
+```bash
+# Regenerate project if xcodegen present
+[ -f <iosDir>/project.yml ] && (cd <iosDir> && xcodegen generate)
+```
+
+Use XcodeBuildMCP:
+1. `session_set_defaults` — projectPath, scheme, simulatorName from config
+2. `build_run_sim` — build and launch
+3. Sleep 6s for map/data to load
+4. `screenshot` — capture path
+5. Copy screenshot to each path in `screenshots` map
+
+## Step 4 — Git commit + push
+
+Stage all modified files:
+```bash
+git add -A
+git commit -m "v{NEW_VERSION}: {one-line summary from changelog}
+
+{bullet changelog}
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+git push
+```
+
+Vercel auto-deploys on push if wired. No extra step needed unless `vercel.json` uses manual promotion.
+
+## Step 5 — TestFlight upload (skip with `--no-testflight`)
+
+Only runs if `"ios"` in platforms.
+
+```bash
+cd <iosDir>
+
+# Safe build number
+NEXT=$(asc builds next-build-number --app <appId> --version <NEW_VERSION> --platform IOS --output json | jq -r '.nextBuildNumber')
+asc xcode version edit --build-number "$NEXT"
+
+# Archive
+asc xcode archive \
+  --project <xcodeProject relative to iosDir> \
+  --scheme <scheme> \
+  --configuration Release \
+  --clean \
+  --archive-path <archivePath relative to iosDir> \
+  --overwrite \
+  --xcodebuild-flag=-destination \
+  --xcodebuild-flag=generic/platform=iOS \
+  --output json
+
+# Export
+asc xcode export \
+  --archive-path <archivePath relative to iosDir> \
+  --export-options <exportOptions relative to iosDir> \
+  --ipa-path <ipaPath relative to iosDir> \
+  --overwrite \
+  --xcodebuild-flag=-allowProvisioningUpdates \
+  --output json
+
+# Upload
+asc builds upload --app <appId> --ipa <ipaPath> --wait --output json
+# Capture BUILD_ID from output
+
+cd ..
+```
+
+## Step 6 — What to Test + App Description (ASC metadata)
+
+Use the changelog bullets to generate intelligent, human-readable copy — not a raw git log dump.
+
+**What to Test** — focused on what a beta tester should exercise:
+```bash
+asc builds test-notes create \
+  --build-id "$BUILD_ID" \
+  --locale "en-US" \
+  --whats-new "v{NEW_VERSION} — {2-sentence human summary of what changed, what to exercise}"
+```
+If `test-notes create` fails (already exists), use `test-notes update --localization-id`.
+
+**App Description** (TestFlight beta app description) — plain-language summary:
+```bash
+asc beta-app-review-submissions --help  # verify available commands
+# Description lives on the beta app info, not per-build — update via:
+asc apps beta-app-localizations list --app "<appId>" --output json
+# then update the localization ID with the new description
+# If asc doesn't expose this, fall back to noting it as a manual ASC step
+```
+
+Both fields should be generated by Claude from the changelog — not templated. Example quality bar:
+- What to Test: "Color map is now live — test the Situation tab across city/rural areas. Also verify brokerage sync and Markets scrolling."
+- Description: "Removes greyscale filter from all map views (web, iOS, macOS). Fixes a pre-existing iOS build scope bug and updates all version badges to 2.5.1."
+
+## Step 7 — Done
+
+Print summary:
+```
+✅ v{NEW_VERSION} (build {NEXT}) shipped
+   GitHub  → pushed (Vercel deploying)
+   TestFlight → processing (~15 min)
+   What to Test → updated
+```
+
+## Error handling
+
+- **Archive already exists** → always use `--overwrite`
+- **Build number too low** → `asc builds next-build-number` before every archive
+- **No ExportOptions.plist** → warn, skip TestFlight, still do git push
+- **xcodegen not found** → skip regenerate, proceed with existing xcodeproj
+- **No git tags** → fall back to last 15 commits for changelog
+
+## Notes
+
+- Never use `git add .` on repos with large binary artifacts — use explicit file list or `git add -u && git add <new files>`
+- Screenshots are optional — skip gracefully if simulator won't boot
+- This skill does NOT submit to the App Store — it only uploads to TestFlight
+- For macOS builds, adapt archive step: `--xcodebuild-flag=generic/platform=macOS`, export `.pkg`, upload with `--pkg` and explicit `--version`/`--build-number`

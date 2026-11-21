@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+BASE="$HOME/Documents/Code/applescripts"
+CACHE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/applescripts"
+LOG="$CACHE_DIR/auto-dj.log"
+DB="$HOME/.local/share/musicctl/history.db"
+MOOD_FILE="$BASE/logs/dj.mood"
+
+mkdir -p "$CACHE_DIR" "$(dirname "$DB")"
+
+# Init SQLite
+sqlite3 "$DB" "CREATE TABLE IF NOT EXISTS history (id INTEGER PRIMARY KEY, track TEXT, artist TEXT, genre TEXT, played_at DATETIME DEFAULT CURRENT_TIMESTAMP);"
+
+echo "[$(date)] auto-dj daemon start" >> "$LOG"
+last_track=""
+
+queue_next() {
+  local artist="$1"
+  local mood="${2:-mixed}"
+  # Pick a random track from library by same artist
+  local pick
+  pick=$(osascript -e "
+tell application \"Music\"
+  set matches to (every track of playlist \"Library\" whose artist contains \"$artist\")
+  if (count of matches) > 0 then
+    set idx to random number from 1 to (count of matches)
+    set t to item idx of matches
+    play t with once
+    return name of t & \" by \" & artist of t
+  else
+    return \"\"
+  end if
+end tell" 2>/dev/null)
+  if [[ -n "$pick" ]]; then
+    echo "[$(date)] queued: $pick (mood: $mood)" >> "$LOG"
+  fi
+}
+
+while true; do
+  if [[ ! -f "$BASE/logs/dj.enabled" ]]; then sleep 5; continue; fi
+
+  out=$(osascript <<'APPLESCRIPT' 2>/dev/null
+tell application "Music"
+  if not running then return "STOPPED"
+  try
+    set t to current track
+    set pos to player position
+    set dur to duration of t
+    set g to genre of t
+    return name of t & "|" & artist of t & "|" & (pos as text) & "|" & (dur as text) & "|" & g
+  on error
+    return "IDLE"
+  end try
+end tell
+APPLESCRIPT
+  )
+
+  if [[ "$out" == "STOPPED" || "$out" == "IDLE" ]]; then sleep 5; continue; fi
+
+  IFS='|' read -r track artist pos dur genre <<< "$out"
+  posi=${pos%.*}; duri=${dur%.*}
+
+  if [[ -n "$track" && "$track|$artist" != "$last_track" ]]; then
+    echo "[$(date)] tracking: $track by $artist [$genre]" >> "$LOG"
+    sqlite3 "$DB" "INSERT INTO history (track, artist, genre) VALUES ('${track//\'/\'\'}', '${artist//\'/\'\'}', '${genre//\'/\'\'}');"
+    last_track="$track|$artist"
+  fi
+
+  if (( duri > 30 && posi >= duri - 20 )); then
+    mood="mixed"
+    [[ -f "$MOOD_FILE" ]] && mood=$(cat "$MOOD_FILE")
+    echo "[$(date)] near end, queueing next (mood: $mood)" >> "$LOG"
+    queue_next "$artist" "$mood"
+    sleep 25
+  fi
+
+  sleep 5
+done

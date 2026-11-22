@@ -21,7 +21,7 @@ Score each candidate 0 to 10 on six axes. A+ means every axis is 9 or more.
 4. **Clean in its field**: no known tool, product or 100+ star repo with that name in the same domain
    (`gh search repos "<name> <field>"`). Big brands in other fields are fine.
 5. **Personal**: ties to Joshua, BC or Vancouver, or the project's own history.
-6. **Not cringe**: fine on a resume. No pwn, 1337, cyber, -hub.
+6. **Not cringe**: no cyber, -hub or startup filler. Leetspeak is fine for hacker tools: Joshua picked f4lc0n over falken (2026-11-22).
 
 Each round: 15+ candidates across different roots (places, people, films, trade words for the craft), score them,
 keep the top 3, and brainstorm the next round off what made them score. Stop when one is A+, or after 4 rounds

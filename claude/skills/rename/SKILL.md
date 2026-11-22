@@ -7,7 +7,7 @@ description: Rename an app end to end once the new name has stuck. Use when Josh
 
 A rename is one sweep, done once, with nothing left for Joshua to remind me about. Run it only after the
 name has stuck: a clear keep ("lock it", "update everything to it"), never a first "decent" or "you decide"
-([[feedback_rename_only_when_it_sticks]]). Names come from `asc-name-creator` first.
+([[feedback_rename_only_when_it_sticks]]). Names come from `/name` first (it grades and loops to A+), then `asc-name-creator` for App Store apps.
 
 ## 0. Check the name is real
 - App Store: probe with `asc-name-creator` on an editable record. If none exists (every version live or in
@@ -39,6 +39,8 @@ List them in the project memory as "still on old names on purpose".
 5. Tests, self-checks, build, deploy, curl the live page for the new name.
 
 ## 3. Outside the repo
+- Pages custom domain: auto mode blocks the API call, so Joshua adds it in the dashboard (Pages project > Custom domains). Until it is live, keep canonical, OG, sitemap and README links on the old host so nothing points at a dead URL.
+- zsh does not word-split `$files`; feed sed with `git grep -I -l -i <old> | xargs sed -i ""`, and `-I` skips tracked binaries like .pyc.
 - Domain: add `<new>.jaybulb.com` to the same Pages project or Worker; the old host keeps serving. For a
   Worker that is a second `routes` entry with `custom_domain = true` in `wrangler.toml`, then deploy; the
   certificate is live in under a minute. Point canonical, OG and in-app links at the new host.

@@ -3,6 +3,10 @@
 # Exits 0 with output like: session 8% (resets 22:49) | weekly_all 50% | weekly_scoped[Fable] 83% WARNING
 # Exits 1 silently on any failure — callers should treat usage as unknown, not block.
 set -o pipefail
+# ponytail: one shared cache for every caller (bar + prompt hook); endpoint 429s when polled from two places
+CACHE=~/.cache/claude_usage.txt
+age=$(( $(date +%s) - $(stat -f %m "$CACHE" 2>/dev/null || echo 0) ))
+[ -s "$CACHE" ] && [ "$age" -lt 90 ] && cat "$CACHE" && exit 0
 TOKEN=$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null \
   | jq -r '.claudeAiOauth.accessToken // empty') || exit 1
 [ -n "$TOKEN" ] || exit 1
@@ -11,4 +15,5 @@ curl -sf --max-time 10 https://api.anthropic.com/api/oauth/usage \
 | jq -r '
   def reset: if .resets_at then " (resets " + (.resets_at[0:19] + "Z" | fromdate | strflocaltime("%a %H:%M")) + ")" else "" end;
   [.limits[] | "\(.kind)\(if .scope.model.display_name then "[" + .scope.model.display_name + "]" else "" end) \(.percent)%\(reset)\(if .severity != "normal" then " " + (.severity | ascii_upcase) else "" end)"]
-  | join(" | ")'
+  | join(" | ")' > "$CACHE.tmp" && [ -s "$CACHE.tmp" ] && mv "$CACHE.tmp" "$CACHE" && cat "$CACHE" && exit 0
+rm -f "$CACHE.tmp"; exit 1

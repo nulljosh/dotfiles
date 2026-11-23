@@ -4,7 +4,7 @@
 # (it estimated pay-per-token spend/time-to-limit from JSONL logs, unrelated to the
 # account's actual rate-limit window) — switched to the OAuth usage endpoint via
 # ~/.claude/scripts/usage.sh, which is what the menu bar app reads too.
-cache=/tmp/claude-usage-hook-cache
+cache=/tmp/claude-usage-hook-cache  # 60s; usage.sh has its own shared cache
 
 # Free space on the data volume, every prompt, uncached. The disk hits 0 often enough to stop
 # a session dead (Bash itself fails with ENOSPC before anything runs), and by then the agent
@@ -15,7 +15,7 @@ if [ -n "$free_gb" ] && [ "$free_gb" -lt 15 ]; then
   disk="[disk] ${free_gb}GB free — run /cleanup before any heavy job, and keep large outputs off this volume"
 fi
 
-if [ -s "$cache" ] && [ $(( $(date +%s) - $(stat -f %m "$cache") )) -lt 300 ]; then
+if [ -s "$cache" ] && [ $(( $(date +%s) - $(stat -f %m "$cache") )) -lt 60 ]; then
   out=$(cat "$cache")
 else
   out=$(bash "$HOME/.claude/scripts/usage.sh" 2>/dev/null)

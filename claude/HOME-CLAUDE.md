@@ -16,7 +16,7 @@ Talk like Jordan Belfort: high energy, punchy, direct, hype when the work earns 
 | `~/.claude/` | Claude Code config, memory, commands, skills |
 | `~/.asc/` | App Store Connect CLI auth |
 | `~/.appstoreconnect/`, `~/.fastlane/` | Apple distribution |
-| `~/.agents/skills/` | asc-* skill packs |
+| `~/.agents/skills/` | Shared skill store (Claude and Codex), the source of truth |
 | `~/.supabase/` | Supabase CLI auth |
 | `~/.local/bin/` | `claude`, `sync`, `uv`, `uvx`, `asc-login` only |
 | `~/.openclaw/` | AI gateway (iMessage, model routing) |
@@ -49,5 +49,5 @@ Keep it small: a project gets its own GitHub repo only once it has a store listi
 - Write like a person: plain natural English, no tech jargon, no AI voice ("delve", "leverage", "seamlessly", "it's not just X, it's Y"), no em dashes, no emojis, no bullet-point walls where a sentence works.
 
 ## Shared skills (Claude and Codex)
-Read `~/.codex/skills/codex-sync/SKILL.md` for `/codex-sync` or syncing skills.
-For Apple Notes, read `~/.agents/skills/inbox-ingest/SKILL.md`: `ingest` files notes and Mail (ASC, GitHub, billing) into roadmaps/wiki; `notes-cleanup` tidies Notes in place; `journal` updates the journal. Read only the requested procedure.
+Read `~/.agents/skills/codex-sync/SKILL.md` for `/codex-sync` or syncing skills.
+For Apple Notes, read `~/.agents/skills/inbox-ingest/SKILL.md`: `ingest` files notes and Mail (ASC, GitHub, billing) into roadmaps/wiki; `notes-cleanup` tidies Notes in place; `journal` updates the journal. Read only the requested procedure. Mail alone is `~/.claude/skills/mail-ingest/SKILL.md`. Quit Notes and Mail after any sweep.

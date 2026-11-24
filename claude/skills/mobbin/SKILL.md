@@ -34,6 +34,11 @@ screenshots in light and dark, put our screen beside the competitor's sheet and 
 type, hierarchy, controls), then bump the minor version, commit, tag, push and deploy. When the matrix is empty, run the
 `apple` skill's checks over every screen; the next major ships when both are clean.
 
+## Web-only projects (no App Store entry)
+Some projects are a landing page, not an app (e.g. f4lc0n). There's no App Store sheet to fetch, so
+compare against Joshua's own A+ landers (plank, keyrate) and 1–2 best-in-class dev-tool landers in the
+same space. Write the gap matrix into the repo's own `roadmap.md` as a Landing section, one row per gap.
+
 ## Rules
 - Our own design system wins over copying: borrow the idea, never the brand, colours or wording.
 - No sound from QA (simulator audio plays on the Mac), no account creation, never type Joshua's passwords.

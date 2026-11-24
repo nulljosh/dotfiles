@@ -11,20 +11,19 @@ Answer: how much have all the apps made so far, which ones, and what to change n
 Follow `~/.claude/skills/sales/asc-signin.md`. Use the API path when it works, the web session next, Safari last.
 
 ## 2. Pull the numbers
-All-time = every yearly report since the first launch, plus monthly reports for this year, plus daily reports for this month. Save reports to `~/Documents/Josh/App Store/sales/` (create it; keep the raw files, they are the record).
+**Headless, web session (works now):**
 ```
-D=~/Documents/Josh/App\ Store/sales
-asc analytics sales --vendor "$ASC_VENDOR_NUMBER" --type SALES --subtype SUMMARY --frequency YEARLY  --date 2025 --allow-missing --output "$D/y2025.tsv.gz"
-asc analytics sales --vendor "$ASC_VENDOR_NUMBER" --type SALES --subtype SUMMARY --frequency MONTHLY --date 2026-10 --allow-missing --output "$D/m2026-10.tsv.gz"
-asc analytics sales --vendor "$ASC_VENDOR_NUMBER" --type SALES --subtype SUMMARY --frequency DAILY   --date 2026-11-23 --allow-missing --output "$D/d2026-11-23.tsv.gz"
-python3 -I ~/.claude/skills/sales/sales_sum.py "$D"/*.tsv.gz
+set -a; . ~/.config/asc.env; set +a
+python3 -I ~/.claude/skills/sales/all_apps.py --json > ~/Documents/Josh/App\ Store/sales/alltime-$(date +%F).json
+python3 -I ~/.claude/skills/sales/all_apps.py
 ```
-Don't double count: a yearly file already covers its months. Skip files already on disk. Reports lag a day or two; `--allow-missing` handles that.
+All-time units (first downloads), sales and proceeds per app, in USD. About 2 s per app. Analytics round each day to whole dollars, so for cents use paid sales × $0.84 (Small Business Program) or the API reports below.
 
-Web session only (no API key): `asc web analytics sales --app APP_ID --start … --end … --output json` per app, and `asc web analytics overview` for page views → downloads conversion.
-Safari only: Sales and Trends → set the range to "All time", group by app, read Proceeds and Units.
+**Exact cents (needs a FINANCE key, rung 1):** yearly + monthly + daily `asc analytics sales --vendor "$ASC_VENDOR_NUMBER" --type SALES --subtype SUMMARY …` into `~/Documents/Josh/App Store/sales/`, then `python3 -I ~/.claude/skills/sales/sales_sum.py <files>` (converts to CAD). A yearly file already covers its months, so don't double count.
 
-Also note web sales: Stripe ($1 web unlocks for Epiphany, Talli, Machaon, Melete). No Stripe CLI here; read the Stripe dashboard in Safari only if Joshua asks.
+**Stripe** (web $1 unlocks): no CLI or key on this Mac. GTM.md had zero charges ever as of 2026-09-06. Say "Stripe: unverified" unless Joshua shares the dashboard.
+
+Last run's numbers and private details live in `~/Documents/Josh/App Store/STATE.md` (outside this public repo). Read it to compare, then add a dated section.
 
 ## 3. Report (terse)
 One line: **all-time proceeds in CAD, paid units, downloads**, then the top 3 apps by proceeds. Show the per-app table only if asked. Compare with the last run (`asc analytics compare --source sales …` or the previous snapshot) when there is one.

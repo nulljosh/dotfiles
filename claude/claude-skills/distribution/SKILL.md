@@ -17,6 +17,12 @@ App IDs come from GTM.md (path in asc-signin.md) or `asc apps list --paginate --
 - Rejected? `asc web review list --app APP_ID` then `show` for the guideline and Apple's text.
 Write the board to `~/Documents/Josh/App Store/distribution.md` (app · platform · live version · in flight · state · territories · next step). Don't re-fetch apps whose state is final and unchanged since the last board unless asked.
 
+## 2b. Badges and notices
+- Apps page notices (China mainland AIGC/Security Assessment, age-rating questions, etc.): list each with its deadline and the choice Joshua has to make.
+- "View App Review Issues & Messages" → `asc web review list/show --app ID`; summarize Apple's text.
+- **One submission a week** (GTM rule). Flag any time more than one app is Waiting for Review; bulk submissions caused the 4.3(a)/5.6 waves.
+- Log findings in `~/Documents/Josh/App Store/STATE.md` (private).
+
 ## 3. Report (terse)
 One line: **N live, N in review, N rejected, N stuck**, then the single most important next step. Full board only if asked.
 

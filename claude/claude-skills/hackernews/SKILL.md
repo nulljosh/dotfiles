@@ -13,6 +13,7 @@ description: Joshua's Hacker News — find or create his account, read karma and
 `curl -s https://hacker-news.firebaseio.com/v0/user/<handle>.json` → karma, created, submitted ids. `…/v0/item/<id>.json` → title, score, descendants (comments). Algolia search: `https://hn.algolia.com/api/v1/search?query=<app>&tags=story`.
 
 ## Post (Show HN)
+- **New accounts can't post Show HN** (HN redirects to /showlim: "temporarily restricting Show HNs… get to know the community first"). Hit 2026-11-24 with Joshua's new account. Don't work around it with a plain link post. Build karma with real comments first, then retry. Check: if submit lands on /showlim, stop.
 - Draft: `<app>/launch/hn.md`. The first line is the title (`Show HN: X – …`, ≤80 chars), the rest is the first comment.
 - Background tab (see /reddit for the osascript line): `https://news.ycombinator.com/submitlink?u=<urlenc url>&t=<urlenc title>`. `pbcopy` the first-comment text. **Joshua clicks submit**, then pastes the comment on his own post.
 - One Show HN per app, never reposted within weeks, and only for something people can try now (the web build, not just an App Store link). After posting, add `Post: <url> (date)` to hn.md and commit/push.

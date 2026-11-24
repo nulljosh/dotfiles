@@ -9,6 +9,9 @@ Select only the mode requested by the user and read its procedure below. Former 
 
 Repository AGENTS.md and current user instructions take precedence over historical procedures. A procedure does not authorize unrelated work, publishing, merging, sending messages, purchases, background automation, or delegation. Honor existing authorization and stop at the requested outcome. Do not start an endless loop or act on a roadmap unless requested. Use current repo names and verify historical paths before running commands.
 
+## Hard gate: one store submission a week, every mode
+Before ANY `asc review submit`, `submissions-submit`, or "Add for Review", run `python3 <skill-dir>/week_gate.py`. If it prints BLOCKED, do not submit. Not in loops, not "just one more", not with a note. Tell Joshua which app is next in line and stop. About 25 submissions went in between Nov 7 and Nov 22, 2026, most from the asc-cli key in agent loops: the bulk pattern behind the 5.6 suspension and the 4.3(a) waves. Only Joshua's explicit yes in chat, for a named app, overrides this.
+
 | Mode / former command | Instructions |
 |---|---|
 | `asc-app-create-ui` | [Procedure](references/asc-app-create-ui/PROCEDURE.md) |

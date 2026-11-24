@@ -34,7 +34,7 @@ Update the "The numbers" section of GTM.md with the verified figure and date, th
 Pick at most 3, each tied to a number you just saw. Respect the GTM rules: every app is free or $0.99 one-time; **no subscriptions, tips, ads, tiers or price tests**. Good levers:
 - **Conversion**: page views high, downloads low → screenshots, first screenshot caption, subtitle, icon (`/mobbin` for competitor screens, `/ui`).
 - **Discovery**: few impressions → keywords and name/subtitle (`asc metadata keywords …`, `/name`), custom product pages, in-app events (`asc web analytics sources`).
-- **Free → $0.99**: a free catalogue app with steady downloads and good ratings is a candidate. Price changes need Joshua's yes (`asc pricing schedule create … --price 0.99`, see GTM hard-won rules).
+- **Free → $0.99: default no.** The Nov 2026 flip cut downloads about 4x for about $12 a month, with a free control app flat (details in STATE.md). Only suggest it for an app that already sells, like Eponym, and measure units/day before vs after with a free control. Price changes need Joshua's yes.
 - **Ratings**: few ratings → an in-app `SKStoreReviewController` prompt after a success moment.
 - **Reach**: missing platforms or territories → hand to `/distribution`.
 - **Launch push** for the best seller → `/launch`.

@@ -34,7 +34,8 @@ Update the "The numbers" section of GTM.md with the verified figure and date, th
 Pick at most 3, each tied to a number you just saw. Respect the GTM rules: every app is free or $0.99 one-time; **no subscriptions, tips, ads, tiers or price tests**. Good levers:
 - **Conversion**: page views high, downloads low → screenshots, first screenshot caption, subtitle, icon (`/mobbin` for competitor screens, `/ui`).
 - **Discovery**: few impressions → keywords and name/subtitle (`asc metadata keywords …`, `/name`), custom product pages, in-app events (`asc web analytics sources`).
-- **Free → $0.99: test one app at a time.** Compare equal windows right before and after against the free group's trend; a longer baseline mixes in launch spikes and fakes a drop (that happened in Nov 2026, see STATE.md). Price changes need Joshua's yes.
+- **Pricing: don't lead with it.** GTM forbids price tests. Free → $0.99 is a permanent call for Joshua, and at current volumes it's worth only a few dollars a month. When judging any price effect, compare equal windows right before and after against the free group, because longer baselines pick up launch spikes and fake a drop (Nov 2026, STATE.md).
+- **Unposted drafts first**: an app that sells with `launch/reddit/*.md` or `hn.md` drafts that have no `Post:` line is the top suggestion (`/launch <app> --reddit`).
 - **Ratings**: few ratings → an in-app `SKStoreReviewController` prompt after a success moment.
 - **Reach**: missing platforms or territories → hand to `/distribution`.
 - **Launch push** for the best seller → `/launch`.

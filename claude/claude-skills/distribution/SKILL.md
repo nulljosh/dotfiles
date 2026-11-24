@@ -20,7 +20,8 @@ Write the board to `~/Documents/Josh/App Store/distribution.md` (app · platform
 ## 2b. Badges and notices
 - Apps page notices (China mainland AIGC/Security Assessment, age-rating questions, etc.): list each with its deadline and the choice Joshua has to make.
 - "View App Review Issues & Messages" → `asc web review list/show --app ID`; summarize Apple's text.
-- **One submission a week** (GTM rule). Flag any time more than one app is Waiting for Review; bulk submissions caused the 4.3(a)/5.6 waves.
+- **One submission a week** (GTM rule). Count submissions in the last 7 days across ALL apps (`asc web review list --app ID` → `submittedDate`, `submittedByActor`), not just what's waiting. More than one is a break; name the actor (an API key means an agent loop did it). Bulk submissions caused the 4.3(a)/5.6 waves.
+- **Held vs backlog**: if other apps' reviews completed within about a day while one has waited more than 7 days, that app is held individually (suggest an App Review status inquiry). If everything is slow, it's Apple's general backlog.
 - Log findings in `~/Documents/Josh/App Store/STATE.md` (private).
 
 ## 3. Report (terse)

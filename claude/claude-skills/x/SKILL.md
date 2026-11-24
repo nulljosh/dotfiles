@@ -5,6 +5,8 @@ description: Joshua's X/Twitter (@nulljosh1) — check sign-in, read his posts a
 
 # /x
 
+**Joshua wants this headless: never make him look at Safari.** Background tabs still pop the window, and navigating the active tab is worse. True headless needs X API keys (developer.x.com) in Keychain `x-api`; until those exist, ask once before any Safari step and batch every post into that one window. Check the live profile before posting: an x.md without a `Post:` line doesn't prove it was never posted (Nimble got duplicated 2026-11-24).
+
 Handle: **@nulljosh1**. As of 2026-11-24 he's signed in to x.com in Safari on Dad's Mac. Open background tabs (`osascript … make new tab at end of tabs`), act by tab id, and close your tabs afterwards.
 
 ## Sign-in

@@ -15,7 +15,7 @@ Report one line of results, then at most 3 next steps. Stay headless: Joshua use
    - Product Hunt: `python3 <launch>/producthunt.py list` (Keychain `producthunt-api`; otherwise "PH: unverified").
    - Reddit/HN: which apps have `launch/reddit/*.md` or a `Post:` line, and which live apps have none.
    - An app that sells but has no post is the top promotion candidate.
-5. **Save**: compare with and append to `~/Documents/Josh/App Store/STATE.md` (private). Update GTM.md "The numbers" and commit/push labs (that repo is private; never put bank, tax or invoice details in this public one).
+5. **Save**: compare with and append to `~/Documents/Josh/App Store/STATE.md` (private). Update GTM.md "The numbers" and commit/push labs. Both labs and dotfiles are public: only sales totals go there, never bank, tax or invoice details.
 
 ## Output
 ```

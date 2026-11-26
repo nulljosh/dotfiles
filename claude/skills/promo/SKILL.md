@@ -26,4 +26,4 @@ Frames stream to ffmpeg. The score is generated: a soft chord with a thump and a
 Read `explore.jpg` and `ad.jpg` (a frame every 2 s). Check: text never touches an edge, every screen reads and is not blank, the caption fits its side, the end card is centred. Fix the spec, re-render. Never play the audio; the render prints mean and max volume (mean near -16 dB, max under -1 dB).
 
 ## 5. Ship
-Files stay in `launch/promo/<app>/` (specs are tracked, mp4 and jpg are gitignored). Upload to YouTube and TikTok only on Joshua's yes: posting is outward-facing, so this skill stops at the files. Keep the title and description plain, with the `<app>.jaybulb.com` link first.
+Files stay in `launch/promo/<app>/` (`launch/` is gitignored in labs, so specs and videos stay on this Mac). Upload to YouTube and TikTok only on Joshua's yes: posting is outward-facing, so this skill stops at the files. Keep the title and description plain, with the `<app>.jaybulb.com` link first.

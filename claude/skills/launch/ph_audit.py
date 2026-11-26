@@ -3,8 +3,11 @@
 import os,sys
 sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 import ph_submit as ph,time,json
-ph.nav('https://www.producthunt.com/my/products'); time.sleep(6)
-slugs=ph.js("[...new Set([...document.querySelectorAll('a')].map(a=>a.href).filter(h=>/\\/products\\/[^/]+\\/edit/.test(h)))].map(h=>h.split('/products/')[1].split('/')[0]).join(',')").split(',')
+# slugs from argv; else every launch/product link on /my/products (the Manage buttons are not anchors any more, 2026-11-26)
+slugs=sys.argv[1:]
+if not slugs:
+    ph.nav('https://www.producthunt.com/my/products'); time.sleep(7)
+    slugs=ph.js("[...new Set([...document.querySelectorAll('a')].map(a=>a.getAttribute('href')||'').filter(h=>/^\\/products\\/[^/?]+\\//.test(h)).map(h=>h.split('/')[2]))].join(',')").split(',')
 out={}
 for s in slugs:
     ph.nav('https://www.producthunt.com/products/%s/edit'%s); time.sleep(4.5)

@@ -68,3 +68,44 @@ APPS.update({
   cats=['AI assistants','Mac'],tags=['Artificial Intelligence','Mac','Open Source'],pricing='free',
   comment="Hi, I'm Josh. Turing is where I build small language models on my own Mac, and Samantha is the first one.\n\nShe is tiny on purpose, a half-billion-parameter model I fine-tuned myself, so she runs on a Mac with nothing sent anywhere. She paints, opens and runs your apps, keeps notes and reminders, finds files, does the math, and researches with sources. Anything that writes, sends or leaves a file asks you first.\n\nYou can talk to her right on the page before you download anything. Free and open source, with the weights on Hugging Face.\n\nHappy to answer anything about the training.",date='Nov 27'),
 })
+
+# 2026-11-26: costanza, keyrate, elah. Copy comes from each launch/producthunt.md; dates are Joshua's to pick, so none here.
+def kit(app,head):
+    t=sections(app+'/launch/producthunt.md')
+    return re.split(r'\n\n[A-Z][^\n]*:\n',t.split(head+'\n',1)[1]+'\n\nEnd:\n')[0].strip()
+APPS.update({
+'costanza':dict(name='Co-Stanza',tagline=kit('costanza','Tagline (<=60 chars):'),desc=kit('costanza','Description (<=260 chars):'),
+  url='https://costanza.jaybulb.com/?ref=ph',github='https://github.com/nulljosh/costanza',
+  logo=RAW+'costanza/main/brand/icon-1024.png',gallery=[RAW+'costanza/main/launch/gallery/00-live.png'],
+  cats=['Writing tools','Social networks'],tags=['Writing','Social Media','iOS'],pricing='free',
+  comment=kit('costanza','First comment (maker story):'),date=''),
+'keyrate':dict(name='Keyrate',tagline=kit('keyrate','Tagline (<=60 chars):'),desc=kit('keyrate','Description (<=260 chars):'),
+  url='https://keyrate.jaybulb.com/?ref=ph',github='https://github.com/nulljosh/keyrate',
+  logo=RAW+'keyrate/main/apple/Keyrate/Assets.xcassets/Keyrate.appiconset/ios-1024.png',gallery=[RAW+'keyrate/main/launch/gallery/00-live.png'],
+  cats=['Typing','Productivity'],tags=['Productivity','Education','Web App'],pricing='free',
+  comment=kit('keyrate','First comment (maker story):'),date=''),
+'elah':dict(name='Elah',tagline=kit('elah','Tagline (<=60 chars):'),desc=kit('elah','Description (<=260 chars):'),
+  url='https://elah.jaybulb.com/?ref=ph',github='https://github.com/nulljosh/elah',
+  logo=RAW+'elah/main/brand/icon-1024.png',gallery=[RAW+'elah/main/launch/gallery/00-live.png'],
+  cats=['Books','Productivity'],tags=['Books','iOS','Mac'],pricing='free',
+  comment=kit('elah','First comment (maker story):'),date=''),
+})
+
+# 2026-11-26: seven small web apps, kits written by one Haiku. labs ones live under labs/main/<app>/, numen and noema are own repos.
+_WEB={'dream':('labs',['Artificial Intelligence','Wellness']),'homeqi':('labs',['Lifestyle','Real Estate']),'numen':(None,['Math','Productivity']),
+ 'weather':('labs',['Weather','Lifestyle']),'fieldbook':('labs',['Education','Science']),'hormuz':('labs',['News','Finance']),'noema':(None,['Science','Education'])}
+for _a,(_repo,_cats) in _WEB.items():
+    _top=kit(_a,'Topics (3):').replace('\n',' ').split(',')
+    _raw=RAW+(('labs/main/'+_a) if _repo else (_a+'/main'))
+    APPS[_a]=dict(name=kit(_a,'Name (<=40 chars):'),tagline=kit(_a,'Tagline (<=60 chars):'),desc=kit(_a,'Description (<=260 chars):'),
+      url='https://%s.jaybulb.com/?ref=ph'%_a,github=('https://github.com/nulljosh/labs/tree/main/'+_a) if _repo else 'https://github.com/nulljosh/'+_a,
+      logo=_raw+'/brand/icon-1024.png' if _a!='noema' else 'https://noema.jaybulb.com/apple-touch-icon.png',gallery=[_raw+'/launch/gallery/00-live.png'],
+      cats=_cats,tags=[t.strip() for t in _top][:3],pricing='free',comment=kit(_a,'First comment (maker story):'),date='')
+
+# 2026-11-26: big projects, own repos. Logos for joshemon and mirage rendered from icon.svg.
+for _a,_cats in {'duke':['Games','Artificial Intelligence'],'joshemon':['Games','Retro'],'mirage':['Games','Indie Games'],'tripwire':['Developer Tools','GitHub']}.items():
+    _top=kit(_a,'Topics (3):').replace('\n',' ').split(',')
+    APPS[_a]=dict(name=kit(_a,'Name (<=40 chars):'),tagline=kit(_a,'Tagline (<=60 chars):'),desc=kit(_a,'Description (<=260 chars):'),
+      url='https://%s.jaybulb.com/?ref=ph'%_a,github='https://github.com/nulljosh/'+_a,
+      logo=RAW+_a+'/main/brand/icon-1024.png',gallery=[RAW+_a+'/main/launch/gallery/00-live.png'],
+      cats=_cats,tags=[t.strip() for t in _top][:3],pricing='free',comment=kit(_a,'First comment (maker story):'),date='')

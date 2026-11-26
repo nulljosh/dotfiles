@@ -106,6 +106,16 @@ PH keeps whatever name, URL and logo the product had at launch, so every rename 
 - Other Claude sessions share this Safari. Work in a window of its own (`make new document`), never in a tab next to someone else's: a background tab hangs `do JavaScript`.
 - Product pages for Curbfind and Plank redirect to their launch page; their pricing lives there and was already Free.
 
+### Lessons from the 2026-11-26 sweep
+- `/my/products` now lists only launches as links (the Manage buttons are not anchors), and the page shows 31 products, not the 9 launches visible at first. `ph_audit.py` takes slugs as arguments (`ph_audit.py slug...`); with none it scrapes `/products/<slug>/` links from that page, which is launches only. Keep the slug list in `PRICING` in `ph_fix.py` current. Products on PH: voxprint (Notate), doorstock, bookrank (Kernel), curvely, talli-2, inkpress (Bugle), quotestreak (Coda), wordroot, lexly (Patois), epiphany-3, sparkjar (Melete), nyc-survive (Gastown), blockframe (Icelus), sidewise-2 (retired), toroid, plaintxt-2, nimble-answers, joshua-tree, curbfind (Scrounger), plank, healstack (Machaon), horula (Tocks), mailbag, airwell, atlin, cartons, hermes-8 (Cyllene), hamurapi, vancouver-vice, sighting, blackcomb, turing-3.
+- Reading an edit page 4.5s after navigating returned the PREVIOUS page's form values for some slugs. Wait 8s (audit does now) and check the slug in the URL.
+- `ph_fix.py` can leave pricing blank (Doorstock, Machaon lost theirs). After any fix, reload, wait 9s and read `input[name=pricingType]:checked`; click the radio again and Save if it is empty.
+- `set_logo` fails with "ax prompt not found" when the native Paste-a-URL prompt appears; it will not type. Set `logo=None` for a run that must not hang, and add the logo by hand.
+- Done 2026-11-26: Horula is now Tocks, Hermes is Cyllene, Machaon and Doorstock URLs fixed. Held: Notate until Apple accepts Echo; Curvely until the Pan/Conics store name settles. Logos for Tocks and Cyllene still old.
+- New-post form (redesigned Nov 2026): Get started, click Continue once empty, then type name, tagline and description with `execCommand('insertText')` (not the value setter), and if Continue is still disabled type them all again. Then Skip, I'll fill it in myself, then Continue without it, and you land on the draft editor. `ph_submit.run` does all of this. Media: open the dialog and wait for the file inputs before `ph_media` sets them.
+- Queue a batch with one shell loop of `python3 -u -c "...p.run('<app>')"`; `run` stops at "ready to schedule" and never schedules. Do not close the PH Safari window mid-run ("NO PH TAB").
+- Not on PH yet, kit written: elah, keyrate, costanza (`<app>/launch/producthunt.md`). Elah's kit is uncommitted (repo mid-merge).
+
 ## Mechanics
 
 `python3 <skill-dir>/mech.py <app> <url> <tagline> <description>` does gallery, og.png,

@@ -12,7 +12,9 @@ def attach(app):
     if ph.js("document.querySelector('[role=dialog] input[type=file],dialog input[type=file]')?1:0") in (0,'0',None):
         for t in ['Logo','Add images','Edit media']:
             if ph.click(t,False)=='ok': break
-        time.sleep(4)
+        for _ in range(15):
+            time.sleep(1)
+            if ph.js("document.querySelector('[role=dialog] input[type=file],dialog input[type=file]')?1:0") in (1,'1'): break
     for i,u in [(0,a['logo'])]+[(1,g) for g in a['gallery']]:
         ph.js("window.__phm=''"); ph.js(JS%(i,json.dumps(u)))
         for _ in range(20):

@@ -118,7 +118,22 @@ def run(key):
     else:
       nav('https://www.producthunt.com/posts/new')
       setval('input[name=url]',a['url']); time.sleep(1)
-      js("[...document.querySelectorAll('button')].find(x=>x.innerText.trim()=='Get started').click();1"); time.sleep(5)
+      js("[...document.querySelectorAll('button')].find(x=>x.innerText.trim()=='Get started').click();1"); time.sleep(6)
+      # one empty Continue first: it switches the form to live validation, and only then does typing enable Continue
+      js("[...document.querySelectorAll('button')].find(b=>b.innerText.trim()=='Continue').click();1"); time.sleep(2)
+      # 2026-11-26 redesign: one form, Continue only enables after REAL input events (execCommand insertText), setval leaves it disabled.
+      for sel,v in [('input[name=name]',a['name']),('input[name=tagline]',a['tagline']),('textarea[name=description]',a['desc'])]:
+          js("(function(){var e=document.querySelector(%s);e.focus();e.select();document.execCommand('insertText',false,%s);return 1})()"%(json.dumps(sel),json.dumps(v))); time.sleep(1.5)
+      time.sleep(3)
+      # the first pass leaves Continue disabled; typing the same text again enables it (verified 2026-11-26)
+      for _ in range(3):
+          if js("[...document.querySelectorAll('button')].find(b=>b.innerText.trim()=='Continue').disabled")=='false': break
+          for sel,v in [('input[name=name]',a['name']),('input[name=tagline]',a['tagline']),('textarea[name=description]',a['desc'])]:
+              js("(function(){var e=document.querySelector(%s);e.focus();e.select();document.execCommand('insertText',false,%s);return 1})()"%(json.dumps(sel),json.dumps(v))); time.sleep(1.2)
+          time.sleep(2)
+      js("[...document.querySelectorAll('button')].find(b=>b.innerText.trim()=='Continue').click();1"); time.sleep(8)
+      js("[...document.querySelectorAll('button,a')].find(b=>/Skip, I.ll fill/.test(b.innerText)).click();1"); time.sleep(3)
+      js("[...document.querySelectorAll('button,a')].find(b=>b.innerText.trim()=='Continue without it').click();1"); time.sleep(8)
     if js("document.querySelector('input[name=connectProduct]')?'y':'n'")=='y':
         js("[...document.querySelectorAll('input[name=connectProduct]')].find(x=>x.value=='false').click();[...document.querySelectorAll('button')].find(x=>x.innerText.trim()=='Get started').click();1"); time.sleep(6)
     print(' draft',js("location.href"))
